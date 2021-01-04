@@ -64,13 +64,20 @@ void initPcbs()
 
 void initPcbs()
 {
-    pcb_t* hd = &pcbFree_h;
-
+    printf("InitPcb###################################");
+    printf("&pcbfreeh %d\n", &pcbFree_h); 
+    pcb_t* hd = &pcbFree_h; // hd = indirizzo di pcbfree da cui muoversi
+    printf("hd %d\n", hd);
     hd->val = 0;
     hd->p_prev = &pcbFree_table[MAXPROC-2];
     hd->p_next = &pcbFree_table[0];
-    hd = hd->p_next;
+    printf("hd->p_next %d\n", hd->p_next);
+    printf("hd->p_prev %d\n", hd->p_prev);
+    printf("pcbfree_h->p_next %d\n", &pcbFree_h->p_next); // come mai sono diversi anche se di pochissimo ?
+    printf("pcbfree_h->p_prev %d\n", &pcbFree_h->p_prev);
 
+    hd = hd->p_next;
+    printf("hd = hd->p_next %d\n", hd);
 
     hd->val = 1;
     hd->p_prev = &pcbFree_h;
@@ -100,10 +107,16 @@ pcb_t *allocPcb()
     }
     else
     {
+        printf("AllocPcb #####################################\n");
+        printf("pcbfree_h %d\n", pcbFree_h);
         pcb_t* temp = pcbFree_h;
+        printf("temp %d\n", temp);
         pcb_t* tail = pcbFree_h->p_prev;
-        p_sentinel->head = pcbFree_h->p_next;
-
+        p_sentinel = temp; // altrimenti seg fault , è una specie di inizializzazione
+        p_sentinel->head = NULL;
+        printf("sentinel %d\n", p_sentinel);
+        p_sentinel->head = &pcbFree_h->p_next; // così in pratica punta a se stessa perchè pcbfreeh è vuota
+        printf("sentinel->head %d\n", p_sentinel->head);
         initList(temp);
 
         tail->p_next = p_sentinel->head;
@@ -284,8 +297,9 @@ int main()
 {
     initPcbs();
     pcb_t* arrayTest;
+    arrayTest = allocPcb();
 
-    arrayTest = fillList(arrayTest, MemoryAlloc);
+    //arrayTest = fillList(arrayTest, MemoryAlloc);
 
     //printf("\nListPrint");
    // printList(&pcbFree_h, MAXPROC+3);
@@ -297,7 +311,7 @@ int main()
 
     test->val = 69;
 
-    printf("addr di pcbFree_h: %d addr di test: %d\n", pcbFree_h, test);
+    //printf("addr di pcbFree_h: %d addr di test: %d\n", pcbFree_h, test);
 
     //insertProcQ(&pcbFree_h, test);
 
