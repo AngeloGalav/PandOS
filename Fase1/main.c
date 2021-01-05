@@ -20,6 +20,9 @@ pcb_t* pcbFree_h;
 //array di pcb_t di lunghezza MAXPROC = 20
 pcb_t pcbFree_table[MAXPROC];
 
+//memoria dei processi
+pcb_t pcb_memory[33];
+
 //test
 pcb_t MemoryAlloc[10];
 
@@ -43,7 +46,7 @@ pcb_t* mkEmptyProcQ();
 int emptyProcQ(pcb_t *tp);
 void insertProcQ(pcb_t** tp, pcb_t* p);
 
-
+int i = 0;
 
 int main()
 {
@@ -60,20 +63,30 @@ int main()
     test->val = 69;
 
     pcb_t* allocTest;
+    pcb_t* allocTest1;
+    pcb_t* allocTest2;
 
-    allocTest = allocPcb();
+    //printList(pcbFree_h, MAXPROC + 3);
 
-    insertProcQ(&pcbFree_h, test);
+    //allocTest = allocPcb();
 
-    printList(pcbFree_h, MAXPROC + 3);
+    //insertProcQ(&pcbFree_h, test);
+
+    //allocTest = mkEmptyProcQ();
+
+    //printList(pcbFree_h, MAXPROC + 3);
 
     //printf("ELEMENTO TOLTO %d", allocTest);
 
     allocTest = mkEmptyProcQ();
+    allocTest1 = mkEmptyProcQ();
+    allocTest2 = mkEmptyProcQ();
 
-    allocTest->val = 327;
+    printList(allocTest, 1);
+    printList(allocTest1, 1);
+    printList(allocTest2, 1);
 
-    insertProcQ(&allocTest, test);
+    //insertProcQ(&allocTest, test);
     printList(pcbFree_h, MAXPROC + 3);
 
     return 0;
@@ -199,12 +212,17 @@ void freePcb(pcb_t* p)
 // crea una lista di pcb_t inizializzandola come vuota
 pcb_t* mkEmptyProcQ()
 {
-    pcb_t* list_head;
 
-    initList(list_head);
+    pcb_t* list_head = &pcb_memory[0 + i];
+
+    //initList(list_head);
+
+    list_head->val = 78 + i;
 
     list_head->p_next = list_head;
     list_head->p_prev = list_head;
+
+    i = i + 1;
 
     return list_head;
 }
