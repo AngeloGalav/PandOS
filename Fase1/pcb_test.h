@@ -18,6 +18,7 @@ typedef struct pcb_t {
 
 }  pcb_t, *pcb_PTR;
 
+//funzione ausiliaria per stampare la lista
 void printList(pcb_t* lhead, int limit)
 {
     printf("\n");
@@ -36,6 +37,7 @@ void printList(pcb_t* lhead, int limit)
 
 }
 
+//self- explanatory
 void reversePrintList(pcb_t* lhead, int limit)
 {
     printf("\n");
@@ -97,6 +99,7 @@ void head_insert(pcb_t* blist,pcb_t* elem)
     }
 }
 
+//funzione ausiliaria per creare una lista test
 pcb_t* fillList(pcb_t* lhead, pcb_t Memory[])
 {
     pcb_t* hd = &lhead;

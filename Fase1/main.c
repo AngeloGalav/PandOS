@@ -5,13 +5,7 @@
 #define TRUE            1
 #define FALSE           0
 
-/*
-typedef struct pcbFree_h{
-    pcb_t *elem;
-    struct pcbFree_h *p_next,*p_prev;
-}pcbFree;
-*/
-
+//sentinella della lista pcbfree, punta a pcbfree_h
 typedef struct sentinel{
     pcb_t* head;
 
@@ -19,14 +13,19 @@ typedef struct sentinel{
 }sentinel;
 
 sentinel *p_sentinel;
+
+//puntatore alla lista dei pcb_t liberi e disponibili, non è un elemento della lista ,punta alla testa
 pcb_t* pcbFree_h;
+
+//array di pcb_t di lunghezza MAXPROC = 20 
 pcb_t pcbFree_table[MAXPROC];
 
+//test
 pcb_t MemoryAlloc[10];
 
 /*  Ho fatto due funzioni initPcbs che inizializzano le due liste in modo di verso: con una, lo stesso puntatore pcbFree_h è nodo della lista,
  *  ciò significa che se volessi stampare l'intera lista mi tocca usare &pcbFree_h (che sarebbe l'indirizzo del primo nodo).
- *  Non consiglio di usare questa, ma la tengo per questioni legacy. (E per far capire a quello scemo di Adriano come funzionano i puntatori (ಠ_ಠ) )
+ *  Non consiglio di usare questa, ma la tengo per questioni legacy.
 */
 void initPcbs_2();
 
@@ -37,6 +36,7 @@ void initPcbs_2();
 void initPcbs();
 
 void initList(pcb_t* node);
+
 void freePcb(pcb_t* p);
 pcb_t *allocPcb();
 pcb_t* mkEmptyProcQ();
@@ -66,6 +66,7 @@ int main()
     return 0;
 }
 
+//inizializza la lista di pcbfree_h con i pcb_t che sono nell'array pcbfree_table
 void initPcbs()
 {
     pcbFree_h = &pcbFree_table[0];
@@ -123,12 +124,13 @@ void initPcbs_2()
     hd->p_next = &pcbFree_h;
 }
 
+//controlla se la lista è vuota
 int emptyProcQ(pcb_t *tp)
 {
     if (tp == NULL) return TRUE;
     else return FALSE;
 }
-
+//l'elemento puntato da *p viene inserito nella lista di **tp (&pcbfree_h)
 void insertProcQ(pcb_t** tp, pcb_t* p)
 {
     pcb_t* hd = (*tp)->p_prev;
@@ -141,6 +143,7 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
     (*tp)->p_prev = p;
 }
 
+//se la lista di pcb_t è vuota ritorna null altrimenti  e ritorna un elemento dopo averlo rimosso
 pcb_t *allocPcb()
 {
     if (pcbFree_h == NULL)
@@ -162,6 +165,7 @@ pcb_t *allocPcb()
     }
 }
 
+// inserisce(in coda ) il pcb_t puntato da *p nella lista pcbfree_h
 void freePcb(pcb_t* p)
 {
     if (p != NULL && pcbFree_h != NULL)
@@ -170,6 +174,7 @@ void freePcb(pcb_t* p)
     }
 }
 
+// crea una lista di pcb_t inizializzandola come vuota
 pcb_t* mkEmptyProcQ()
 {
     pcb_t* list_head;
@@ -182,6 +187,7 @@ pcb_t* mkEmptyProcQ()
     return list_head;
 }
 
+//funzione ausiliaria per inizializzare i campi a NULL
 void initList(pcb_t* node)
 {
     node->p_next = NULL;
@@ -189,7 +195,6 @@ void initList(pcb_t* node)
     node->p_child = NULL;
     node->p_next_sib = NULL;
     node->p_prnt = NULL;
-    //node->p_s = NULL;
     node->p_prev_sib = NULL;
 }
 
