@@ -17,7 +17,7 @@ sentinel *p_sentinel;
 //puntatore alla lista dei pcb_t liberi e disponibili, non è un elemento della lista ,punta alla testa
 pcb_t* pcbFree_h;
 
-//array di pcb_t di lunghezza MAXPROC = 20 
+//array di pcb_t di lunghezza MAXPROC = 20
 pcb_t pcbFree_table[MAXPROC];
 
 //test
@@ -59,9 +59,15 @@ int main()
     test = &tests;
     test->val = 69;
 
+    pcb_t* allocTest;
+
+    allocTest = allocPcb();
+
     insertProcQ(&pcbFree_h, test);
 
     printList(pcbFree_h, MAXPROC + 3);
+
+    printf("ELEMENTO TOLTO %d", allocTest);
 
     return 0;
 }
@@ -130,6 +136,7 @@ int emptyProcQ(pcb_t *tp)
     if (tp == NULL) return TRUE;
     else return FALSE;
 }
+
 //l'elemento puntato da *p viene inserito nella lista di **tp (&pcbfree_h)
 void insertProcQ(pcb_t** tp, pcb_t* p)
 {
@@ -144,7 +151,7 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
 }
 
 //se la lista di pcb_t è vuota ritorna null altrimenti  e ritorna un elemento dopo averlo rimosso
-pcb_t *allocPcb()
+pcb_t *allocPcb() //TODO: AGGIUNGERE SUPPORTO SENTINELLA
 {
     if (pcbFree_h == NULL)
     {
@@ -153,13 +160,21 @@ pcb_t *allocPcb()
     else
     {
         pcb_t* temp = pcbFree_h;
+
         pcb_t* tail = pcbFree_h->p_prev;
-        p_sentinel->head = pcbFree_h->p_next;
+        pcb_t* nx = pcbFree_h->p_next;
+
+        //p_sentinel->head = pcbFree_h->p_next;
+
+        nx->p_prev = tail;
+        tail->p_next = nx;
+
+        pcbFree_h = nx;
 
         initList(temp);
 
-        tail->p_next = p_sentinel->head;
-        p_sentinel->head = NULL;
+        //tail->p_next = p_sentinel->head;
+        //p_sentinel->head = NULL;
 
         return temp;
     }
@@ -175,9 +190,9 @@ void freePcb(pcb_t* p)
 }
 
 // crea una lista di pcb_t inizializzandola come vuota
-pcb_t* mkEmptyProcQ()
+pcb_t* mkEmptyProcQ() //DA TESTARE
 {
-    pcb_t* list_head;
+    pcb_t* list_head ;
 
     initList(list_head);
 
@@ -194,6 +209,7 @@ void initList(pcb_t* node)
     node->p_prev = NULL;
     node->p_child = NULL;
     node->p_next_sib = NULL;
+    //node->p_s = 0;
     node->p_prnt = NULL;
     node->p_prev_sib = NULL;
 }
