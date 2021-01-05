@@ -67,7 +67,14 @@ int main()
 
     printList(pcbFree_h, MAXPROC + 3);
 
-    printf("ELEMENTO TOLTO %d", allocTest);
+    //printf("ELEMENTO TOLTO %d", allocTest);
+
+    allocTest = mkEmptyProcQ();
+
+    allocTest->val = 327;
+
+    insertProcQ(&allocTest, test);
+    printList(pcbFree_h, MAXPROC + 3);
 
     return 0;
 }
@@ -190,9 +197,9 @@ void freePcb(pcb_t* p)
 }
 
 // crea una lista di pcb_t inizializzandola come vuota
-pcb_t* mkEmptyProcQ() //DA TESTARE
+pcb_t* mkEmptyProcQ()
 {
-    pcb_t* list_head ;
+    pcb_t* list_head;
 
     initList(list_head);
 
@@ -205,13 +212,15 @@ pcb_t* mkEmptyProcQ() //DA TESTARE
 //funzione ausiliaria per inizializzare i campi a NULL
 void initList(pcb_t* node)
 {
-    node->p_next = NULL;
-    node->p_prev = NULL;
-    node->p_child = NULL;
-    node->p_next_sib = NULL;
-    //node->p_s = 0;
-    node->p_prnt = NULL;
-    node->p_prev_sib = NULL;
+    if (node != NULL){
+        node->p_next = NULL;
+        node->p_prev = NULL;
+        node->p_child = NULL;
+        node->p_next_sib = NULL;
+        //node->p_s = 0;
+        node->p_prnt = NULL;
+        node->p_prev_sib = NULL;
+    }
 }
 
 
