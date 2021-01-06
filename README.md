@@ -1,5 +1,5 @@
 # Progetto_Sistemi
-
+(*tp) sta  a significare che se gli passo &pcbfree_h punta al primo elemento della lista cioè l'elemento puntato da pcbfree_h
 Cosa si è fatto fino ad ora 4 gennaio:
 create e TESTATE le prime sei funzioni  richieste, fino ad ora abbiamo lavorato solo con  puntatori e liste (specifiche nei commenti).
 
@@ -34,3 +34,5 @@ Sono TUTTI gli elementi della nostra lista, il 69 è l'elemento test, 1 2 3 veng
 Ovviamente ogni stampa che fate cambiano gli indirizzi ma è normale, basta che corrispondano.
 Abbiamo dei problemi con la funzione mkEmptyProcQ() perchè praticamente non capiamo come creare un puntatore e farlo puntare a qualcosa effettivamente, per poi utilizzarlo.ABbiamo provato a creare dei pcb_t fittizzi a cui assegnarlo ma questo crea il problema che poi ogni volta che si richiama quella funzione il pcbt utilizzato dal compilatore è lo stesso, abbiamo perciò provato a creare un array di pcb_t ed assegnare con un contatore un pcb_t diverso ogni volta che viene chiamata la funzione, questo però ci porta al dubbio che questa cosa sia effettivamente legale perciò abbiamo chiesto al prof un pò di delucidazioni.
 Comunque sia tutte le altre funzioni sembrano funzionare senza grandi problemi.
+DATA 6/01/2021
+Aggiunta un'altra funzione e forse terminata la parte delle liste, va fatta una revisione per essere certi
