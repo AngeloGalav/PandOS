@@ -54,6 +54,8 @@ pcb_t *headProcQ(pcb_t **tp);
 
 pcb_t* removeProcQ(pcb_t **tp);
 
+pcb_t* outProcQ(pcb_t **tp, pcb_t *p);
+
 
 int i = 0;
 
@@ -87,6 +89,7 @@ int main()
 
     //printf("ELEMENTO TOLTO %d", allocTest);
 
+    /*
     allocTest = mkEmptyProcQ();
     allocTest1 = mkEmptyProcQ();
     allocTest2 = mkEmptyProcQ();
@@ -96,6 +99,14 @@ int main()
     printList(allocTest2, 1);
 
     //insertProcQ(&allocTest, test);
+
+    */
+
+    printList(pcbFree_h, MAXPROC + 3);
+    pcb_t* ok = removeProcQ(&pcbFree_h);
+
+    printf("ELEMENTO ELIMINTATO %d %d", ok->val, ok);
+
     printList(pcbFree_h, MAXPROC + 3);
 
     return 0;
@@ -168,10 +179,10 @@ int emptyProcQ(pcb_t *tp)
 
 //l'elemento puntato da *p viene inserito nella lista di **tp (&pcbfree_h)
 /**
- * inserisce l’elemento puntato da p nella 
- * coda dei processi tp. La doppia 
- * indirezione su tp serve per poter inserire 
- * p come ultimo elemento della coda. 
+ * inserisce l’elemento puntato da p nella
+ * coda dei processi tp. La doppia
+ * indirezione su tp serve per poter inserire
+ * p come ultimo elemento della coda.
  */
 void insertProcQ(pcb_t** tp, pcb_t* p)
 {
@@ -243,8 +254,8 @@ pcb_t* mkEmptyProcQ()
 }
 
 /**
- * Restituisce l’elemento in fondo alla coda dei processi tp, SENZA RIMUOVERLO. 
- * Ritorna NULL se la coda non ha elementi. 
+ * Restituisce l’elemento in fondo alla coda dei processi tp, SENZA RIMUOVERLO.
+ * Ritorna NULL se la coda non ha elementi.
  */
 pcb_t *headProcQ(pcb_t **tp)
 {
@@ -259,9 +270,9 @@ pcb_t *headProcQ(pcb_t **tp)
 }
 
 /**
- * Rimuove l’elemento piu’ vecchio dalla coda 
- * tp. Ritorna NULL se la coda è vuota, 
- * altrimenti ritorna il puntatore all’elemento 
+ * Rimuove l’elemento piu’ vecchio dalla coda
+ * tp. Ritorna NULL se la coda è vuota,
+ * altrimenti ritorna il puntatore all’elemento
  * rimosso dalla lista.
  */
 pcb_t* removeProcQ(pcb_t **tp)
@@ -278,9 +289,21 @@ pcb_t* removeProcQ(pcb_t **tp)
         tmp->p_prev->p_next = (*tp);
         return tmp;
     }
-    
-    
 }
+
+/** Rimuove il PCB puntato da p dalla coda dei
+*   processi puntata da tp. Se p non è presente
+*   nella coda, restituisce NULL (p può trovarsi
+*   in una posizione arbitraria della coda).
+*/
+
+pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
+{
+
+
+    return NULL;
+}
+
 
 
 //funzione ausiliaria per inizializzare i campi a NULL
