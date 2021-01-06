@@ -81,7 +81,7 @@ int main()
 
     //allocTest = allocPcb();
 
-    //insertProcQ(&pcbFree_h, test);
+    insertProcQ(&pcbFree_h, test);
 
     //allocTest = mkEmptyProcQ();
 
@@ -103,12 +103,20 @@ int main()
     */
 
     printList(pcbFree_h, MAXPROC + 3);
-    pcb_t* ok = removeProcQ(&pcbFree_h);
+    //pcb_t* ok = removeProcQ(&pcbFree_h);
 
-    printf("ELEMENTO ELIMINTATO %d %d", ok->val, ok);
+    //printf("ELEMENTO ELIMINTATO %d %d", ok->val, ok);
 
+    //printList(pcbFree_h, MAXPROC + 3);
+
+    // test di outProcQ con diversi input
+    pcb_t* work = NULL;
+    //work = outProcQ(&pcbFree_h, NULL);
+    //work = outProcQ(NULL, test );  SEG FAULT !!
+    //work = outProcQ(&pcbFree_h, pcbfree_h) 
+    work = outProcQ(&pcbFree_h, test);
     printList(pcbFree_h, MAXPROC + 3);
-
+    printf("%d\n", work->val);
     return 0;
 }
 
@@ -299,9 +307,37 @@ pcb_t* removeProcQ(pcb_t **tp)
 
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
+    if( ( (*tp) != NULL) && (p != NULL)  && ((*tp) != p)) // p non è il primo elemento
+    {
+        pcb_t* tmp = (*tp)->p_next;
+        while(tmp != (*tp) )
+        {
+            if(tmp == p)
+            {
+                tmp->p_prev->p_next = tmp->p_next;
+                tmp->p_next->p_prev = tmp->p_prev;
+                tmp->p_next = NULL;
+                tmp->p_prev = NULL;
+                return tmp;
+            }
+            tmp = tmp->p_next;
+        }
+        return NULL;
+    }
+    else if ( (*tp) == p && (*tp) != NULL) // p è il primo elemento
+    {   
+           pcb_t* tmp = (*tp);
+           (*tp) = (*tp)->p_next;
+           (*tp)->p_prev = tmp->p_prev;
+            tmp->p_prev->p_next = (*tp);
+            return tmp;
 
-
-    return NULL;
+    } 
+    else // se leggi questa Adriano starà con tua mamma nel frattempo
+    {
+        return NULL;
+    }
+    
 }
 
 
