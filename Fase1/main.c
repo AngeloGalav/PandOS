@@ -41,10 +41,19 @@ void initPcbs();
 void initList(pcb_t* node);
 
 void freePcb(pcb_t* p);
+
 pcb_t *allocPcb();
+
 pcb_t* mkEmptyProcQ();
+
 int emptyProcQ(pcb_t *tp);
+
 void insertProcQ(pcb_t** tp, pcb_t* p);
+
+pcb_t *headProcQ(pcb_t **tp);
+
+pcb_t* removeProcQ(pcb_t **tp);
+
 
 int i = 0;
 
@@ -158,6 +167,12 @@ int emptyProcQ(pcb_t *tp)
 }
 
 //l'elemento puntato da *p viene inserito nella lista di **tp (&pcbfree_h)
+/**
+ * inserisce l’elemento puntato da p nella 
+ * coda dei processi tp. La doppia 
+ * indirezione su tp serve per poter inserire 
+ * p come ultimo elemento della coda. 
+ */
 void insertProcQ(pcb_t** tp, pcb_t* p)
 {
     pcb_t* hd = (*tp)->p_prev;
@@ -213,8 +228,8 @@ void freePcb(pcb_t* p)
 pcb_t* mkEmptyProcQ()
 {
 
-    pcb_t* list_head = &pcb_memory[0 + i];
-
+    pcb_t* list_head = NULL; //&pcb_memory[0 + i];
+    /*
     //initList(list_head);
 
     list_head->val = 78 + i;
@@ -223,9 +238,50 @@ pcb_t* mkEmptyProcQ()
     list_head->p_prev = list_head;
 
     i = i + 1;
-
+    */
     return list_head;
 }
+
+/**
+ * Restituisce l’elemento in fondo alla coda dei processi tp, SENZA RIMUOVERLO. 
+ * Ritorna NULL se la coda non ha elementi. 
+ */
+pcb_t *headProcQ(pcb_t **tp)
+{
+    if(*tp == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        return (*tp)->p_prev;
+    }
+}
+
+/**
+ * Rimuove l’elemento piu’ vecchio dalla coda 
+ * tp. Ritorna NULL se la coda è vuota, 
+ * altrimenti ritorna il puntatore all’elemento 
+ * rimosso dalla lista.
+ */
+pcb_t* removeProcQ(pcb_t **tp)
+{
+    if(*tp == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        pcb_t *tmp = *tp;
+        *tp = (*tp)->p_next;
+        (*tp)->p_prev = tmp->p_prev;
+        tmp->p_prev->p_next = (*tp);
+        return tmp;
+    }
+    
+    
+}
+
 
 //funzione ausiliaria per inizializzare i campi a NULL
 void initList(pcb_t* node)
