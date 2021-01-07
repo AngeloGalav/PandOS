@@ -56,6 +56,8 @@ pcb_t* removeProcQ(pcb_t **tp);
 
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p);
 
+int emptyChild(pcb_t *p);
+
 
 int i = 0;
 
@@ -67,24 +69,32 @@ int main()
     //this is a test array, ignore it
     arrayTest = fillList(arrayTest, MemoryAlloc);
 
+    //pcb_t making
+    pcb_t tests;
+    pcb_t test2;
+    pcb_t* test;
+    test = &tests;
+    test->val = 69;
+
+    pcb_t* allocTest;
+    pcb_t* allocTest1;
+    pcb_t* allocTest2;
+
+    allocTest1 = &test2;
+    allocTest1->val = 909;
+
     insertProcQ(&pcbFree_h, test);
+    insertProcQ(&pcbFree_h, allocTest1);
 
     printList(pcbFree_h, MAXPROC + 3);
 
     pcb_t* work = NULL;
 
-    pcb_t* work2 = NULL;
-
-    work = outProcQ(&work2, test );
-
-    if (work == NULL)
-    {
-        printf("SUCA\n");
-    }
-
     work = outProcQ(&pcbFree_h, test);
+
     printList(pcbFree_h, MAXPROC + 3);
-    printf("%d\n", work->val);
+
+    printf("ELEMENTO ELIMINATO: %d | addr: %d\n", work->val, work);
     return 0;
 }
 
@@ -292,7 +302,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         }
         return NULL;
     }
-    else if ( (*tp) == p && (tp != NULL) && (*tp) != NULL) // p è il primo elemento
+    else if ( (*tp) == p &&(tp != NULL) &&(*tp) != NULL) // p è il primo elemento
     {
             pcb_t* tmp = (*tp);
             (*tp) = (*tp)->p_next;

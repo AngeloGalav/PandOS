@@ -118,7 +118,6 @@ pcb_t* fillList(pcb_t* lhead, pcb_t Memory[])
     return lhead;
 }
 
-
 pcb_t* fillList_2(pcb_t* lhead, pcb_t Memory[])
 {
     pcb_t* hd = &lhead;
