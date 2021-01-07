@@ -67,53 +67,21 @@ int main()
     //this is a test array, ignore it
     arrayTest = fillList(arrayTest, MemoryAlloc);
 
-    //pcb_t making
-    pcb_t tests;
-    pcb_t* test;
-    test = &tests;
-    test->val = 69;
-
-    pcb_t* allocTest;
-    pcb_t* allocTest1;
-    pcb_t* allocTest2;
-
-    //printList(pcbFree_h, MAXPROC + 3);
-
-    //allocTest = allocPcb();
-
     insertProcQ(&pcbFree_h, test);
 
-    //allocTest = mkEmptyProcQ();
-
-    //printList(pcbFree_h, MAXPROC + 3);
-
-    //printf("ELEMENTO TOLTO %d", allocTest);
-
-    /*
-    allocTest = mkEmptyProcQ();
-    allocTest1 = mkEmptyProcQ();
-    allocTest2 = mkEmptyProcQ();
-
-    printList(allocTest, 1);
-    printList(allocTest1, 1);
-    printList(allocTest2, 1);
-
-    //insertProcQ(&allocTest, test);
-
-    */
-
     printList(pcbFree_h, MAXPROC + 3);
-    //pcb_t* ok = removeProcQ(&pcbFree_h);
 
-    //printf("ELEMENTO ELIMINTATO %d %d", ok->val, ok);
-
-    //printList(pcbFree_h, MAXPROC + 3);
-
-    // test di outProcQ con diversi input
     pcb_t* work = NULL;
-    //work = outProcQ(&pcbFree_h, NULL);
-    //work = outProcQ(NULL, test );  SEG FAULT !!
-    //work = outProcQ(&pcbFree_h, pcbfree_h) 
+
+    pcb_t* work2 = NULL;
+
+    work = outProcQ(&work2, test );
+
+    if (work == NULL)
+    {
+        printf("SUCA\n");
+    }
+
     work = outProcQ(&pcbFree_h, test);
     printList(pcbFree_h, MAXPROC + 3);
     printf("%d\n", work->val);
@@ -307,7 +275,7 @@ pcb_t* removeProcQ(pcb_t **tp)
 
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
-    if( ( (*tp) != NULL) && (p != NULL)  && ((*tp) != p)) // p non è il primo elemento
+    if( (tp != NULL) && (*tp != NULL) && (p != NULL)  && ((*tp) != p)) // p non è il primo elemento
     {
         pcb_t* tmp = (*tp)->p_next;
         while(tmp != (*tp) )
@@ -324,20 +292,19 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         }
         return NULL;
     }
-    else if ( (*tp) == p && (*tp) != NULL) // p è il primo elemento
-    {   
-           pcb_t* tmp = (*tp);
-           (*tp) = (*tp)->p_next;
-           (*tp)->p_prev = tmp->p_prev;
+    else if ( (*tp) == p && (tp != NULL) && (*tp) != NULL) // p è il primo elemento
+    {
+            pcb_t* tmp = (*tp);
+            (*tp) = (*tp)->p_next;
+            (*tp)->p_prev = tmp->p_prev;
             tmp->p_prev->p_next = (*tp);
             return tmp;
-
-    } 
-    else // se leggi questa Adriano starà con tua mamma nel frattempo
+    }
+    else
     {
         return NULL;
     }
-    
+
 }
 
 
