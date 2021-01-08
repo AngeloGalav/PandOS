@@ -20,11 +20,8 @@ pcb_t* pcbFree_h;
 //array di pcb_t di lunghezza MAXPROC = 20
 pcb_t pcbFree_table[MAXPROC];
 
-//memoria dei processi
-pcb_t pcb_memory[33];
-
-//test
-pcb_t MemoryAlloc[10];
+//memoria dei processi (usata per testare)
+pcb_t pcb_memory[300];
 
 /*  Ho fatto due funzioni initPcbs che inizializzano le due liste in modo di verso: con una, lo stesso puntatore pcbFree_h è nodo della lista,
  *  ciò significa che se volessi stampare l'intera lista mi tocca usare &pcbFree_h (che sarebbe l'indirizzo del primo nodo).
@@ -36,6 +33,7 @@ void initPcbs_2();
  *  elemento. Dunque, per stampare la lista intera ti basta usare pcbFree_h (e anche per lavorare su pcbFree_h ti basta usare pcbFree_h senza
  *  la &). Questa è la funzione che consiglio di usare.
 */
+
 void initPcbs();
 
 void initList(pcb_t* node);
@@ -56,7 +54,15 @@ pcb_t* removeProcQ(pcb_t **tp);
 
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p);
 
+///FUNZIONI SUGLI ALBERI///
+
 int emptyChild(pcb_t *p);
+
+void insertChild(pcb_t *prnt, pcb_t *p);
+
+pcb_t* removeChild(pcb_t *p);
+
+pcb_t *outChild(pcb_t* p);
 
 
 int i = 0;
@@ -64,11 +70,7 @@ int i = 0;
 int main()
 {
     initPcbs();
-    pcb_t* arrayTest;
-
-    //this is a test array, ignore it
-    arrayTest = fillList(arrayTest, MemoryAlloc);
-
+    /*
     //pcb_t making
     pcb_t tests;
     pcb_t test2;
@@ -93,8 +95,25 @@ int main()
     work = outProcQ(&pcbFree_h, test);
 
     printList(pcbFree_h, MAXPROC + 3);
-
     printf("ELEMENTO ELIMINATO: %d | addr: %d\n", work->val, work);
+
+    */
+
+    pcb_t* tree_source;
+    tree_source = fillTree_UGLY(tree_source, pcb_memory, 5);
+
+    printPcbTree(tree_source);
+
+    pcbFree_h->val = 69;
+
+    insertChild(tree_source, pcbFree_h);
+
+    //pcbFree_h = removeChild(tree_source);
+
+    //printf("DELETED ELEMENT IS %d, value of %d\n" , pcbFree_h, pcbFree_h->val);
+
+    printPcbTree(tree_source);
+
     return 0;
 }
 
@@ -282,7 +301,6 @@ pcb_t* removeProcQ(pcb_t **tp)
 *   nella coda, restituisce NULL (p può trovarsi
 *   in una posizione arbitraria della coda).
 */
-
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
     if( (tp != NULL) && (*tp != NULL) && (p != NULL)  && ((*tp) != p)) // p non è il primo elemento
@@ -316,6 +334,71 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
     }
 
 }
+
+///FUNZIONI ALBERI///
+
+//TODO: MAKE PRINT, FILL functions on trees in pcb_test.h
+
+/** Restituisce TRUE se il PCB puntato da p
+*   non ha figli, FALSE altrimenti.
+*/
+int emptyChild(pcb_t *p)    //restituisce true se è una foglia!
+{
+    if ( p != NULL && p->p_child == NULL)
+    {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+/** Inserisce il PCB puntato da p come figlio
+*   del PCB puntato da prnt.
+*/
+void insertChild(pcb_t *prnt, pcb_t *p)
+{
+    if (prnt != NULL && p != NULL)
+    {
+        pcb_t* tmp = prnt->p_child;
+        prnt->p_child = p;
+        p->p_next_sib = tmp;
+        tmp->p_prev_sib = p;
+    }
+
+}
+
+/** Rimuove il primo figlio del PCB puntato
+*   da p. Se p non ha figli, restituisce NULL.
+*/
+pcb_t* removeChild(pcb_t *p)
+{
+    if (p != NULL)
+    {
+        pcb_t* tmp = p->p_child;
+        p->p_child = tmp->p_next_sib;
+        tmp->p_next_sib->p_prev_sib = NULL;
+
+        return tmp;
+    }
+
+    return NULL;
+}
+
+/** Rimuove il PCB puntato da p dalla lista
+*   dei figli del padre. Se il PCB puntato da
+*   p non ha un padre, restituisce NULL,
+*   altrimenti restituisce l’elemento
+*   rimosso (cioè p). A differenza della
+*   removeChild, p può trovarsi in una
+*   posizione arbitraria (ossia non è
+*   necessariamente il primo figlio del padre).
+*/
+pcb_t *outChild(pcb_t* p)
+{
+    return NULL;
+}
+
+
 
 
 
