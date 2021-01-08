@@ -9,7 +9,6 @@
 typedef struct sentinel{
     pcb_t* head;
 
-    int size;
 }sentinel;
 
 sentinel *p_sentinel;
@@ -22,12 +21,6 @@ pcb_t pcbFree_table[MAXPROC];
 
 //memoria dei processi (usata per testare)
 pcb_t pcb_memory[300];
-
-/*  Ho fatto due funzioni initPcbs che inizializzano le due liste in modo di verso: con una, lo stesso puntatore pcbFree_h è nodo della lista,
- *  ciò significa che se volessi stampare l'intera lista mi tocca usare &pcbFree_h (che sarebbe l'indirizzo del primo nodo).
- *  Non consiglio di usare questa, ma la tengo per questioni legacy.
-*/
-void initPcbs_2();
 
 /*  Questa è la initPcbs che funziona come si deve, ovvere pcbFree punta al primo elemento della lista e basta, senza essere anch'esso il primo
  *  elemento. Dunque, per stampare la lista intera ti basta usare pcbFree_h (e anche per lavorare su pcbFree_h ti basta usare pcbFree_h senza
@@ -159,36 +152,8 @@ void initPcbs()
     hd->val = i;
     hd->p_prev = &pcbFree_table[i - 1];
     hd->p_next = &pcbFree_table[0];
-}
 
-void initPcbs_2()
-{
-    pcb_t* hd = &pcbFree_h;
-
-    hd->val = 0;
-    hd->p_prev = &pcbFree_table[MAXPROC-2];
-    hd->p_next = &pcbFree_table[0];
-    hd = hd->p_next;
-
-
-    hd->val = 1;
-    hd->p_prev = &pcbFree_h;
-    hd->p_next = &pcbFree_table[1];
-    hd = hd->p_next;
-
-    int i = 2;
-
-    while (i < MAXPROC - 1){
-        hd->val = i;
-        hd->p_prev = &pcbFree_table[i-2];
-        hd->p_next = &pcbFree_table[i];
-        i = i + 1;
-        hd = hd->p_next;
-    }
-
-    hd->val = i;
-    hd->p_prev = &pcbFree_table[i-2];
-    hd->p_next = &pcbFree_h;
+    p_sentinel->head = pcbFree_h;
 }
 
 //controlla se la lista è vuota
