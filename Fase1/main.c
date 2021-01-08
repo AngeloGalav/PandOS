@@ -104,13 +104,29 @@ int main()
 
     printPcbTree(tree_source);
 
-    pcbFree_h->val = 69;
+    //pcbFree_h->val = 69;
 
-    insertChild(tree_source, pcbFree_h);
+    //insertChild((tree_source->p_child)->p_next_sib, pcbFree_h);
 
-    //pcbFree_h = removeChild(tree_source);
+    //printPcbTree(tree_source);
 
-    //printf("DELETED ELEMENT IS %d, value of %d\n" , pcbFree_h, pcbFree_h->val);
+    pcbFree_h = removeChild(tree_source->p_child);
+
+    //pcbFree_h = outChild((tree_source->p_child)->p_next_sib);
+
+    if (pcbFree_h == NULL)
+    {
+        printf("CANNOT DELETE NULL ELEMENT!\n");
+
+    }else{
+
+        printf("DELETED ELEMENT IS %d, value of %d\n" , pcbFree_h, pcbFree_h->val);
+
+        if (pcbFree_h->p_prnt == NULL && pcbFree_h->p_prev_sib == NULL && pcbFree_h->p_next_sib == NULL)
+        {
+            printf("COMPLETELY DELETED CLEAN\n");
+        }
+    }
 
     printPcbTree(tree_source);
 
@@ -355,14 +371,19 @@ int emptyChild(pcb_t *p)    //restituisce true se è una foglia!
 /** Inserisce il PCB puntato da p come figlio
 *   del PCB puntato da prnt.
 */
-void insertChild(pcb_t *prnt, pcb_t *p)
+void insertChild(pcb_t *prnt, pcb_t *p) //inserisce un figlio p a prnt.
 {
-    if (prnt != NULL && p != NULL)
+    if (prnt != NULL && p != NULL)  //se il figlio non esiste, evito il segFault.
     {
         pcb_t* tmp = prnt->p_child;
         prnt->p_child = p;
         p->p_next_sib = tmp;
-        tmp->p_prev_sib = p;
+
+        p->p_prnt = prnt;
+
+        if (tmp != NULL){
+            tmp->p_prev_sib = p;    //se prnt non aveva figli inizialmente, mi basta mettere tmp->prev_sib a p;
+        }
     }
 
 }
@@ -372,11 +393,22 @@ void insertChild(pcb_t *prnt, pcb_t *p)
 */
 pcb_t* removeChild(pcb_t *p)
 {
-    if (p != NULL)
+    if (p != NULL && p->p_child != NULL) //se p non ha un figlio, ritorno NULL
     {
-        pcb_t* tmp = p->p_child;
-        p->p_child = tmp->p_next_sib;
-        tmp->p_next_sib->p_prev_sib = NULL;
+        pcb_t* tmp = p->p_child;    //tmp è il figlio
+
+        if (tmp->p_next_sib != NULL){ //se p non ha fratelli destri, evito il segFault
+            p->p_child = tmp->p_next_sib;
+            tmp->p_next_sib->p_prev_sib = NULL;
+        } else {
+            p->p_child = NULL;  //se p aveva un solo figlio, mi basta mettere p->child = null;
+        }
+
+        /*  Ho aggiunto queste due righe nel caso il prof volesse che quando potassimo l'albero non ci sia più traccia dell'albero
+        *   d'origine. Ma ciò dipende tutto da cosa vuole lui. Nel dubbio, queste due righe si possono sempre togliere.
+        */
+        tmp->p_prnt = NULL;
+        tmp->p_next_sib = NULL;
 
         return tmp;
     }
@@ -393,13 +425,38 @@ pcb_t* removeChild(pcb_t *p)
 *   posizione arbitraria (ossia non è
 *   necessariamente il primo figlio del padre).
 */
-pcb_t *outChild(pcb_t* p)
+pcb_t *outChild(pcb_t* p)   //ho interpretato questa funzione nel caso si intendesse che p sia un elemento della lista dei figlio di p->prnt
 {
-    return NULL;
+
+    if (p->p_prnt == NULL)
+    {
+        return NULL;
+    }
+
+
+    if (p->p_prev_sib == NULL)
+    {
+        return removeChild(p->p_prnt); //se non ha un fratello sinistro, p è sicuramente il primo figlio. posso quindi usare la funzione vecchia
+    } else
+    {
+        pcb_t* tmp = p->p_prev_sib; //se è un elemento in mezzo o alla fine, mi basta eseguire queste due righe.
+        tmp->p_next_sib = p->p_next_sib;
+
+        if (p->p_next_sib != NULL) //se non ha un fratello destro, evito il segFault;
+        {
+            p->p_next_sib->p_prev_sib = tmp;
+        }
+
+        /*  Ho aggiunto queste tre righe nel caso il prof volesse che quando potassimo l'albero non ci sia più traccia dell'albero
+        *   d'origine. Ma ciò dipende tutto da cosa vuole lui. Nel dubbio, queste tre righe si possono sempre togliere.
+        */
+        p->p_prnt = NULL;
+        p->p_next_sib = NULL;
+        p->p_prev_sib = NULL;
+
+        return p;
+    }
 }
-
-
-
 
 
 //funzione ausiliaria per inizializzare i campi a NULL

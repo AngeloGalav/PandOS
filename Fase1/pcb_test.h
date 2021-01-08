@@ -241,14 +241,20 @@ pcb_t* fillTree_UGLY(pcb_t* root, pcb_t Memory[], int nodenums)
     rt->p_child = list_head;
     list_head->p_prnt = rt;
 
+    pcb_t* tmp;
+    tmp = list_head;
+
 
     list_head->p_next_sib = &Memory[2];
     list_head = list_head->p_next_sib;
+    list_head->p_prev_sib = tmp;
     list_head->val = 2;
     list_head->p_prnt = rt;
 
+    tmp = list_head;
     list_head->p_next_sib = &Memory[3];
     list_head = list_head->p_next_sib;
+    list_head->p_prev_sib = tmp;
     list_head->val = 3;
     list_head->p_prnt = rt;
 
@@ -257,9 +263,10 @@ pcb_t* fillTree_UGLY(pcb_t* root, pcb_t Memory[], int nodenums)
     lhd->p_child = list_head;
     list_head->p_prnt = lhd;
 
-
+    tmp = list_head;
     list_head->p_next_sib = &Memory[5];
     list_head = list_head->p_next_sib;
+    list_head->p_prev_sib = tmp;
     list_head->val = 5;
     list_head->p_prnt = lhd;
 
