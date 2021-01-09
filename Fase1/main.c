@@ -404,8 +404,6 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 
 ///FUNZIONI ALBERI///
 
-//TODO: MAKE PRINT, FILL functions on trees in pcb_test.h
-
 /** Restituisce TRUE se il PCB puntato da p
 *   non ha figli, FALSE altrimenti.
 */
@@ -532,7 +530,8 @@ int insertBlocked(int *semAdd,pcb_t *p)
  *  corrispondente dalla ASL e lo inserisce nella coda dei descrittori liberi (semdFree_h).
  *
 */
-pcb_t* removeBlocked(int *semAdd){
+pcb_t* removeBlocked(int *semAdd)
+{
     return NULL;
 }
 
@@ -541,7 +540,8 @@ pcb_t* removeBlocked(int *semAdd){
  *  >p_semAdd). Se il PCB non compare in tale coda, allora restituisce NULL (condizione di errore).
  *  Altrimenti, restituisce p.
 */
-pcb_t* outBlocked(pcb_t *p){
+pcb_t* outBlocked(pcb_t *p)
+{
     return NULL;
 }
 
@@ -550,7 +550,8 @@ pcb_t* outBlocked(pcb_t *p){
  *  associata al SEMD con chiave semAdd. Ritorna NULL se il SEMD non compare nella ASL oppure
  *  se compare ma la sua coda dei processi è vuota.
 */
-pcb_t* headBlocked(int *semAdd){
+pcb_t* headBlocked(int *semAdd)
+{
     return NULL;
 }
 
@@ -559,7 +560,8 @@ pcb_t* headBlocked(int *semAdd){
  *  della semdTable. Questo metodo viene invocato una volta sola durante
  *  l’inizializzazione della struttura dati.
 */
-void initASL(){
+void initASL()
+{
 
 }
 
