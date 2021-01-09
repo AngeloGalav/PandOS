@@ -27,12 +27,15 @@ typedef struct pcb_t {
 
 	/* process status information */
 	state_t     p_s;              /* processor state        */
-
-	/* add more fields here */
+    cpu_t       p_time;           /* cpu time used by proc */
+    int         *p_semAdd         /* ptr to semaphore on */
+    /* which proc is blocked */
+    /* support layer information */
+    support_t *p_supportStruct;
 
 }  pcb_t, *pcb_PTR;
 
-typedef struct semd_t {
+typedef struct semd_t { //N.B: per questa fase del progetto basta vedere il semaforo come un intero.
     /* ptr to next element on queue */
     struct semd_t *s_next;
 

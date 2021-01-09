@@ -9,8 +9,10 @@
 
 #include <umps3/umps/const.h>
 
-/* Mikeyg Added constants */
+#define HIDDEN static
 
+
+/* Mikeyg Added constants */
 #define MAXPROC 20
 
 #define CREATEPROCESS 1

@@ -5,28 +5,63 @@
 #define TRUE            1
 #define FALSE           0
 
+
+/*  TODO: Rework delle funzioni per permettere il supporto delle corretto delle queue
+*   (devono essere rifatte considerando che una queue è definita da un puntatore alla coda (tail) della queue).
+*/
+
+/*  TODO: Dopo che abbiamo finito i due moduli, sarà necessario metterli in due file separati detti
+*   pcb.c e asl.c (con i rispettivi .h) in modo da rendere il progetto ordinato.
+*
+*/
+
+//(PCB sta per Process Control Block)
+//(ASL sta per Active semaphore List)
+//(SEMD sta per Semaphore Descriptor)
+
 //sentinella della lista pcbfree, punta a pcbfree_h
 typedef struct sentinel{
     pcb_t* head;
 
 }sentinel;
 
+
+///STRUTTURE DATI///
+
+///->PCB///
 sentinel *p_sentinel;
 
-//puntatore alla lista dei pcb_t liberi e disponibili, non è un elemento della lista ,punta alla testa
-pcb_t* pcbFree_h;
+//puntatore alla lista dei pcb_t liberi e disponibili, quindi non utilizzati. Il puntatore in sé non è un elemento della lista, bensi punta alla testa.
+HIDDEN pcb_t* pcbFree_h;
 
-//array di pcb_t di lunghezza MAXPROC = 20
-pcb_t pcbFree_table[MAXPROC];
+//array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti. (il prof ha chiesto di renderlo statico)
+HIDDEN pcb_t pcbFree_table[MAXPROC];
 
-//memoria dei processi (usata per testare)
+//array usato come memoria dummy per testing
 pcb_t pcb_memory[300];
+
+///->SEMD///
+
+/*  Un semaforo è attivo quando ho almeno un pcb mella sua queue (da qui usiamo emptyProcQ).
+ *
+ *  Quello che dovremo fare è creare una lista (LISTA, NON QUEUE) di semd detta semd_h, dove semd_h punta alla testa della lista.
+ *  Questa lista semd_h viene detta ASL, e deve essere ordinata in base al valore di s_semAdd in senso ascendente (dal più piccolo al più grande)
+ *
+ *  semdFree_h è la lista dei semdFree non utilizzati (initSemds?? lol)
+ *  semdFree_h è una lista, NON una queue! (esattamente come pcbFree_h)
+ *  semd_table è un array di lunghezza MAXPROC
+*/
+
+HIDDEN semd_t semd_table[MAXPROC];
+HIDDEN semd_t* semdFree_h;
+HIDDEN semd_t* semd_h;
+
+///FUNZIONI////
 
 /*  Questa è la initPcbs che funziona come si deve, ovvere pcbFree punta al primo elemento della lista e basta, senza essere anch'esso il primo
  *  elemento. Dunque, per stampare la lista intera ti basta usare pcbFree_h (e anche per lavorare su pcbFree_h ti basta usare pcbFree_h senza
  *  la &). Questa è la funzione che consiglio di usare.
 */
-
 void initPcbs();
 
 void initList(pcb_t* node);
@@ -34,6 +69,12 @@ void initList(pcb_t* node);
 void freePcb(pcb_t* p);
 
 pcb_t *allocPcb();
+
+///FUNZIONI DI MANIPOLAZIONE DELLE QUEUE///
+
+/*  N.B.: Queste funzioni non sono usate per manipolare un insieme particolare di code o una coda di processi specifica, bensì sono
+*   funzioni generiche per la manipolazione di una queue di processi.
+*/
 
 pcb_t* mkEmptyProcQ();
 
@@ -57,8 +98,20 @@ pcb_t* removeChild(pcb_t *p);
 
 pcb_t *outChild(pcb_t* p);
 
+///FUNZIONI DEI SEMAFORI///
 
-int i = 0;
+int insertBlocked(int *semAdd,pcb_t *p);
+
+pcb_t* removeBlocked(int *semAdd);
+
+pcb_t* outBlocked(pcb_t *p);
+
+pcb_t* headBlocked(int *semAdd);
+
+void initASL();
+
+
+
 
 int main()
 {
@@ -126,13 +179,19 @@ int main()
     return 0;
 }
 
-//inizializza la lista di pcbfree_h con i pcb_t che sono nell'array pcbfree_table
-void initPcbs()
+
+/** Inizializza la pcbFree in modo da contenere tutti gli elementi della
+ *  pcbFree_table.
+ *  Questo metodo deve essere chiamato una volta sola in fase
+ *  di inizializzazione della struttura dati.
+ *
+*/
+void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs nella lista.
 {
     pcbFree_h = &pcbFree_table[0];
     pcb_t* hd = pcbFree_h;
 
-    hd->val = 0;
+    hd->val = 0;    //diamo dei valori a ciascun elemento della lista UNICAMENTE perché riuscire a debuggare.
     hd->p_prev = &pcbFree_table[MAXPROC - 1];
     hd->p_next = &pcbFree_table[1];
 
@@ -156,35 +215,38 @@ void initPcbs()
     p_sentinel->head = pcbFree_h;
 }
 
-//controlla se la lista è vuota
-int emptyProcQ(pcb_t *tp)
+//funzione ausiliaria per inizializzare i campi a NULL
+void initList(pcb_t* node)
 {
-    if (tp == NULL) return TRUE;
-    else return FALSE;
+    if (node != NULL){
+        node->p_next = NULL;
+        node->p_prev = NULL;
+        node->p_child = NULL;
+        node->p_next_sib = NULL;
+        //node->p_s = 0;
+        node->p_prnt = NULL;
+        node->p_prev_sib = NULL;
+    }
 }
 
-//l'elemento puntato da *p viene inserito nella lista di **tp (&pcbfree_h)
-/**
- * inserisce l’elemento puntato da p nella
- * coda dei processi tp. La doppia
- * indirezione su tp serve per poter inserire
- * p come ultimo elemento della coda.
- */
-void insertProcQ(pcb_t** tp, pcb_t* p)
-{
-    pcb_t* hd = (*tp)->p_prev;
-
-    p->p_prev = (*tp)->p_prev;
-    p->p_next = (*tp);
-
-    hd->p_next = p;
-
-    (*tp)->p_prev = p;
+/** Inserisce il PCB puntato da p nella listaù
+*   dei PCB liberi (pcbFree_h)
+*/
+void freePcb(pcb_t* p) //questa funzione quindi libera un processo mettendolo nella lista dei processi liberi.
+{                      //l'inserimento consiste in un semplice inserimento in coda.
+    if (p != NULL && pcbFree_h != NULL)
+    {
+        tail_insert(pcbFree_h, p);
+    }
 }
 
-//se la lista di pcb_t è vuota ritorna null altrimenti  e ritorna un elemento dopo averlo rimosso
-pcb_t *allocPcb() //TODO: AGGIUNGERE SUPPORTO SENTINELLA
-{
+/** Restituisce NULL se la pcbFree_h è vuota.
+*   Altrimenti rimuove un elemento dalla
+*   pcbFree, inizializza tutti i campi (NULL/0)
+*   e restituisce l’elemento rimosso.
+*/
+pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
+{                 //TODO: Aggiungere supporto alla sentinella.
     if (pcbFree_h == NULL)
     {
         return NULL;
@@ -203,7 +265,7 @@ pcb_t *allocPcb() //TODO: AGGIUNGERE SUPPORTO SENTINELLA
 
         pcbFree_h = nx;
 
-        initList(temp);
+        initList(temp); //funzione che inizializza i campi
 
         //tail->p_next = p_sentinel->head;
         //p_sentinel->head = NULL;
@@ -212,16 +274,10 @@ pcb_t *allocPcb() //TODO: AGGIUNGERE SUPPORTO SENTINELLA
     }
 }
 
-// inserisce(in coda ) il pcb_t puntato da *p nella lista pcbfree_h
-void freePcb(pcb_t* p)
-{
-    if (p != NULL && pcbFree_h != NULL)
-    {
-        tail_insert(pcbFree_h, p);
-    }
-}
-
-// crea una lista di pcb_t inizializzandola come vuota
+/** Crea una lista di PCB, inizializzandola
+*   come lista vuota (i.e. restituisce
+*   NULL).
+*/
 pcb_t* mkEmptyProcQ()
 {
 
@@ -238,6 +294,36 @@ pcb_t* mkEmptyProcQ()
     */
     return list_head;
 }
+
+
+/** Restituisce TRUE se la lista puntata da
+*   head è vuota, FALSE altrimenti
+*/
+int emptyProcQ(pcb_t *tp)
+
+{
+    if (tp == NULL) return TRUE;
+    else return FALSE;
+}
+
+/**
+ * inserisce l’elemento puntato da p nella
+ * coda dei processi tp. La doppia
+ * indirezione su tp serve per poter inserire
+ * p come ultimo elemento della coda.
+ */
+void insertProcQ(pcb_t** tp, pcb_t* p)
+{
+    pcb_t* hd = (*tp)->p_prev; //esegue un semplice inserimento in testa
+
+    p->p_prev = (*tp)->p_prev;
+    p->p_next = (*tp);
+
+    hd->p_next = p;
+
+    (*tp)->p_prev = p;
+}
+
 
 /**
  * Restituisce l’elemento in fondo alla coda dei processi tp, SENZA RIMUOVERLO.
@@ -261,7 +347,7 @@ pcb_t *headProcQ(pcb_t **tp)
  * altrimenti ritorna il puntatore all’elemento
  * rimosso dalla lista.
  */
-pcb_t* removeProcQ(pcb_t **tp)
+pcb_t* removeProcQ(pcb_t **tp) //con elemento più vecchio, il prof intende di rimuovere il primo processo (quello in testa)
 {
     if(*tp == NULL)
     {
@@ -424,20 +510,58 @@ pcb_t *outChild(pcb_t* p)   //ho interpretato questa funzione nel caso si intend
 }
 
 
-//funzione ausiliaria per inizializzare i campi a NULL
-void initList(pcb_t* node)
+///FUNZIONI SUI SEMAFORI///
+
+/**
+ *  Viene inserito il PCB puntato da p nella coda dei processi bloccati associata al SEMD con chiave
+ *  semAdd. Se il semaforo corrispondente non è presente nella ASL, alloca un nuovo SEMD dalla
+ *  lista di quelli liberi (semdFree) e lo inserisce nella ASL, settando I campi in maniera opportuna (i.e.
+ *  key e s_procQ). Se non è possibile allocare un nuovo SEMD perché la lista di quelli liberi è vuota,
+ *  restituisce TRUE. In tutti gli altri casi, restituisce FALSE.
+*/
+int insertBlocked(int *semAdd,pcb_t *p)
 {
-    if (node != NULL){
-        node->p_next = NULL;
-        node->p_prev = NULL;
-        node->p_child = NULL;
-        node->p_next_sib = NULL;
-        //node->p_s = 0;
-        node->p_prnt = NULL;
-        node->p_prev_sib = NULL;
-    }
+    return 0;
 }
 
+
+/** Ritorna il primo PCB dalla coda dei processi
+ *  bloccati (s_procq) associata al SEMD della ASL con chiave semAdd. Se tale descrittore
+ *  non esiste nella ASL, restituisce NULL. Altrimenti, restituisce l’elemento rimosso. Se
+ *  la coda dei processi bloccati per il semaforo diventa vuota, rimuove il descrittore
+ *  corrispondente dalla ASL e lo inserisce nella coda dei descrittori liberi (semdFree_h).
+ *
+*/
+pcb_t* removeBlocked(int *semAdd){
+    return NULL;
+}
+
+/**
+ *  Rimuove il PCB puntato da p dalla coda del semaforo su cui è bloccato (indicato da p-
+ *  >p_semAdd). Se il PCB non compare in tale coda, allora restituisce NULL (condizione di errore).
+ *  Altrimenti, restituisce p.
+*/
+pcb_t* outBlocked(pcb_t *p){
+    return NULL;
+}
+
+/**
+ *  Restituisce (senza rimuovere) il puntatore al PCB che si trova in testa alla coda dei processi
+ *  associata al SEMD con chiave semAdd. Ritorna NULL se il SEMD non compare nella ASL oppure
+ *  se compare ma la sua coda dei processi è vuota.
+*/
+pcb_t* headBlocked(int *semAdd){
+    return NULL;
+}
+
+/**
+ *  Inizializza la lista dei semdFree in modo da contenere tutti gli elementi
+ *  della semdTable. Questo metodo viene invocato una volta sola durante
+ *  l’inizializzazione della struttura dati.
+*/
+void initASL(){
+
+}
 
 
 

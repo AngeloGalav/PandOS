@@ -7,6 +7,11 @@
 			<Cursor1 position="6024" topLine="252" />
 		</Cursor>
 	</File>
+	<File name="pandos_types.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1250" topLine="21" />
+		</Cursor>
+	</File>
 	<File name="pandos_const.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="2163" topLine="99" />
@@ -14,12 +19,7 @@
 	</File>
 	<File name="main.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2839" topLine="432" />
-		</Cursor>
-	</File>
-	<File name="pandos_types.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="818" topLine="6" />
+			<Cursor1 position="3260" topLine="145" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

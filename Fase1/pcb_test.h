@@ -12,11 +12,23 @@ typedef struct pcb_t {
 					*p_prev_sib;					/* ptr to prev. sibling			*/
 
 	/* process status information */
-	int     val;              /* processor state        */
+	int     val;              /* modified to a simple integer for local testing */
 
 	/* add more fields here */
 
 }  pcb_t, *pcb_PTR;
+
+typedef struct semd_t { //N.B: per questa fase del progetto basta vedere il semaforo come un intero.
+    /* ptr to next element on queue */
+    struct semd_t *s_next;
+
+    /* ptr to the semaphore */
+    int *s_semAdd;
+
+    /* ptr to tail of the queue of procs. blocked on this sem. */
+    pcb_PTR s_procQ;
+
+} semd_t, *semd_PTR;
 
 
 pcb_t* fillList(pcb_t* lhead, pcb_t Memory[]);
