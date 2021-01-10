@@ -29,13 +29,13 @@ typedef struct sentinel{
 ///STRUTTURE DATI///
 
 ///->PCB///
-sentinel *p_sentinel;
+sentinel p_sentinel;
 
 //puntatore alla lista dei pcb_t liberi e disponibili, quindi non utilizzati. Il puntatore in sé non è un elemento della lista, bensi punta alla testa.
-HIDDEN pcb_t* pcbFree_h;
+ pcb_t* pcbFree_h;
 
 //array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti. (il prof ha chiesto di renderlo statico)
-HIDDEN pcb_t pcbFree_table[MAXPROC];
+ pcb_t pcbFree_table[MAXPROC];
 
 //array usato come memoria dummy per testing
 pcb_t pcb_memory[300];
@@ -108,7 +108,7 @@ pcb_t* outBlocked(pcb_t *p);
 
 pcb_t* headBlocked(int *semAdd);
 
-void initASL();
+void initASL(); //(fatta)
 
 
 
@@ -144,10 +144,8 @@ int main()
     printf("ELEMENTO ELIMINATO: %d | addr: %d\n", work->val, work);
 
     */
-
     pcb_t* tree_source;
     tree_source = fillTree_UGLY(tree_source, pcb_memory, 5);
-
     printPcbTree(tree_source);
 
     //pcbFree_h->val = 69;
@@ -212,7 +210,7 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
     hd->p_prev = &pcbFree_table[i - 1];
     hd->p_next = &pcbFree_table[0];
 
-    p_sentinel->head = pcbFree_h;
+    p_sentinel.head = pcbFree_h;
 }
 
 //funzione ausiliaria per inizializzare i campi a NULL
@@ -560,8 +558,29 @@ pcb_t* headBlocked(int *semAdd)
  *  della semdTable. Questo metodo viene invocato una volta sola durante
  *  l’inizializzazione della struttura dati.
 */
-void initASL()
+void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di checkOrder?)
 {
+    semdFree_h = &semd_table[0];
+    pcb_t* hd = semdFree_h;
+
+    hd->p_prev = &semd_table[MAXPROC - 1];
+    hd->p_next = &semd_table[1];
+
+    hd = hd->p_next;
+
+    int i = 1;
+
+    while (i < MAXPROC - 1){
+        hd->p_prev = &semd_table[i-1];
+        hd->p_next = &semd_table[i+1];
+
+        i = i + 1;
+        hd = hd->p_next;
+    }
+
+    hd->val = i;
+    hd->p_prev = &semd_table[i - 1];
+    hd->p_next = &semd_table[0];
 
 }
 
