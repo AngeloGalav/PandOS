@@ -42,16 +42,9 @@
 //(ASL sta per Active semaphore List)
 //(SEMD sta per Semaphore Descriptor)
 
-//sentinella della lista pcbfree, punta a pcbfree_h
-typedef struct sentinel{
-    pcb_t* head;
-} sentinel;
-
-
 ///STRUTTURE DATI///
 
 ///->PCB///
-sentinel p_sentinel;
 
 //puntatore alla lista dei pcb_t liberi e disponibili, quindi non utilizzati. Il puntatore in sé non è un elemento della lista, bensi punta alla testa.
 HIDDEN pcb_t* pcbFree_h;
@@ -167,6 +160,7 @@ int main()
     printList(pcbQueue, 3);
 
 
+    ///COMMENTI USATI PER I TEST///
     /*
     pcb_t* work = NULL;
 
@@ -243,8 +237,6 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
     hd->val = i;
     hd->p_prev = &pcbFree_table[i - 1];
     hd->p_next = &pcbFree_table[0];
-
-    p_sentinel.head = pcbFree_h;
 }
 
 //funzione ausiliaria per inizializzare i campi a NULL
@@ -546,9 +538,17 @@ pcb_t *outChild(pcb_t* p)   //ho interpretato questa funzione nel caso si intend
  *  key e s_procQ). Se non è possibile allocare un nuovo SEMD perché la lista di quelli liberi è vuota,
  *  restituisce TRUE. In tutti gli altri casi, restituisce FALSE.
 */
-int insertBlocked(int *semAdd,pcb_t *p)
+int insertBlocked(int *semAdd, pcb_t *p)
 {
-    return 0;
+
+    //TODO: set up the stuff correctly
+    if (semdFree_h == NULL)
+    {
+        return TRUE;
+    } else
+    {
+        return FALSE;
+    }
 }
 
 

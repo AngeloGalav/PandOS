@@ -40,7 +40,7 @@ typedef struct semd_t { //N.B: per questa fase del progetto basta vedere il sema
     struct semd_t *s_next;
 
     /* ptr to the semaphore */
-    int *s_semAdd;
+    int *s_semAdd;  //(semaphore key)
 
     /* ptr to tail of the queue of procs. blocked on this sem. */
     pcb_PTR s_procQ;
