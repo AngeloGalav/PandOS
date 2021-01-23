@@ -8,6 +8,29 @@
 
 /*  TODO: Rework delle funzioni per permettere il supporto delle corretto delle queue
 *   (devono essere rifatte considerando che una queue è definita da un puntatore alla coda (tail) della queue).
+
+    queste funzioni sono:
+
+    pcb_t* removeProcQ(pcb_t **tp);
+
+    pcb_t* outProcQ(pcb_t **tp, pcb_t *p);
+*/
+
+
+/* TODO: Funzioni sui semafori:
+
+    int insertBlocked(int *semAdd,pcb_t *p);
+
+    pcb_t* removeBlocked(int *semAdd);
+
+    pcb_t* outBlocked(pcb_t *p);
+
+    pcb_t* headBlocked(int *semAdd);
+*
+*/
+
+/*
+    TODO: fare pcbFree monodirezionale.
 */
 
 /*  TODO: Dopo che abbiamo finito i due moduli, sarà necessario metterli in due file separati detti
@@ -22,8 +45,7 @@
 //sentinella della lista pcbfree, punta a pcbfree_h
 typedef struct sentinel{
     pcb_t* head;
-
-}sentinel;
+} sentinel;
 
 
 ///STRUTTURE DATI///
@@ -32,10 +54,10 @@ typedef struct sentinel{
 sentinel p_sentinel;
 
 //puntatore alla lista dei pcb_t liberi e disponibili, quindi non utilizzati. Il puntatore in sé non è un elemento della lista, bensi punta alla testa.
- pcb_t* pcbFree_h;
+HIDDEN pcb_t* pcbFree_h;
 
 //array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti. (il prof ha chiesto di renderlo statico)
- pcb_t pcbFree_table[MAXPROC];
+HIDDEN pcb_t pcbFree_table[MAXPROC];
 
 //array usato come memoria dummy per testing
 pcb_t pcb_memory[300];
@@ -112,38 +134,49 @@ void initASL(); //(fatta)
 
 
 
-
 int main()
 {
     initPcbs();
-    /*
+
+    pcb_t* pcbQueue = mkEmptyProcQ();
+
     //pcb_t making
     pcb_t tests;
-    pcb_t test2;
     pcb_t* test;
     test = &tests;
     test->val = 69;
 
-    pcb_t* allocTest;
     pcb_t* allocTest1;
-    pcb_t* allocTest2;
-
+    pcb_t test2;
     allocTest1 = &test2;
     allocTest1->val = 909;
 
-    insertProcQ(&pcbFree_h, test);
-    insertProcQ(&pcbFree_h, allocTest1);
+    pcb_t* allocTest2;
+    pcb_t test3;
+    allocTest2 = &test3;
+    allocTest2->val = 902;
 
-    printList(pcbFree_h, MAXPROC + 3);
 
+    insertProcQ(&pcbQueue, test);
+    printList(pcbQueue, 1);
+
+    insertProcQ(&pcbQueue, allocTest1);
+    printList(pcbQueue, 2);
+
+    insertProcQ(&pcbQueue, allocTest2);
+    printList(pcbQueue, 3);
+
+
+    /*
     pcb_t* work = NULL;
 
     work = outProcQ(&pcbFree_h, test);
 
     printList(pcbFree_h, MAXPROC + 3);
     printf("ELEMENTO ELIMINATO: %d | addr: %d\n", work->val, work);
-
     */
+
+    /*
     pcb_t* tree_source;
     tree_source = fillTree_UGLY(tree_source, pcb_memory, 5);
     printPcbTree(tree_source);
@@ -173,6 +206,7 @@ int main()
     }
 
     printPcbTree(tree_source);
+    */
 
     return 0;
 }
@@ -278,19 +312,8 @@ pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
 */
 pcb_t* mkEmptyProcQ()
 {
-
-    pcb_t* list_head = NULL; //&pcb_memory[0 + i];
-    /*
-    //initList(list_head);
-
-    list_head->val = 78 + i;
-
-    list_head->p_next = list_head;
-    list_head->p_prev = list_head;
-
-    i = i + 1;
-    */
-    return list_head;
+    pcb_t* list_tail = NULL;
+    return list_tail;
 }
 
 
@@ -305,21 +328,31 @@ int emptyProcQ(pcb_t *tp)
 }
 
 /**
- * inserisce l’elemento puntato da p nella
+ * Inserisce l’elemento puntato da p nella
  * coda dei processi tp. La doppia
  * indirezione su tp serve per poter inserire
  * p come ultimo elemento della coda.
  */
-void insertProcQ(pcb_t** tp, pcb_t* p)
+
+void insertProcQ(pcb_t** tp, pcb_t* p) //MANCA IL CASO tp == NULL !!!
 {
-    pcb_t* hd = (*tp)->p_prev; //esegue un semplice inserimento in testa
 
-    p->p_prev = (*tp)->p_prev;
-    p->p_next = (*tp);
+    if ((*tp) != NULL && p != NULL)
+    {
+        p->p_prev = (*tp);
+        p->p_next = (*tp)->p_next;
 
-    hd->p_next = p;
+        (*tp)->p_next->p_prev = p;
+        (*tp)->p_next = p;
 
-    (*tp)->p_prev = p;
+        (*tp) = p;      //la sentinella tp ora punta all'indirizzo contenuto da p
+    }
+    else if (p != NULL && (*tp) == NULL)
+    {
+        (*tp) = p;
+        (*tp)->p_next = (*tp);
+        (*tp)->p_prev = (*tp);
+    }
 }
 
 
@@ -329,14 +362,12 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
  */
 pcb_t *headProcQ(pcb_t **tp)
 {
-    if(*tp == NULL)
+    if (tp == NULL)
     {
         return NULL;
     }
-    else
-    {
-        return (*tp)->p_prev;
-    }
+
+    return (*tp);
 }
 
 /**
