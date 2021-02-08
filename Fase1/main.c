@@ -1,20 +1,10 @@
 #include "pcb_test.h"
 
 #define MAXPROC 20
+#define MAXINT 999
 #define HIDDEN static
 #define TRUE            1
 #define FALSE           0
-
-
-/*  TODO: Rework delle funzioni per permettere il supporto delle corretto delle queue
-*   (devono essere rifatte considerando che una queue è definita da un puntatore alla coda (tail) della queue).
-
-    queste funzioni sono:
-
-    pcb_t* removeProcQ(pcb_t **tp);
-
-    pcb_t* outProcQ(pcb_t **tp, pcb_t *p);
-*/
 
 
 /* TODO: Funzioni sui semafori:
@@ -67,9 +57,9 @@ pcb_t pcb_memory[300];
  *  semd_table è un array di lunghezza MAXPROC
 */
 
-HIDDEN semd_t semd_table[MAXPROC];
+HIDDEN semd_t semd_table[MAXPROC + 2];
 HIDDEN semd_t* semdFree_h;
-HIDDEN semd_t* semd_h;
+HIDDEN semd_t* semd_h;  //La vera ASL
 
 ///FUNZIONI////
 
@@ -153,11 +143,19 @@ int main()
     insertProcQ(&pcbQueue, test);
     printList(pcbQueue, 1);
 
+
     insertProcQ(&pcbQueue, allocTest1);
     printList(pcbQueue, 2);
 
     insertProcQ(&pcbQueue, allocTest2);
-    printList(pcbQueue, 3);
+    printList(pcbQueue, 5);
+
+
+    pcb_t* nand = outProcQ(&pcbQueue, test);
+    printList(pcbQueue, 5);
+
+    printList(nand, 1);
+
 
 
     ///COMMENTI USATI PER I TEST///
@@ -376,10 +374,12 @@ pcb_t* removeProcQ(pcb_t **tp) //con elemento più vecchio, il prof intende di r
     }
     else
     {
-        pcb_t *tmp = *tp;
-        *tp = (*tp)->p_next;
-        (*tp)->p_prev = tmp->p_prev;
-        tmp->p_prev->p_next = (*tp);
+        pcb_t *tmp = (*tp)->p_next;
+        (*tp)->p_next = tmp->p_next;
+        tmp->p_next->p_prev = (*tp);
+
+        tmp->p_next = NULL;
+        tmp->p_prev = NULL;
         return tmp;
     }
 }
@@ -389,12 +389,13 @@ pcb_t* removeProcQ(pcb_t **tp) //con elemento più vecchio, il prof intende di r
 *   nella coda, restituisce NULL (p può trovarsi
 *   in una posizione arbitraria della coda).
 */
-pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
+pcb_t* outProcQ(pcb_t **tp, pcb_t *p)   //
 {
-    if( (tp != NULL) && (*tp != NULL) && (p != NULL)  && ((*tp) != p)) // p non è il primo elemento
+    if( (tp != NULL) && (*tp != NULL) && (p != NULL) && ((*tp) != p)) // p non è il primo elemento
     {
         pcb_t* tmp = (*tp)->p_next;
-        while(tmp != (*tp) )
+
+        while(tmp != (*tp))
         {
             if(tmp == p)
             {
@@ -408,13 +409,29 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         }
         return NULL;
     }
-    else if ( (*tp) == p &&(tp != NULL) &&(*tp) != NULL) // p è il primo elemento
+    else if ((*tp) == (*tp)->p_next && (*tp) == p && (tp != NULL) && (*tp) != NULL) // tp ha un solo elemento, ed è p
     {
-            pcb_t* tmp = (*tp);
-            (*tp) = (*tp)->p_next;
-            (*tp)->p_prev = tmp->p_prev;
-            tmp->p_prev->p_next = (*tp);
-            return tmp;
+        pcb_t* tmp = (*tp);
+        *tp = NULL;
+
+        tmp->p_next = NULL;
+        tmp->p_prev = NULL;
+
+        return tmp;
+    }
+    else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // p è l'elemento puntato dalla sentinella
+    {
+        pcb_t* tmp = (*tp);
+        (*tp) = (*tp)->p_prev;
+
+
+        (*tp)->p_next = tmp->p_next;
+        tmp->p_next->p_prev = (*tp);
+
+        tmp->p_next = NULL;
+        tmp->p_prev = NULL;
+
+        return tmp;
     }
     else
     {
@@ -545,10 +562,45 @@ int insertBlocked(int *semAdd, pcb_t *p)
     if (semdFree_h == NULL)
     {
         return TRUE;
-    } else
-    {
-        return FALSE;
     }
+    else
+    {
+        semd_t* hd = semd_h;
+
+        //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
+
+        while (hd->s_semAdd != MAXINT)
+        {
+            if (hd->s_semAdd == semAdd)
+            {
+                insertProcQ(&(hd->s_procQ), p);
+                return FALSE;
+            }
+            else if (hd->s_next->s_semAdd > semAdd)
+            {
+                //prendo il primo elemento dalla semdFree_h
+                semd_t* toAdd = semdFree_h;
+                semdFree_h = semdFree_h->s_next;
+
+                toAdd->s_next = hd->s_next;
+                hd->s_next = toAdd;
+
+                toAdd->s_procQ = mkEmptyProcQ();
+
+                insertProcQ(&(toAdd->s_procQ), p);
+
+                toAdd->s_semAdd = semAdd;
+
+                return FALSE;
+            }
+
+            hd = hd->s_next;
+        }
+
+        return FALSE;
+
+    }
+
 }
 
 
@@ -561,6 +613,28 @@ int insertBlocked(int *semAdd, pcb_t *p)
 */
 pcb_t* removeBlocked(int *semAdd)
 {
+    semd_t* hd = semd_h;
+
+    while (hd->s_next->s_semAdd != MAXINT)
+    {
+        if (hd->s_next->s_semAdd == semAdd)
+        {
+            pcb_t* toReturn = removeProcQ(hd->s_next->s_procQ);
+
+            if (emptyProcQ(hd->s_next->s_procQ))
+            {
+                semd_t* toAdd = hd->s_next;
+
+                toAdd->s_next = semdFree_h; //inserisco in testa a semdFree_h
+                semdFree_h = toAdd;
+
+                hd = hd->s_next->s_next;
+            }
+
+            return toReturn;
+        }
+    }
+
     return NULL;
 }
 
@@ -591,28 +665,27 @@ pcb_t* headBlocked(int *semAdd)
 */
 void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di checkOrder?)
 {
-    semdFree_h = &semd_table[0];
-    pcb_t* hd = semdFree_h;
+    semdFree_h = &semd_table[1];
 
-    hd->p_prev = &semd_table[MAXPROC - 1];
-    hd->p_next = &semd_table[1];
-
-    hd = hd->p_next;
+    semd_t* hd = semdFree_h;
 
     int i = 1;
 
-    while (i < MAXPROC - 1){
-        hd->p_prev = &semd_table[i-1];
-        hd->p_next = &semd_table[i+1];
-
+    while (i < MAXPROC + 1)
+    {
+        hd->s_next = &semd_table[i];
         i = i + 1;
-        hd = hd->p_next;
     }
 
-    hd->val = i;
-    hd->p_prev = &semd_table[i - 1];
-    hd->p_next = &semd_table[0];
+    hd->s_next = NULL;
 
+    semd_h = &semd_table[0];
+    semd_h->s_semAdd = 0;
+    semd_h->s_procQ = NULL;
+
+    semd_h = &semd_table[MAXPROC + 1];
+    semd_h->s_semAdd = MAXINT;
+    semd_h->s_procQ = NULL;
 }
 
 
