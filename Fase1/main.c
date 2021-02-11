@@ -1,6 +1,6 @@
 #include "pcb_test.h"
 
-#define MAXPROC 20
+#define MAXPROC 10
 #define MAXINT 999
 #define HIDDEN static
 #define TRUE            1
@@ -129,7 +129,10 @@ int main()
     test = &tests;
     test->val = 69;
 
-    pcb_t* allocTest1;
+
+    freePcb(test);
+
+   /* pcb_t* allocTest1;
     pcb_t test2;
     allocTest1 = &test2;
     allocTest1->val = 909;
@@ -152,9 +155,9 @@ int main()
 
 
     pcb_t* nand = outProcQ(&pcbQueue, test);
-    printList(pcbQueue, 5);
+    printList(pcbQueue, 5);*/
 
-    printList(nand, 1);
+    printList(pcbFree_h, 13);
 
 
 
@@ -215,26 +218,16 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
     pcbFree_h = &pcbFree_table[0];
     pcb_t* hd = pcbFree_h;
 
-    hd->val = 0;    //diamo dei valori a ciascun elemento della lista UNICAMENTE perché riuscire a debuggare.
-    hd->p_prev = &pcbFree_table[MAXPROC - 1];
-    hd->p_next = &pcbFree_table[1];
-
-    hd = hd->p_next;
-
+    //diamo dei valori a ciascun elemento della lista UNICAMENTE perché riuscire a debuggare.
     int i = 1;
 
-    while (i < MAXPROC - 1){
-        hd->val = i;
-        hd->p_prev = &pcbFree_table[i-1];
-        hd->p_next = &pcbFree_table[i+1];
-
-        i = i + 1;
+    while (i < MAXPROC)
+    {
+        hd->p_next = &pcbFree_table[i];
         hd = hd->p_next;
+        hd->val = i;
+        i = i + 1;
     }
-
-    hd->val = i;
-    hd->p_prev = &pcbFree_table[i - 1];
-    hd->p_next = &pcbFree_table[0];
 }
 
 //funzione ausiliaria per inizializzare i campi a NULL
@@ -258,7 +251,8 @@ void freePcb(pcb_t* p) //questa funzione quindi libera un processo mettendolo ne
 {                      //l'inserimento consiste in un semplice inserimento in coda.
     if (p != NULL && pcbFree_h != NULL)
     {
-        tail_insert(pcbFree_h, p);
+        p->p_next = pcbFree_h;
+        pcbFree_h = p;
     }
 }
 
@@ -311,7 +305,6 @@ pcb_t* mkEmptyProcQ()
 *   head è vuota, FALSE altrimenti
 */
 int emptyProcQ(pcb_t *tp)
-
 {
     if (tp == NULL) return TRUE;
     else return FALSE;
@@ -574,6 +567,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
             if (hd->s_semAdd == semAdd)
             {
                 insertProcQ(&(hd->s_procQ), p);
+                p->p_semAdd = semAdd;
                 return FALSE;
             }
             else if (hd->s_next->s_semAdd > semAdd)
@@ -589,7 +583,8 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
                 insertProcQ(&(toAdd->s_procQ), p);
 
-                toAdd->s_semAdd = semAdd;
+                p->p_semAdd = semAdd;
+                toAdd->s_semAdd = semAdd;   //aggiorno gli indirizzi dei semafori
 
                 return FALSE;
             }
@@ -645,6 +640,23 @@ pcb_t* removeBlocked(int *semAdd)
 */
 pcb_t* outBlocked(pcb_t *p)
 {
+    semd_t* hd = semd_h;
+
+    if (p == NULL) return NULL;
+
+    while (*(hd->s_semAdd) != MAXINT)
+    {
+        if(hd->s_semAdd == p->p_semAdd)  //se il semaforo è quello che cercavo...
+        {
+            if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
+            else return outProcQ(hd->s_procQ, p); //altrimenti elimina p dalla lista dei processi del semaforo.
+
+            //questo codice funziona anche in caso l'elemento della lista sia uno, siccome la coda è circolare
+        }
+
+        hd = hd->s_next;
+    }
+
     return NULL;
 }
 
@@ -655,6 +667,21 @@ pcb_t* outBlocked(pcb_t *p)
 */
 pcb_t* headBlocked(int *semAdd)
 {
+    semd_t* hd = semd_h;
+
+    while (*(hd->s_semAdd) != MAXINT)
+    {
+        if(*(hd->s_semAdd) == semAdd)  //se il semaforo è quello che cercavo...
+        {
+            if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
+            else return hd->s_procQ->p_next; //altrimenti ritorna la testa (elemento dopo la coda)
+
+            //questo codice funziona anche in caso l'elemento della lista sia uno, siccome la coda è circolare
+        }
+
+        hd = hd->s_next;
+    }
+
     return NULL;
 }
 
@@ -684,7 +711,7 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
     semd_h->s_procQ = NULL;
 
     semd_h = &semd_table[MAXPROC + 1];
-    semd_h->s_semAdd = MAXINT;
+    *(semd_h->s_semAdd) = MAXINT;
     semd_h->s_procQ = NULL;
 }
 

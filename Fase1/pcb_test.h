@@ -13,6 +13,7 @@ typedef struct pcb_t {
 
 	/* process status information */
 	int     val;              /* modified to a simple integer for local testing */
+	int         *p_semAdd;
 
 	/* add more fields here */
 
@@ -57,7 +58,7 @@ void printList(pcb_t* lhead, int limit)
         i=i+1;
 
     }
-    while (i < limit);
+    while (i < limit && hd != NULL);
 
 }
 
