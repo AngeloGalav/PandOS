@@ -251,6 +251,7 @@ void freePcb(pcb_t* p) //questa funzione quindi libera un processo mettendolo ne
 {                      //l'inserimento consiste in un semplice inserimento in coda.
     if (p != NULL && pcbFree_h != NULL)
     {
+        p->p_prev = NULL;
         p->p_next = pcbFree_h;
         pcbFree_h = p;
     }

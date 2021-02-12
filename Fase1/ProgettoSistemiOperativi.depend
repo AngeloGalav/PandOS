@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1609885154 source:/home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/main.c
+1613086243 source:/home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/main.c
 	"pcb_test.h"
 
 1609015747 /home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/pandos_const.h
@@ -9,7 +9,7 @@
 	<umps3/umps/types.h>
 	"pandos_const.h"
 
-1609879472 /home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/pcb_test.h
+1613086243 /home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/pcb_test.h
 	<stdio.h>
 
 1610123951 source:c:\users\asus\desktop\progetto so\progetto_sistemi\fase1\main.c
