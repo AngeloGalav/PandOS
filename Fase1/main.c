@@ -263,7 +263,7 @@ void freePcb(pcb_t* p) //questa funzione quindi libera un processo mettendolo ne
 *   e restituisce l’elemento rimosso.
 */
 pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
-{                 //TODO: Aggiungere supporto alla sentinella.
+{
     if (pcbFree_h == NULL)
     {
         return NULL;
@@ -551,29 +551,25 @@ pcb_t *outChild(pcb_t* p)   //ho interpretato questa funzione nel caso si intend
 */
 int insertBlocked(int *semAdd, pcb_t *p)
 {
+    semd_t* hd = semd_h;
 
-    //TODO: set up the stuff correctly
-    if (semdFree_h == NULL)
+    //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
+
+    while (hd->s_semAdd != MAXINT)
     {
-        return TRUE;
-    }
-    else
-    {
-        semd_t* hd = semd_h;
-
-        //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
-
-        while (hd->s_semAdd != MAXINT)
+        if (hd->s_semAdd == semAdd)
         {
-            if (hd->s_semAdd == semAdd)
+            insertProcQ(&(hd->s_procQ), p);
+            p->p_semAdd = semAdd;
+            return FALSE;
+        }
+        else if (hd->s_next->s_semAdd > semAdd)
+        {
+            //prendo il primo elemento dalla semdFree_h
+
+            if (semdFree_h == NULL) return TRUE;
+            else
             {
-                insertProcQ(&(hd->s_procQ), p);
-                p->p_semAdd = semAdd;
-                return FALSE;
-            }
-            else if (hd->s_next->s_semAdd > semAdd)
-            {
-                //prendo il primo elemento dalla semdFree_h
                 semd_t* toAdd = semdFree_h;
                 semdFree_h = semdFree_h->s_next;
 
@@ -589,13 +585,12 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
                 return FALSE;
             }
-
-            hd = hd->s_next;
         }
 
-        return FALSE;
-
+        hd = hd->s_next;
     }
+
+    return FALSE;
 
 }
 
