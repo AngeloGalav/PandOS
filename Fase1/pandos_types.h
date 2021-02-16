@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-#include <umps3/umps/types.h>
+#include "umps3/umps/types.h"
 #include "pandos_const.h"
 
 typedef signed int cpu_t;
@@ -31,7 +31,7 @@ typedef struct pcb_t {
     int         *p_semAdd;        /* ptr to semaphore on */
     /* which proc is blocked */
     /* support layer information */
-    support_t *p_supportStruct;
+    //support_t *p_supportStruct;
 
 }  pcb_t, *pcb_PTR;
 

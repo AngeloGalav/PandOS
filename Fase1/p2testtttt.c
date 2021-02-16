@@ -16,14 +16,14 @@
 #include "pandos_types.h" // prima aveva i simboli > <
 
 
-#include <umps3/umps/libumps.h>
+#include "umps3/umps/libumps.h"
 //#include <pcb.h>
 //#include <asl.h>
-#include "pcb_test.h"
+//#include "pcb_test.h"
 #include "testami.h"
-#include <stdio.h>
+#include "stdio.h"
 
-#define MAXPROC 10
+
 #define MAXINT 999
 #define HIDDEN static
 #define TRUE            1
@@ -119,7 +119,7 @@ void addokbuf(char *strp) {
 /* This function placess the specified character string in errbuf and
 *	causes the string to be written out to terminal0.  After this is done
 *	the system shuts down with a panic message */
-void printf(char *strp) {
+void adderrbuf(char *strp) {
 	char *ep = errbuf;
 	char *tstrp = strp;
 	
@@ -127,7 +127,7 @@ void printf(char *strp) {
 	
 	termprint(tstrp, 0);
 		
-	PANIC();
+	//PANIC();
 }
 
 

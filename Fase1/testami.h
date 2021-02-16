@@ -134,7 +134,6 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
     {
         hd->p_next = &pcbFree_table[i];
         hd = hd->p_next;
-        hd->val = i;
         i = i + 1;
     }
 }
