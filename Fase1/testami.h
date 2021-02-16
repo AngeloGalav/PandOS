@@ -1,7 +1,7 @@
 //#include "pcb_test.h"
-
+#include "pandos_types.h"
 #define MAXPROC 20
-#define MAXINT 999
+#define MAXINT 0xFFFFFFFF
 #define HIDDEN static
 #define NULL 0
 #define TRUE            1
@@ -325,7 +325,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)   //
 */
 int emptyChild(pcb_t *p)    //restituisce true se è una foglia!
 {
-    if ( p != NULL && p->p_child == NULL)
+    if ( (p != NULL) && (p->p_child == NULL))
     {
         return TRUE;
     } else {
@@ -439,7 +439,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
 
-    while (*(hd->s_semAdd) != MAXINT)
+    while (hd->s_semAdd != (int*)MAXINT)
     {
         if (hd->s_semAdd == semAdd)
         {
@@ -489,8 +489,9 @@ int insertBlocked(int *semAdd, pcb_t *p)
 pcb_t* removeBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
-
-    while (*(hd->s_next->s_semAdd) != MAXINT)
+    
+    //seg-fault perchè hd->s_next è NULL
+    while (hd->s_next->s_semAdd != (int*)MAXINT)
     {
         if (hd->s_next->s_semAdd == semAdd)
         {
@@ -524,8 +525,8 @@ pcb_t* outBlocked(pcb_t *p)
 
     if (p == NULL) return NULL;
 
-    while (*(hd->s_semAdd) != MAXINT)
-    {
+    while (hd->s_semAdd != (int*)MAXINT)
+    { 
         if(hd->s_semAdd == p->p_semAdd)  //se il semaforo è quello che cercavo...
         {
             if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
@@ -549,7 +550,7 @@ pcb_t* headBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
 
-    while (*(hd->s_semAdd) != MAXINT)
+    while (hd->s_semAdd != (int*)MAXINT)
     {
         if(*(hd->s_semAdd) == *semAdd)  //se il semaforo è quello che cercavo...
         {
@@ -590,9 +591,10 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
     semd_h->s_semAdd = 0;
     semd_h->s_procQ = NULL;
 
-    semd_h = &semd_table[MAXPROC + 1];
-    *(semd_h->s_semAdd) = MAXINT;
+    semd_h = &semd_table[MAXPROC +1];
+    semd_h->s_semAdd = (int*)MAXINT;
     semd_h->s_procQ = NULL;
+
 }
 
 

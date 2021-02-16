@@ -24,7 +24,7 @@
 #include "stdio.h"
 
 
-#define MAXINT 999
+#define MAXINT 0xFFFFFFFF
 #define HIDDEN static
 #define TRUE            1
 #define FALSE           0
