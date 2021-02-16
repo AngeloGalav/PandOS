@@ -127,7 +127,7 @@ void head_insert(pcb_t* blist,pcb_t* elem)
 //funzione ausiliaria per creare una lista test
 pcb_t* fillList(pcb_t* lhead, pcb_t Memory[])
 {
-    pcb_t* hd = &lhead;
+    pcb_t* hd = lhead;
 
     int i=0;
 
@@ -186,7 +186,7 @@ void printPcbTree(pcb_t* p)
 }
 
 /** Riempie l'albero ricorsivamente.
-*   Tuttavia NON FUNZIONA e in più non so quanto sia utile.
+*   Tuttavia NON FUNZIONA e in piï¿½ non so quanto sia utile.
 *
 */
 
@@ -220,7 +220,7 @@ pcb_t* fillTreeRecursive(pcb_t* parent_node, pcb_t Memory[], int nodenums, int i
 }
 
 /** Riempie l'albero partendo dal nodo e poi riempiendolo ricorsivamente.
-*   Tuttavia NON FUNZIONA e in più non so quanto sia utile.
+*   Tuttavia NON FUNZIONA e in piï¿½ non so quanto sia utile.
 *
 */
 

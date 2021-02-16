@@ -1,4 +1,4 @@
-#include "pcb_test.h"
+//#include "pcb_test.h"
 
 #define MAXPROC 10
 #define MAXINT 999
@@ -114,97 +114,6 @@ pcb_t* outBlocked(pcb_t *p);
 pcb_t* headBlocked(int *semAdd);
 
 void initASL(); //(fatta)
-
-
-
-int main()
-{
-    initPcbs();
-
-    pcb_t* pcbQueue = mkEmptyProcQ();
-
-    //pcb_t making
-    pcb_t tests;
-    pcb_t* test;
-    test = &tests;
-    test->val = 69;
-
-
-    freePcb(test);
-
-   /* pcb_t* allocTest1;
-    pcb_t test2;
-    allocTest1 = &test2;
-    allocTest1->val = 909;
-
-    pcb_t* allocTest2;
-    pcb_t test3;
-    allocTest2 = &test3;
-    allocTest2->val = 902;
-
-
-    insertProcQ(&pcbQueue, test);
-    printList(pcbQueue, 1);
-
-
-    insertProcQ(&pcbQueue, allocTest1);
-    printList(pcbQueue, 2);
-
-    insertProcQ(&pcbQueue, allocTest2);
-    printList(pcbQueue, 5);
-
-
-    pcb_t* nand = outProcQ(&pcbQueue, test);
-    printList(pcbQueue, 5);*/
-
-    printList(pcbFree_h, 13);
-
-
-
-    ///COMMENTI USATI PER I TEST///
-    /*
-    pcb_t* work = NULL;
-
-    work = outProcQ(&pcbFree_h, test);
-
-    printList(pcbFree_h, MAXPROC + 3);
-    printf("ELEMENTO ELIMINATO: %d | addr: %d\n", work->val, work);
-    */
-
-    /*
-    pcb_t* tree_source;
-    tree_source = fillTree_UGLY(tree_source, pcb_memory, 5);
-    printPcbTree(tree_source);
-
-    //pcbFree_h->val = 69;
-
-    //insertChild((tree_source->p_child)->p_next_sib, pcbFree_h);
-
-    //printPcbTree(tree_source);
-
-    pcbFree_h = removeChild(tree_source->p_child);
-
-    //pcbFree_h = outChild((tree_source->p_child)->p_next_sib);
-
-    if (pcbFree_h == NULL)
-    {
-        printf("CANNOT DELETE NULL ELEMENT!\n");
-
-    }else{
-
-        printf("DELETED ELEMENT IS %d, value of %d\n" , pcbFree_h, pcbFree_h->val);
-
-        if (pcbFree_h->p_prnt == NULL && pcbFree_h->p_prev_sib == NULL && pcbFree_h->p_next_sib == NULL)
-        {
-            printf("COMPLETELY DELETED CLEAN\n");
-        }
-    }
-
-    printPcbTree(tree_source);
-    */
-
-    return 0;
-}
 
 
 /** Inizializza la pcbFree in modo da contenere tutti gli elementi della
@@ -555,7 +464,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
 
-    while (hd->s_semAdd != MAXINT)
+    while (*(hd->s_semAdd) != MAXINT)
     {
         if (hd->s_semAdd == semAdd)
         {
@@ -606,7 +515,7 @@ pcb_t* removeBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
 
-    while (hd->s_next->s_semAdd != MAXINT)
+    while (*(hd->s_next->s_semAdd) != MAXINT)
     {
         if (hd->s_next->s_semAdd == semAdd)
         {
@@ -645,7 +554,7 @@ pcb_t* outBlocked(pcb_t *p)
         if(hd->s_semAdd == p->p_semAdd)  //se il semaforo è quello che cercavo...
         {
             if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
-            else return outProcQ(hd->s_procQ, p); //altrimenti elimina p dalla lista dei processi del semaforo.
+            else return outProcQ(&(hd->s_procQ), p); //altrimenti elimina p dalla lista dei processi del semaforo.
 
             //questo codice funziona anche in caso l'elemento della lista sia uno, siccome la coda è circolare
         }
@@ -667,7 +576,7 @@ pcb_t* headBlocked(int *semAdd)
 
     while (*(hd->s_semAdd) != MAXINT)
     {
-        if(*(hd->s_semAdd) == semAdd)  //se il semaforo è quello che cercavo...
+        if(*(hd->s_semAdd) == *semAdd)  //se il semaforo è quello che cercavo...
         {
             if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
             else return hd->s_procQ->p_next; //altrimenti ritorna la testa (elemento dopo la coda)
