@@ -1,27 +1,12 @@
 //#include "pcb_test.h"
 
-#define MAXPROC 10
+#define MAXPROC 20
 #define MAXINT 999
 #define HIDDEN static
+#define NULL 0
 #define TRUE            1
 #define FALSE           0
 
-
-/* TODO: Funzioni sui semafori:
-
-    int insertBlocked(int *semAdd,pcb_t *p);
-
-    pcb_t* removeBlocked(int *semAdd);
-
-    pcb_t* outBlocked(pcb_t *p);
-
-    pcb_t* headBlocked(int *semAdd);
-*
-*/
-
-/*
-    TODO: fare pcbFree monodirezionale.
-*/
 
 /*  TODO: Dopo che abbiamo finito i due moduli, sarà necessario metterli in due file separati detti
 *   pcb.c e asl.c (con i rispettivi .h) in modo da rendere il progetto ordinato.
@@ -136,6 +121,8 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
         hd = hd->p_next;
         i = i + 1;
     }
+
+    hd->p_next = NULL;
 }
 
 //funzione ausiliaria per inizializzare i campi a NULL
@@ -157,7 +144,7 @@ void initList(pcb_t* node)
 */
 void freePcb(pcb_t* p) //questa funzione quindi libera un processo mettendolo nella lista dei processi liberi.
 {                      //l'inserimento consiste in un semplice inserimento in coda.
-    if (p != NULL && pcbFree_h != NULL)
+    if (p != NULL)
     {
         p->p_prev = NULL;
         p->p_next = pcbFree_h;
@@ -180,20 +167,9 @@ pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
     {
         pcb_t* temp = pcbFree_h;
 
-        pcb_t* tail = pcbFree_h->p_prev;
-        pcb_t* nx = pcbFree_h->p_next;
-
-        //p_sentinel->head = pcbFree_h->p_next;
-
-        nx->p_prev = tail;
-        tail->p_next = nx;
-
-        pcbFree_h = nx;
+        pcbFree_h = pcbFree_h->p_next;
 
         initList(temp); //funzione che inizializza i campi
-
-        //tail->p_next = p_sentinel->head;
-        //p_sentinel->head = NULL;
 
         return temp;
     }
