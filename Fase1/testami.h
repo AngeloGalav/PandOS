@@ -72,7 +72,7 @@ int emptyProcQ(pcb_t *tp);
 
 void insertProcQ(pcb_t** tp, pcb_t* p);
 
-pcb_t *headProcQ(pcb_t **tp);
+pcb_t *headProcQ(pcb_t *tp);
 
 pcb_t* removeProcQ(pcb_t **tp);
 
@@ -205,14 +205,17 @@ void insertProcQ(pcb_t** tp, pcb_t* p) //MANCA IL CASO tp == NULL !!!
 {
     if ((*tp) != NULL && p != NULL)
     {
+        pcb_t* head = (*tp)->p_prev;
         p->p_next = (*tp);
-        p->p_prev = (*tp)->p_prev;
+        p->p_prev = head;
 
-        (*tp)->p_prev->p_next = p;
+        head->p_next = p;
 
         (*tp)->p_prev = p;
 
         (*tp) = p;      //la sentinella tp ora punta all'indirizzo contenuto da p
+
+
     }
     else if (p != NULL && (*tp) == NULL)
     {
@@ -227,14 +230,14 @@ void insertProcQ(pcb_t** tp, pcb_t* p) //MANCA IL CASO tp == NULL !!!
  * Restituisce l’elemento in fondo alla coda dei processi tp, SENZA RIMUOVERLO.
  * Ritorna NULL se la coda non ha elementi.
  */
-pcb_t *headProcQ(pcb_t **tp)
+pcb_t *headProcQ(pcb_t *tp)
 {
     if (tp == NULL)
     {
         return NULL;
     }
 
-    return (*tp)->p_prev;
+    return (tp)->p_prev;
 }
 
 /**
@@ -249,15 +252,26 @@ pcb_t* removeProcQ(pcb_t **tp) //con elemento più vecchio, il prof intende di r
     {
         return NULL;
     }
+    else if (*tp == (*tp)->p_prev)
+    {
+        pcb_t* head = *tp;
+        head->p_next = NULL;
+        head->p_prev = NULL;
+
+        *tp = NULL;
+
+        return head;
+    }
     else
     {
-        pcb_t *tmp = (*tp)->p_prev;
-        (*tp)->p_prev = tmp->p_prev;
-        tmp->p_prev->p_next = (*tp);
+        pcb_t* head = (*tp)->p_prev;
+        (*tp)->p_prev = head->p_prev;
+        pcb_t* tmp = head->p_prev; //to change
+        tmp->p_next = (*tp);
 
-        tmp->p_next = NULL;
-        tmp->p_prev = NULL;
-        return tmp;
+        head->p_next = NULL;
+        head->p_prev = NULL;
+        return head;
     }
 }
 
@@ -438,10 +452,13 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     //TODO: FARE CASO IN CUI SEMD_H CHE CERCHIAMO è PRESENTE
 
-    while (hd->s_semAdd != (int*)MAXINT)
+    while (hd->s_semAdd != (unsigned int*)MAXINT)
     {
+        printf("semd_h %d, params: %d\n", hd->s_semAdd, semAdd);
+
         if (hd->s_semAdd == semAdd)
         {
+            printf("adding to an asl\n");
             insertProcQ(&(hd->s_procQ), p);
             p->p_semAdd = semAdd;
             return FALSE;
@@ -449,6 +466,8 @@ int insertBlocked(int *semAdd, pcb_t *p)
         else if (hd->s_next->s_semAdd > semAdd)
         {
             //prendo il primo elemento dalla semdFree_h
+
+            printf("adding...\n");
 
             if (semdFree_h == NULL) return TRUE;
             else
@@ -473,8 +492,9 @@ int insertBlocked(int *semAdd, pcb_t *p)
         hd = hd->s_next;
     }
 
-    return FALSE;
+    printf("nope...\n");
 
+    return FALSE;
 }
 
 
@@ -576,24 +596,38 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
 
     semd_t* hd = semdFree_h;
 
-    int i = 1;
+    int i = 2;
 
     while (i < MAXPROC + 1)
     {
         hd->s_next = &semd_table[i];
+        hd = hd->s_next;
         i = i + 1;
     }
 
     hd->s_next = NULL;
 
-    semd_h = &semd_table[0];
-    semd_h->s_semAdd = 0;
+    /*
+    hd = semdFree_h;
+    i = 0;
+    while (hd != NULL)
+    {
+        printf("index %i, act: %d | nxt: %d\n",i, hd, hd->s_next);
+        hd = hd->s_next;
+        i = i + 1;
+    }*/
+
+    semd_h = &semd_table[0]; // con indice 0
+    semd_h->s_semAdd = (int*)0x00000000;
     semd_h->s_procQ = NULL;
 
-    semd_h = &semd_table[MAXPROC +1];
-    semd_h->s_semAdd = (int*)MAXINT;
-    semd_h->s_procQ = NULL;
+    semd_h->s_next = &semd_table[MAXPROC +1]; // con indice 0xFFFFFF
+    semd_h->s_next->s_semAdd = (int*)0xFFFA;
+    semd_h->s_next->s_procQ = NULL;
 
+    printf("semd_h is %d, nx is %d\n",semd_h->s_semAdd, semd_h->s_next->s_semAdd);
+
+    semd_h->s_next->s_next = NULL;
 }
 
 

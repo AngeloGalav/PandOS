@@ -184,11 +184,10 @@ void main()
 
 	if (emptyProcQ(qa)) printf("emptyProcQ: unexpected TRUE"   );
 
+
 	/* Check outProc and headProc */
-	if (headProcQ(qa) != firstproc){
+	if (headProcQ(qa) != firstproc)
             printf("headProcQ failed   ");
-            return -1;
-        }
 	q = outProcQ(&qa, firstproc);
 	if (q == NULL || q != firstproc)
 		printf("outProcQ failed on first entry   ");
@@ -203,6 +202,7 @@ void main()
 
 	/* Check if removeProc and insertProc remove in the correct order */
 	printf("Removing...   \n");
+
 	for (i = 0; i < 8; i++) {
 		if ((q = removeProcQ(&qa)) == NULL)
 			printf("removeProcQ: unexpected NULL   ");
@@ -210,9 +210,9 @@ void main()
 	}
 	if (q != lastproc)
 		printf("removeProcQ: failed on last entry   ");
+
 	if (removeProcQ(&qa) != NULL)
 		printf("removeProcQ: removes too many entries   ");
-
         if (!emptyProcQ(qa))
                 printf("emptyProcQ: unexpected FALSE   ");
 
@@ -272,6 +272,7 @@ void main()
 	printf("insertBlocked test #1 started  \n");
 	for (i = 10; i < MAXPROC; i++) {
 		procp[i] = allocPcb();
+
 		if (insertBlocked(&sem[i], procp[i]))
 			printf("insertBlocked(1): unexpected TRUE   ");
 	}
@@ -287,8 +288,20 @@ void main()
 	if (insertBlocked(&sem[11],p))
 		printf("removeBlocked: fails to return to free list   ");
 
-	if (insertBlocked(&onesem, procp[9]) == FALSE)
-		printf("insertBlocked: inserted more than MAXPROC   ");
+    semd_t* curs = semdFree_h;
+    printf("\n\n\n");
+	while (curs != NULL)
+    {
+        printf("act: %d | nxt: %d\n", curs, curs->s_next);
+        curs = curs->s_next;
+    }
+
+
+	if (insertBlocked(&onesem, procp[9]) == FALSE) /**QUA C'E' IL PROBLEMA*/
+        {
+            printf("insertBlocked: inserted more than MAXPROC   ");
+            return -1;
+		}
 
 	printf("removeBlocked test started   \n");
 	for (i = 10; i< MAXPROC; i++) {
@@ -300,6 +313,7 @@ void main()
 		if (insertBlocked(&sem[i-10], q))
 			printf("insertBlocked(3): unexpected TRUE   ");
 	}
+
 	if (removeBlocked(&sem[11]) != NULL)
 		printf("removeBlocked: removed nonexistent blocked proc   ");
 	printf("insertBlocked and removeBlocked ok   \n");
