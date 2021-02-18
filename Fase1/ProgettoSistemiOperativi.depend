@@ -34,5 +34,13 @@
 	"testami.h"
 	"stdio.h"
 
-1613514085 /home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/testami.h
+1613683740 /home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/testami.h
+	"pandos_types.h"
+
+1613682169 source:/home/agala/Desktop/Corso informatica/Progetto_Sistemi/Fase1/p2test.c
+	"pandos_const.h"
+	"pandos_types.h"
+	"umps3/umps/libumps.h"
+	"testami.h"
+	"stdio.h"
 

@@ -181,8 +181,7 @@ pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
 */
 pcb_t* mkEmptyProcQ()
 {
-    pcb_t* list_tail = NULL;
-    return list_tail;
+    return NULL;
 }
 
 
@@ -204,14 +203,14 @@ int emptyProcQ(pcb_t *tp)
 
 void insertProcQ(pcb_t** tp, pcb_t* p) //MANCA IL CASO tp == NULL !!!
 {
-
     if ((*tp) != NULL && p != NULL)
     {
-        p->p_prev = (*tp);
-        p->p_next = (*tp)->p_next;
+        p->p_next = (*tp);
+        p->p_prev = (*tp)->p_prev;
 
-        (*tp)->p_next->p_prev = p;
-        (*tp)->p_next = p;
+        (*tp)->p_prev->p_next = p;
+
+        (*tp)->p_prev = p;
 
         (*tp) = p;      //la sentinella tp ora punta all'indirizzo contenuto da p
     }
@@ -235,7 +234,7 @@ pcb_t *headProcQ(pcb_t **tp)
         return NULL;
     }
 
-    return (*tp);
+    return (*tp)->p_prev;
 }
 
 /**
@@ -252,9 +251,9 @@ pcb_t* removeProcQ(pcb_t **tp) //con elemento più vecchio, il prof intende di r
     }
     else
     {
-        pcb_t *tmp = (*tp)->p_next;
-        (*tp)->p_next = tmp->p_next;
-        tmp->p_next->p_prev = (*tp);
+        pcb_t *tmp = (*tp)->p_prev;
+        (*tp)->p_prev = tmp->p_prev;
+        tmp->p_prev->p_next = (*tp);
 
         tmp->p_next = NULL;
         tmp->p_prev = NULL;
@@ -271,7 +270,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)   //
 {
     if( (tp != NULL) && (*tp != NULL) && (p != NULL) && ((*tp) != p)) // p non è il primo elemento
     {
-        pcb_t* tmp = (*tp)->p_next;
+        pcb_t* tmp = (*tp)->p_prev;
 
         while(tmp != (*tp))
         {
@@ -283,7 +282,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)   //
                 tmp->p_prev = NULL;
                 return tmp;
             }
-            tmp = tmp->p_next;
+            tmp = tmp->p_prev;
         }
         return NULL;
     }
@@ -300,11 +299,11 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)   //
     else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // p è l'elemento puntato dalla sentinella
     {
         pcb_t* tmp = (*tp);
-        (*tp) = (*tp)->p_prev;
 
+        (*tp) = (*tp)->p_next;
 
-        (*tp)->p_next = tmp->p_next;
-        tmp->p_next->p_prev = (*tp);
+        (*tp)->p_prev = tmp->p_prev;
+        tmp->p_prev->p_next = (*tp);
 
         tmp->p_next = NULL;
         tmp->p_prev = NULL;
@@ -489,7 +488,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
 pcb_t* removeBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
-    
+
     //seg-fault perchè hd->s_next è NULL
     while (hd->s_next->s_semAdd != (int*)MAXINT)
     {
@@ -526,7 +525,7 @@ pcb_t* outBlocked(pcb_t *p)
     if (p == NULL) return NULL;
 
     while (hd->s_semAdd != (int*)MAXINT)
-    { 
+    {
         if(hd->s_semAdd == p->p_semAdd)  //se il semaforo è quello che cercavo...
         {
             if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL

@@ -131,7 +131,8 @@ void adderrbuf(char *strp) {
 
 
 
-void main() {
+void main()
+{
 	int i;
 
 	initPcbs();
@@ -142,8 +143,6 @@ void main() {
 		if ((procp[i] = allocPcb()) == NULL)
 			printf("allocPcb: unexpected NULL   ");
 	}
-
-    printf("over %d\n", i);
 
 	if (allocPcb() != NULL) {
 		printf("allocPcb: allocated more than MAXPROC entries   ");
@@ -186,8 +185,10 @@ void main() {
 	if (emptyProcQ(qa)) printf("emptyProcQ: unexpected TRUE"   );
 
 	/* Check outProc and headProc */
-	if (headProcQ(qa) != firstproc)
-		printf("headProcQ failed   ");
+	if (headProcQ(qa) != firstproc){
+            printf("headProcQ failed   ");
+            return -1;
+        }
 	q = outProcQ(&qa, firstproc);
 	if (q == NULL || q != firstproc)
 		printf("outProcQ failed on first entry   ");
