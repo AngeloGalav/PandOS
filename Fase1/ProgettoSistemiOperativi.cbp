@@ -31,12 +31,12 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="main.c">
+		<Unit filename="p2test.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="pandos_const.h" />
 		<Unit filename="pandos_types.h" />
-		<Unit filename="pcb_test.h" />
+		<Unit filename="testami.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

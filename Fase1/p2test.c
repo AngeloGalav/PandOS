@@ -312,13 +312,15 @@ void main()
         curs = curs->s_next;
     }
 
+    printf("QUI\n");
+
 	/* check if semaphore descriptors are returned to free list */
 	p = removeBlocked(&sem[11]);
 
 	if (insertBlocked(&sem[11],p))
 		printf("removeBlocked: fails to return to free list   ");
 
-
+    printf("qui ok\n");
 	if (insertBlocked(&onesem, procp[9]) == FALSE) /**QUA C'E' IL PROBLEMA*/
         {
             printf("insertBlocked: inserted more than MAXPROC   ");

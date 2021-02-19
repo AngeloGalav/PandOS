@@ -510,8 +510,6 @@ pcb_t* removeBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
 
-    printf("test\n");
-
     //seg-fault perchè hd->s_next è NULL
     while (hd->s_next->s_semAdd != (int*)MAXINT)
     {
@@ -528,11 +526,10 @@ pcb_t* removeBlocked(int *semAdd)
 
                 hd = hd->s_next->s_next;
             }
-
-            printf("i wontr ered\n");
-
             return toReturn;
         }
+
+        hd = hd->s_next;
     }
 
     return NULL;
