@@ -1,7 +1,7 @@
 //#include "pcb_test.h"
 #include "pandos_types.h"
 #define MAXPROC 20
-#define MAXINT 0xFFFFFFFF
+#define MAXINT 4294967295
 #define HIDDEN static
 #define NULL 0
 #define TRUE            1
@@ -454,7 +454,10 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     while (hd->s_semAdd != (unsigned int*)MAXINT)
     {
-        printf("semd_h %d, params: %d\n", hd->s_semAdd, semAdd);
+        if (hd->s_next != NULL)
+        {
+            //printf("semd_h %d, semd_h->nx %d,  params: %d\n", hd->s_semAdd, hd->s_next->s_semAdd, semAdd);
+        }
 
         if (hd->s_semAdd == semAdd)
         {
@@ -463,11 +466,9 @@ int insertBlocked(int *semAdd, pcb_t *p)
             p->p_semAdd = semAdd;
             return FALSE;
         }
-        else if (hd->s_next->s_semAdd > semAdd)
+        else if (hd->s_next->s_semAdd > semAdd || hd->s_next->s_semAdd == (unsigned int*)MAXINT)
         {
             //prendo il primo elemento dalla semdFree_h
-
-            printf("adding...\n");
 
             if (semdFree_h == NULL) return TRUE;
             else
@@ -509,6 +510,8 @@ pcb_t* removeBlocked(int *semAdd)
 {
     semd_t* hd = semd_h;
 
+    printf("test\n");
+
     //seg-fault perchè hd->s_next è NULL
     while (hd->s_next->s_semAdd != (int*)MAXINT)
     {
@@ -525,6 +528,8 @@ pcb_t* removeBlocked(int *semAdd)
 
                 hd = hd->s_next->s_next;
             }
+
+            printf("i wontr ered\n");
 
             return toReturn;
         }
@@ -618,11 +623,11 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
     }*/
 
     semd_h = &semd_table[0]; // con indice 0
-    semd_h->s_semAdd = (int*)0x00000000;
+    semd_h->s_semAdd = (unsigned int*)0x00000000;
     semd_h->s_procQ = NULL;
 
     semd_h->s_next = &semd_table[MAXPROC +1]; // con indice 0xFFFFFF
-    semd_h->s_next->s_semAdd = (int*)0xFFFA;
+    semd_h->s_next->s_semAdd = (unsigned int*)MAXINT;
     semd_h->s_next->s_procQ = NULL;
 
     printf("semd_h is %d, nx is %d\n",semd_h->s_semAdd, semd_h->s_next->s_semAdd);

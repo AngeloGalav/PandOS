@@ -283,12 +283,28 @@ void main()
 			printf("insertBlocked(2): unexpected TRUE   ");
 	}
 
-	/* check if semaphore descriptors are returned to free list */
-	p = removeBlocked(&sem[11]);
-	if (insertBlocked(&sem[11],p))
-		printf("removeBlocked: fails to return to free list   ");
+    semd_t* curss = semd_h;
+    int j = 0;
+	while (curss != NULL)
+    {
+        printf("id = %d, act: %d | nxt: %d, ", curss->s_semAdd, curss, curss->s_next);
+        printf("with elements: ");
+        pcb_t* ok = curss->s_procQ;
+        if (ok != NULL)
+        {
+            printf("prev: %d | act: %d | nxt: %d", ok->p_prev, ok, ok->p_next);
+        }else
+        {
+            printf("NULL! ERROR!");
+        }
+
+        printf("\n\n");
+        curss = curss->s_next;
+        j = j + 1;
+    }
 
     semd_t* curs = semdFree_h;
+
     printf("\n\n\n");
 	while (curs != NULL)
     {
@@ -296,11 +312,17 @@ void main()
         curs = curs->s_next;
     }
 
+	/* check if semaphore descriptors are returned to free list */
+	p = removeBlocked(&sem[11]);
+
+	if (insertBlocked(&sem[11],p))
+		printf("removeBlocked: fails to return to free list   ");
+
 
 	if (insertBlocked(&onesem, procp[9]) == FALSE) /**QUA C'E' IL PROBLEMA*/
         {
             printf("insertBlocked: inserted more than MAXPROC   ");
-            return -1;
+
 		}
 
 	printf("removeBlocked test started   \n");
