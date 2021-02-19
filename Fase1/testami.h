@@ -3,6 +3,7 @@
 #define MAXPROC 20
 #define MAXINT 4294967295
 #define HIDDEN static
+#define NULL 0
 #define TRUE            1
 #define FALSE           0
 
@@ -26,8 +27,6 @@ HIDDEN pcb_t* pcbFree_h;
 //array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti. (il prof ha chiesto di renderlo statico)
 HIDDEN pcb_t pcbFree_table[MAXPROC];
 
-//array usato come memoria dummy per testing
-pcb_t pcb_memory[300];
 
 ///->SEMD///
 
@@ -53,7 +52,7 @@ HIDDEN semd_t* semd_h;  //La vera ASL
 */
 void initPcbs();
 
-void initList(pcb_t* node);
+void initializePcbt(pcb_t* node);
 
 void freePcb(pcb_t* p);
 
@@ -125,7 +124,7 @@ void initPcbs() //questa funzione mette quindi tutte gli elementi di initPcbs ne
 }
 
 //funzione ausiliaria per inizializzare i campi a NULL
-void initList(pcb_t* node)
+void initializePcbt(pcb_t* node)
 {
     if (node != NULL){
         node->p_next = NULL;
@@ -168,7 +167,7 @@ pcb_t *allocPcb() //Alloca un pcb della lista pcbFree nell
 
         pcbFree_h = pcbFree_h->p_next;
 
-        initList(temp); //funzione che inizializza i campi
+        initializePcbt(temp); //funzione che inizializza i campi
 
         return temp;
     }
@@ -362,7 +361,6 @@ void insertChild(pcb_t *prnt, pcb_t *p) //inserisce un figlio p a prnt.
             tmp->p_prev_sib = p;    //se prnt non aveva figli inizialmente, mi basta mettere tmp->prev_sib a p;
         }
     }
-
 }
 
 /** Rimuove il primo figlio del PCB puntato
@@ -478,8 +476,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
                 insertProcQ(&(toAdd->s_procQ), p);
 
                 p->p_semAdd = semAdd;
-                //aggiorno gli indirizzi dei semafori
-                toAdd->s_semAdd = semAdd;   
+                toAdd->s_semAdd = semAdd;   //aggiorno gli indirizzi dei semafori
 
                 return FALSE;
             }
