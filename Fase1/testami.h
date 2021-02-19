@@ -3,7 +3,6 @@
 #define MAXPROC 20
 #define MAXINT 4294967295
 #define HIDDEN static
-#define NULL 0
 #define TRUE            1
 #define FALSE           0
 
@@ -479,7 +478,8 @@ int insertBlocked(int *semAdd, pcb_t *p)
                 insertProcQ(&(toAdd->s_procQ), p);
 
                 p->p_semAdd = semAdd;
-                toAdd->s_semAdd = semAdd;   //aggiorno gli indirizzi dei semafori
+                //aggiorno gli indirizzi dei semafori
+                toAdd->s_semAdd = semAdd;   
 
                 return FALSE;
             }
