@@ -283,49 +283,16 @@ void main()
 			printf("insertBlocked(2): unexpected TRUE   ");
 	}
 
-    semd_t* curss = semd_h;
-    int j = 0;
-	while (curss != NULL)
-    {
-        printf("id = %d, act: %d | nxt: %d, ", curss->s_semAdd, curss, curss->s_next);
-        printf("with elements: ");
-        pcb_t* ok = curss->s_procQ;
-        if (ok != NULL)
-        {
-            printf("prev: %d | act: %d | nxt: %d", ok->p_prev, ok, ok->p_next);
-        }else
-        {
-            printf("NULL! ERROR!");
-        }
-
-        printf("\n\n");
-        curss = curss->s_next;
-        j = j + 1;
-    }
-
-    semd_t* curs = semdFree_h;
-
-    printf("\n\n\n");
-	while (curs != NULL)
-    {
-        printf("act: %d | nxt: %d\n", curs, curs->s_next);
-        curs = curs->s_next;
-    }
-
-    printf("QUI\n");
-
 	/* check if semaphore descriptors are returned to free list */
 	p = removeBlocked(&sem[11]);
 
 	if (insertBlocked(&sem[11],p))
 		printf("removeBlocked: fails to return to free list   ");
 
-    printf("qui ok\n");
-	if (insertBlocked(&onesem, procp[9]) == FALSE) /**QUA C'E' IL PROBLEMA*/
-        {
-            printf("insertBlocked: inserted more than MAXPROC   ");
-
-		}
+	if (insertBlocked(&onesem, procp[9]) == FALSE)
+    {
+        printf("insertBlocked: inserted more than MAXPROC   ");
+    }
 
 	printf("removeBlocked test started   \n");
 	for (i = 10; i< MAXPROC; i++) {
@@ -342,12 +309,14 @@ void main()
 		printf("removeBlocked: removed nonexistent blocked proc   ");
 	printf("insertBlocked and removeBlocked ok   \n");
 
+
 	if (headBlocked(&sem[11]) != NULL)
 		printf("headBlocked: nonNULL for a nonexistent queue   ");
 	if ((q = headBlocked(&sem[9])) == NULL)
 		printf("headBlocked(1): NULL for an existent queue   ");
 	if (q != procp[9])
 		printf("headBlocked(1): wrong process returned   ");
+
 	p = outBlocked(q);
 	if (p != q)
 		printf("outBlocked(1): couldn't remove from valid queue   ");

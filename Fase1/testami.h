@@ -454,14 +454,9 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     while (hd->s_semAdd != (unsigned int*)MAXINT)
     {
-        if (hd->s_next != NULL)
-        {
-            //printf("semd_h %d, semd_h->nx %d,  params: %d\n", hd->s_semAdd, hd->s_next->s_semAdd, semAdd);
-        }
 
         if (hd->s_semAdd == semAdd)
         {
-            printf("adding to an asl\n");
             insertProcQ(&(hd->s_procQ), p);
             p->p_semAdd = semAdd;
             return FALSE;
@@ -493,8 +488,6 @@ int insertBlocked(int *semAdd, pcb_t *p)
         hd = hd->s_next;
     }
 
-    printf("nope...\n");
-
     return FALSE;
 }
 
@@ -508,30 +501,33 @@ int insertBlocked(int *semAdd, pcb_t *p)
 */
 pcb_t* removeBlocked(int *semAdd)
 {
-    semd_t* hd = semd_h;
+    semd_t* hd = semd_h->s_next;
+    semd_t* hdPrevious = semd_h;
 
     //seg-fault perchè hd->s_next è NULL
-    while (hd->s_next->s_semAdd != (int*)MAXINT)
+    while (hd->s_semAdd != (int*)MAXINT)
     {
-        if (hd->s_next->s_semAdd == semAdd)
+        if (hd->s_semAdd == semAdd)
         {
-            pcb_t* toReturn = removeProcQ(&(hd->s_next->s_procQ));
+            pcb_t* toReturn = removeProcQ(&(hd->s_procQ));
 
-            if (emptyProcQ(hd->s_next->s_procQ))
+            if (emptyProcQ(hd->s_procQ))
             {
-                semd_t* toAdd = hd->s_next;
+                hdPrevious->s_next = hd->s_next;
+
+                semd_t* toAdd = hd;
 
                 toAdd->s_next = semdFree_h; //inserisco in testa a semdFree_h
                 semdFree_h = toAdd;
 
-                hd = hd->s_next->s_next;
             }
+
             return toReturn;
         }
 
+        hdPrevious = hd;
         hd = hd->s_next;
     }
-
     return NULL;
 }
 
@@ -573,10 +569,10 @@ pcb_t* headBlocked(int *semAdd)
 
     while (hd->s_semAdd != (int*)MAXINT)
     {
-        if(*(hd->s_semAdd) == *semAdd)  //se il semaforo è quello che cercavo...
+        if(hd->s_semAdd == semAdd)  //se il semaforo è quello che cercavo...
         {
             if (hd->s_procQ == NULL) return NULL; //se la coda è vuota altrimenti ritorna NULL
-            else return hd->s_procQ->p_next; //altrimenti ritorna la testa (elemento dopo la coda)
+            else return hd->s_procQ->p_prev; //altrimenti ritorna la testa (elemento dopo la coda)
 
             //questo codice funziona anche in caso l'elemento della lista sia uno, siccome la coda è circolare
         }
@@ -609,16 +605,6 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
 
     hd->s_next = NULL;
 
-    /*
-    hd = semdFree_h;
-    i = 0;
-    while (hd != NULL)
-    {
-        printf("index %i, act: %d | nxt: %d\n",i, hd, hd->s_next);
-        hd = hd->s_next;
-        i = i + 1;
-    }*/
-
     semd_h = &semd_table[0]; // con indice 0
     semd_h->s_semAdd = (unsigned int*)0x00000000;
     semd_h->s_procQ = NULL;
@@ -626,8 +612,6 @@ void initASL()  //da vedere: come mantenere l'ordine. (creare una funzione di ch
     semd_h->s_next = &semd_table[MAXPROC +1]; // con indice 0xFFFFFF
     semd_h->s_next->s_semAdd = (unsigned int*)MAXINT;
     semd_h->s_next->s_procQ = NULL;
-
-    printf("semd_h is %d, nx is %d\n",semd_h->s_semAdd, semd_h->s_next->s_semAdd);
 
     semd_h->s_next->s_next = NULL;
 }
