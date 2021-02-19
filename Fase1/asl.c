@@ -1,5 +1,5 @@
 #include "asl.h"
-#define NULL 0
+
 
 /**
  *  Viene inserito il PCB puntato da p nella coda dei processi bloccati associata al SEMD

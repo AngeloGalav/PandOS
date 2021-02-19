@@ -1,5 +1,5 @@
 #include "pcb.h"
-#define NULL 0
+
 
 /** Inizializzazione della lista pcbFree_h.
     Per inizializzarla, aggiunge alla lista ogni elemento degli array dei processi.

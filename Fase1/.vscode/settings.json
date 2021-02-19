@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "libumps.h": "c",
+        "pandos_const.h": "c",
+        "pandos_types.h": "c"
+    }
+}
