@@ -1,4 +1,4 @@
-Fase 1 del progetto di Sistemi Operativi 2020/2021
+##Fase 1 del progetto di Sistemi Operativi 2020/2021
 
 ## Autori:
 
@@ -15,13 +15,14 @@ L’ambiente di riferimento per l’esecuzione del software e’μMPS3. Si tratt
 
 ## Tecnologie usate
 
+* Ambiente di sviluppo Unix
 * Linguaggio di programmazione C
 * Emulatore per architettura MIPS μMPS3
 
 
 ## Come compilare e avviare
 
-La compilazione avviene attraverso il makefile presente nella directory del progetto .Per avviare il programma è necessario avviare μMPS3 e creare una "nuova macchina virtuale" salvando le configurazioni nella directory del progetto, a quel punto l'emulatore sarà in grado di leggere i file generati dal makefile.
+La compilazione avviene attraverso il makefile presente nella directory del progetto. Per avviare il programma è necessario avviare μMPS3 e creare una "nuova macchina virtuale" salvando le configurazioni nella directory del progetto, a quel punto l'emulatore sarà in grado di leggere i file generati dal makefile.
 
 N.B: se si usa una distro di linux basata su arch, bisogna modificare il makefile includendo anche il percorso commentato.
 
