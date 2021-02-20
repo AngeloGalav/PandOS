@@ -21,9 +21,9 @@ L’ambiente di riferimento per l’esecuzione del software e’μMPS3. Si tratt
 
 ## Fase 1
 
-Il tema di questa fase è la gestione dei processi e dei semafori. I primi vengono gestiti i pcb (ovvero i descrittori dei processi) che possono essere organizzate in code o alberi. Inoltre, la lista monodirezionale pcbFree_h contiene i pcb liberi, che potranno essere inseriti nelle code o alberi prima descritti e reinserite nella lista una volta che non vengono più utilizzate.
+Il tema di questa fase è la gestione dei processi e dei semafori. I primi vengono gestiti attraverso i pcb (ovvero i descrittori dei processi) che possono essere organizzate in code o alberi. Inoltre, la lista monodirezionale pcbFree_h contiene i pcb liberi, che potranno essere inseriti nelle code o alberi prima citati e reinserite nella lista una volta che non vengono più utilizzate.
 
-I semafori vengono organizzati tramite una lista di descrittori di semafori (semd) detta ASL, che contiene due nodi "dummy" agli estremi. Ogni descrittore della lista contiene una chiave di riconoscimento (semAdd) e una coda di processi pcb. Ogni semaforo diventa attivo una volta che questo contiene un processo, ad esclusione dei nodi dummy che hanno chiave 0 e MAXINT rispettivamente e che non contengono pcb. La lista in se è ordinata in senso crescente in base a semAdd. Anche per i semafori abbiamo una lista monodirezionale di descrittori semd liberi, che ha la stessa esatta funzione di pcbFree_h, anche se nel contesto degli semd.
+I semafori vengono organizzati tramite una lista di descrittori di semafori (semd) detta ASL, che contiene due nodi "dummy" agli estremi. Ogni descrittore della lista contiene una chiave di riconoscimento (semAdd) e una coda di processi pcb. Ogni semaforo diventa attivo una volta che questo contiene un processo, ad esclusione dei nodi dummy che hanno chiave 0 e MAXINT rispettivamente e che non contengono pcb. La lista in sé è ordinata in senso crescente in base a semAdd. Anche per i semafori abbiamo una lista monodirezionale di descrittori semd liberi, che ha la stessa esatta funzione di pcbFree_h, anche se nel contesto degli semd.
 
 Le strutture dei semafori e dei pcb vengono inizializzate attraverso le funzioni initASL e iniPcbs rispettivamente.
 
