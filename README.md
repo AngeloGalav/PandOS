@@ -1,4 +1,4 @@
-##Fase 1 del progetto di Sistemi Operativi 2020/2021
+## Fase 1 del progetto di Sistemi Operativi 2020/2021
 
 ## Autori:
 
