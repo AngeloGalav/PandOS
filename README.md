@@ -27,7 +27,7 @@ La compilazione avviene attraverso il makefile presente nella directory del prog
 N.B: se si usa una distro di linux basata su arch, bisogna modificare il makefile includendo anche il percorso commentato.
 
 
-* cd Progetto_Sistemi
-* cd Fase1
-* make
+- cd Progetto_Sistemi/
+- cd Fase1/
+- make
 
