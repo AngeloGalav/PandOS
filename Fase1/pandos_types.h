@@ -35,7 +35,7 @@ typedef struct pcb_t {
 
 }  pcb_t, *pcb_PTR;
 
-typedef struct semd_t { //N.B: per questa fase del progetto basta vedere il semaforo come un intero.
+typedef struct semd_t {
     /* ptr to next element on queue */
     struct semd_t *s_next;
 

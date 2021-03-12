@@ -137,8 +137,7 @@ pcb_t* removeProcQ(pcb_t **tp)
     else if (*tp == (*tp)->p_prev) // Caso in cui ho un singolo elemento nella coda.
     {
         pcb_t* head = *tp;
-        head->p_next = NULL;
-        head->p_prev = NULL;
+        initializePcbt(head);
 
         *tp = NULL; // Rimuove l'unico elemento della coda, quindi la coda diventa vuota.
 
@@ -151,8 +150,7 @@ pcb_t* removeProcQ(pcb_t **tp)
         pcb_t* tmp = head->p_prev;
         tmp->p_next = (*tp);
 
-        head->p_next = NULL;
-        head->p_prev = NULL;
+        initializePcbt(head);
         return head;
     }
 }
@@ -173,8 +171,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             {
                 tmp->p_prev->p_next = tmp->p_next;
                 tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                tmp->p_next = NULL;
-                tmp->p_prev = NULL;
+                initializePcbt(tmp);
                 return tmp;
             }
             tmp = tmp->p_prev;
@@ -186,9 +183,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         pcb_t* tmp = (*tp);
         *tp = NULL;
 
-        tmp->p_next = NULL;
-        tmp->p_prev = NULL;
-
+        initializePcbt(tmp);
         return tmp;
     }
     else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui la sentinella punta a p
@@ -200,9 +195,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         (*tp)->p_prev = tmp->p_prev;
         tmp->p_prev->p_next = (*tp);
 
-        tmp->p_next = NULL;
-        tmp->p_prev = NULL;
-
+        initializePcbt(tmp);
         return tmp;
     }
     else return NULL;
@@ -254,8 +247,8 @@ pcb_t* removeChild(pcb_t *p)
             p->p_child = NULL;  // Se p aveva un solo figlio, setta p->child = null
         }
 
-        tmp->p_prnt = NULL;     // Ri-inizializzazione dei campi, in modo che non ci sia piu' traccia dell'albero di partenza
-        tmp->p_next_sib = NULL;
+        // Ri-inizializzazione dei campi, in modo che non ci sia piu' traccia dell'albero di partenza
+        initializePcbt(tmp);
 
         return tmp;
     }
@@ -281,9 +274,7 @@ pcb_t *outChild(pcb_t* p)
         if (p->p_next_sib != NULL)  // Se ha un fratello destro, collego quest'ultimo con il fratello precedente
             p->p_next_sib->p_prev_sib = tmp;
 
-        p->p_prnt = NULL;
-        p->p_next_sib = NULL;
-        p->p_prev_sib = NULL;
+        initializePcbt(p);
 
         return p;
     }
