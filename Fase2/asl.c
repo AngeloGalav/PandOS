@@ -14,7 +14,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
 {
     semd_t* hd = semd_h;
 
-    while (hd->s_semAdd != (unsigned int*)MAXINT)
+    while (hd->s_semAdd != (int*)MAXINT)
     {
 
         if (hd->s_semAdd == semAdd)
@@ -24,7 +24,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
             return FALSE;
         }
         // Viene effettuato l'inserimento rispettando un ordine non decrescente
-        else if (hd->s_next->s_semAdd > semAdd || hd->s_next->s_semAdd == (unsigned int*)MAXINT)
+        else if (hd->s_next->s_semAdd > semAdd || hd->s_next->s_semAdd == (int*)MAXINT)
         {
 
             if (semdFree_h == NULL)
@@ -191,12 +191,12 @@ void initASL()
 
     // Nodo dummy ad inizio lista
     semd_h = &semd_table[0];
-    semd_h->s_semAdd = (unsigned int*)0x00000000;
+    semd_h->s_semAdd = (int*)0x00000000;
     semd_h->s_procQ = NULL;
 
     // Nodo dummy a fine lista
     semd_h->s_next = &semd_table[MAXPROC +1];
-    semd_h->s_next->s_semAdd = (unsigned int*)MAXINT;
+    semd_h->s_next->s_semAdd = (int*)MAXINT;
     semd_h->s_next->s_procQ = NULL;
 
     semd_h->s_next->s_next = NULL;
