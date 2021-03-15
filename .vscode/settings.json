@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "arch.h": "c",
+        "libumps.h": "c",
+        "regdef.h": "c",
+        "bios_defs.h": "c",
+        "aout.h": "c",
+        "cp0.h": "c",
+        "pandos_const.h": "c",
+        "const.h": "c",
+        "fstream": "c",
+        "pcb.h": "c"
+    }
+}
