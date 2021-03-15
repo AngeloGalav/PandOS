@@ -1,4 +1,4 @@
-## Fase 1 del progetto di Sistemi Operativi 2020/2021
+## Progetto PandOS del corso di Sistemi Operativi 2020/2021
 
 ## Autori:
 
@@ -27,6 +27,9 @@ I semafori vengono organizzati tramite una lista di descrittori di semafori (sem
 
 Le strutture dei semafori e dei pcb vengono inizializzate attraverso le funzioni initASL e iniPcbs rispettivamente.
 
+## Fase 2
+
+[work in progress]
 
 ## Come compilare e avviare
 
