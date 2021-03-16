@@ -1,4 +1,15 @@
-#include "asl.h"
+#include "../Libraries/asl.h"
+#include "../Libraries/libraries.h"
+
+
+// Array di semafori non attivi
+HIDDEN semd_t semd_table[MAXPROC + 2];
+
+// Puntatore alla lista di semafori liberi non in uso
+HIDDEN semd_t* semdFree_h;
+
+// Puntatore alla lista dei semafori attualmente in uso
+HIDDEN semd_t* semd_h;
 
 
 /**

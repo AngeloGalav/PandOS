@@ -14,11 +14,10 @@
 
 #include "pandos_const.h"
 #include "pandos_types.h" // prima aveva i simboli > <
-#include <stdio.h>
 
 #include <umps3/umps/libumps.h>
-#include "pcb.h"
-#include "asl.h"
+#include "../Libraries/pcb.h"
+#include "../Libraries/asl.h"
 //#include "pcb_test.h"
 //#include "testami.h"
 

@@ -1,9 +1,16 @@
-#include "pcb.h"
+#include "../Libraries/pcb.h"
+
 
 
 /** Inizializzazione della lista pcbFree_h.
     Per inizializzarla, aggiunge alla lista ogni elemento degli array dei processi.
 */
+// Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
+HIDDEN pcb_t* pcbFree_h;
+
+// Array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti.
+HIDDEN pcb_t pcbFree_table[MAXPROC];
+
 void initPcbs()
 {
     pcbFree_h = &pcbFree_table[0];
