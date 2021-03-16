@@ -74,3 +74,4 @@ int main()
 
     // 00001000000000000000000000001001 == 134217737 passare un numero che mette i bit dello status register come vogliamo?
     proc->p_s.status = setSTATUS(134217737);
+}

@@ -1,6 +1,7 @@
-#include "asl.h"
+#ifndef LIBRARIES_H
+#define LIBRARIES_H
+
 #include "pcb.h"
-#include "pandos_const.h"
 #include "pandos_types.h"
 
 typedef struct semd_t {
@@ -14,3 +15,5 @@ typedef struct semd_t {
     pcb_PTR s_procQ;
 
 } semd_t, *semd_PTR;
+
+#endif
