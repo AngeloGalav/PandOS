@@ -6,8 +6,8 @@
 #include "umps3/umps/cp0.h"
 #include "umps3/umps/regdef.h"
 #include <umps3/umps/libumps.h>
-#include <asl.h>
-#include <pcb.h>
+#include "../Fase1/asl.h"
+#include "../Fase1/pcb.h"
 
 /* Define the 100000 milliseconds */
 #define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR))
@@ -73,3 +73,4 @@ int main()
 
     // 00001000000000000000000000001001 == 134217737 passare un numero che mette i bit dello status register come vogliamo?
     proc->p_s.status = setSTATUS(134217737);
+}
