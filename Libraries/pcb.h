@@ -9,12 +9,15 @@
 
 #include "pandos_const.h"
 #include "pandos_types.h"
+#include "libraries.h"
 
+/*
 // Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
 HIDDEN pcb_t* pcbFree_h;
 
 // Array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti.
 HIDDEN pcb_t pcbFree_table[MAXPROC];
+*/
 
 void initPcbs();
 void initializePcbt(pcb_t* node);
