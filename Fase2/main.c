@@ -9,9 +9,9 @@
 #include <asl.h>
 #include <pcb.h>
 
-/* Define the 1 00 000 milliseconds */
+/* Define the 100000 milliseconds */
 #define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR))
-
+#define DEVICES_NUMBER 17
 /* Include the test function */
 extern void test();
 
@@ -34,6 +34,8 @@ pcb_PTR currentProcess;
 /* Inizialize pass-up-vector with the addressess needed */
 passupvector_t* passupvector ;
 
+/* Int Array for semaphores*/
+int semaphores[DEVICES_NUMBER];
 
 int main()
 {
