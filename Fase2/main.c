@@ -1,13 +1,14 @@
-#include "pandos_const.h"
-#include "pandos_types.h"
+#include "../Libraries/pandos_const.h"
+#include "../Libraries/pandos_types.h"
 #include "umps3/umps/aout.h"
 #include "umps3/umps/arch.h"
 #include "umps3/umps/bios_defs.h"
 #include "umps3/umps/cp0.h"
 #include "umps3/umps/regdef.h"
 #include <umps3/umps/libumps.h>
-#include <asl.h>
-#include <pcb.h>
+#include "../Libraries/pcb.h"
+#include "../Libraries/asl.h"
+#include "../Libraries/libraries.h"
 
 /* Define the 100000 milliseconds */
 #define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR))

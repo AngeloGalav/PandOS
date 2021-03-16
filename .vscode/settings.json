@@ -9,6 +9,7 @@
         "pandos_const.h": "c",
         "const.h": "c",
         "fstream": "c",
-        "pcb.h": "c"
+        "pcb.h": "c",
+        "asl.h": "c"
     }
 }
