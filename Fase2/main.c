@@ -6,9 +6,13 @@
 #include "umps3/umps/cp0.h"
 #include "umps3/umps/regdef.h"
 #include <umps3/umps/libumps.h>
-#include <Fase1/asl.h>
-#include <Fase1/pcb.h>
+#include <asl.h>
+#include <pcb.h>
 
+/* Define the 1 00 000 milliseconds */
+#define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR))
+
+/* Include the test function */
 extern void test();
 
 /* Number of started, but not yet terminated processes. */
@@ -28,7 +32,8 @@ pcb_PTR currentProcess;
 //TO-DO capire come inizializzare i semaphores devices
 
 /* Inizialize pass-up-vector with the addressess needed */
-passupvector_t passupvector ;
+passupvector_t* passupvector ;
+
 
 int main()
 {
@@ -38,19 +43,17 @@ int main()
     initASL();
 
     /* Fill up pass-up-vector*/
-    passupvector.tlb_refill_handler = (memaddr) uTLB_RefillHandler() ; //Codice già dato nel p2test.c
-    passupvector.tlb_refill_stackPtr = (memaddr) 0x20001000;
-    passupvector.exception_stackPtr = (memaddr) 0x20001000 ;
-    passupvector.exception_handler = (memaddr) fooBar(); //fooBar is for exception
+    passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler() ; //Codice già dato nel p2test.c
+    passupvector->tlb_refill_stackPtr = (memaddr) 0x20001000;
+    passupvector->exception_stackPtr = (memaddr) 0x20001000 ;
+    passupvector->exception_handler = (memaddr) fooBar(); //fooBar is for exception
 
     if(!getSTATUS()) // check the kernel mode ?????
-        LDIT(1000000); // load the interval timer trought the macro LDIT
-
+        LDIT(TIMERVALUE);
 
     /* Start the process initialization */
-
-    pcb_t* proc = allocPcb() ;
-
+    pcb_PTR proc = allocPcb() ;
+    
     insertProcQ(&(readyQueue), proc);
     
     processCount += 1;
