@@ -1,0 +1,47 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include/linux",
+                "/usr/include/c++/9/**",
+                "${workspaceFolder}/**",
+                "${workspaceFolder}",
+                "/usr/include/x86_64-linux-gnu/c++/9",
+                "/usr/include/c++/9/backward",
+                "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                "/usr/local/include",
+                "/usr/include/x86_64-linux-gnu",
+                "/usr/include",
+                "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9",
+                "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9",
+                "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward",
+                "/usr/lib/llvm-10/lib/clang/10.0.0/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-x64",
+            "browse": {
+                "path": [
+                    "/usr/include/linux",
+                    "/usr/include/c++/9",
+                    "${workspaceFolder}/**",
+                    "${workspaceFolder}",
+                    "/usr/include/x86_64-linux-gnu/c++/9",
+                    "/usr/include/c++/9/backward",
+                    "/usr/lib/gcc/x86_64-linux-gnu/9/include",
+                    "/usr/local/include",
+                    "/usr/include/x86_64-linux-gnu",
+                    "/usr/include",
+                    "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9",
+                    "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/x86_64-linux-gnu/c++/9",
+                    "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/backward",
+                    "/usr/lib/llvm-10/lib/clang/10.0.0/include"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

@@ -1,5 +1,7 @@
 {
+    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.intelliSenseEngine": "Default",
     "files.associations": {
-        "libumps.h": "c"
+        "random": "c"
     }
 }
