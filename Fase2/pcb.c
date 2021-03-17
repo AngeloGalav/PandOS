@@ -1,4 +1,11 @@
-#include "pcb.h"
+#include "../Libraries/pcb.h"
+
+// Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
+HIDDEN pcb_t* pcbFree_h;
+
+// Array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti.
+HIDDEN pcb_t pcbFree_table[MAXPROC];
+
 
 
 /** Inizializzazione della lista pcbFree_h.

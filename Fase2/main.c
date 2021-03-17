@@ -59,10 +59,13 @@ int main()
     
     /// TODO: Qui dobbiamo mettere un for che inizializza i semafori dei device appena sappiamo come
     /// questi sono definiti...
+
+    for(int i = 0; i < 2*(DEVICES_NUMBER + 1); i++)
+    {
+        semaphores[i] = 0;
+    }
     
-    
-    if(!getSTATUS()) // check the kernel mode ?????
-        LDIT(TIMERVALUE); /* TODO: initCPU? */
+    LDIT(TIMERVALUE);
 
     /* Start the process initialization */
     pcb_PTR proc = allocPcb() ;
@@ -82,7 +85,7 @@ int main()
     //PC
     proc->p_s.pc_epc = (memaddr) test; 
 
-    // 00001000000000000000000000001001 == 134217737 passare un numero che mette i bit dello status register come vogliamo?
+    // 00001000000000000000000000001100 == 134217737 passare un numero che mette i bit dello status register come vogliamo?
     proc->p_s.status = setSTATUS(134217737);
 }
 
