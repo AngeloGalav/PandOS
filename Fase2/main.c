@@ -129,6 +129,44 @@ void placeholder_scheduler()
     }
 }
 
+void fooBar()
+{
+    /**
+     * Leggere dal registro cause del state_t il codice dell'eccezione (3.3-pops)
+     * In base a questo exception code foobar passa:
+     * Code 0: Kernel device interrupt handler (3.6 pandos)
+     * Code 1-3: Kernel TLB exception handler (3.7.3 pandos)
+     * Code 4-7,9-12: Kernel Program Trap exception handler (3.7.2 pandos)
+     * Code8: SYSCALL exception handler (3.5 pandos)
+     * */
+
+    state_t *excepetionState = (memaddr) BIOS_DATA_PAGE_BASE;
+    unsigned int exceptionCode = excepetionState->cause & 124;
+    exceptionCode >>= 2;
+    if(exceptionCode == 0)
+    {
+        //TODO
+    }
+    else if ((exceptionCode >= 1) && (exceptionCode <= 3))
+    {
+        //TODO
+    }
+    else if (exceptionCode == 8)
+    {
+        //TODO
+    }
+    else
+    {
+        //TODO
+    }
+}
+
+unsigned int bitExtractor(unsigned int value, int start, int end)
+{
+    unsigned int mask = (1 << (end-start)) -1;
+    return (value >> start) & mask;
+}
+
 
 
 void uTLB_RefillHandler () {
