@@ -73,7 +73,7 @@ int main()
     proc->p_semAdd = NULL;
     proc->p_supportStruct = NULL;
     
-    // nel 28esimo (che e' 26 causa umps3 che non conta 2 entry) registro del GPR c'è lo stack pointer 
+    // nel 26 esimo (che e' 26 causa umps3 che non conta 2 entry) registro del GPR c'è lo stack pointer 
     // del programma, dobbiamo scrivere li dentro il valore di RAMTOP
     // ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))))
 
@@ -99,12 +99,34 @@ void placeholder_scheduler()
     {
         currentProcess = removeProcQ(&readyQueue);
         int status = setTIMER(TIMERVALUE(5000));
-        LDST ((state_t *) &(currentProcess->p_s)); // carichiamo lo stato del processo corrente
-    } else
-    {
-        
-    }
+        LDST ((state_t *) &(currentProcess->p_s)); // 
 
+        //IF BLOCKING SYSCALL PUT THE PROCESS IN THE EVENT QUEUE
+
+
+        //ELSE IF NON-BLOCKING SYSCALL PUT THE PROCESS IN THE READY QUEUE WITH ROUNDROBIN
+
+
+    } else // IF  READY QUEUE IT'S EMPTY
+    {
+        if ( processCount == 0)
+        {
+            //TO-DO we should be in KERNEL MODE
+            HALT();
+        }
+        else if ((processCount && softBlockCount) > 0)
+        {
+            setSTATUS(WAIT_STATUS);
+
+            WAIT();
+        }
+        else if ((softBlockCount == 0) && (processCount > 0))
+        {
+            //DEADLOCK YOU ARE FCKD
+            PANIC();
+
+        }
+    }
 }
 
 
@@ -117,3 +139,6 @@ void uTLB_RefillHandler () {
 	
 	LDST ((state_t *) 0x0FFFF000);
 }
+
+
+
