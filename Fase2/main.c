@@ -12,7 +12,7 @@
 
 /* Define the 100000 milliseconds */
 #define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR)) /// TODO: vedere questo 
-#define DEVICES_NUMBER 17
+#define DEVICES_NUMBER 49
 /* Include the test function */
 extern void test();
 
@@ -32,7 +32,7 @@ HIDDEN pcb_PTR currentProcess = NULL;
 
 //TO-DO capire come inizializzare i semaphores devices
 /* Int Array for semaphores*/
-HIDDEN int semaphores[2*(DEVICES_NUMBER + 1)]; // we need two semaphore for each device + 1
+HIDDEN int semaphores[DEVICES_NUMBER]; // we need two semaphore for each device + 1
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -60,7 +60,7 @@ int main()
     /// TODO: Qui dobbiamo mettere un for che inizializza i semafori dei device appena sappiamo come
     /// questi sono definiti...
 
-    for(int i = 0; i < 2*(DEVICES_NUMBER + 1); i++)
+    for(int i = 0; i < DEVICES_NUMBER ; i++)
     {
         semaphores[i] = 0;
     }
