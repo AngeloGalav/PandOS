@@ -3,7 +3,14 @@
 
 #define INIT_STATUS 0x8000004 
 
+<<<<<<< HEAD
 #define WAIT_STATUS 0x0000001 // Disables PLT interrupts 
+=======
+#define SEMAPHORE_QTY 49
+
+/* Define the 100000 milliseconds */
+#define TIMERVALUE(T)  ((T) * (*((cpu_t *) TIMESCALEADDR)))
+>>>>>>> eb5e88b (placeholder scheduler and fixes)
 
 /* Total number of semaphores in PandOS */
 #define SEMAPHORE_QTY 49
