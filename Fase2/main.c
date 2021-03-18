@@ -9,10 +9,8 @@
 #include "../Libraries/pcb.h"
 #include "../Libraries/asl.h"
 #include "../Libraries/libraries.h"
+#include "../Libraries/definitions.h"
 
-/* Define the 100000 milliseconds */
-#define TIMERVALUE  (PSECOND / * ((unsigned int*) TIMESCALEADDR)) /// TODO: vedere questo 
-#define DEVICES_NUMBER 49
 /* Include the test function */
 extern void test();
 
@@ -30,9 +28,8 @@ HIDDEN pcb_PTR readyQueue;
 /* Pointer to the current pcb that is in running state */ 
 HIDDEN pcb_PTR currentProcess = NULL;
 
-//TO-DO capire come inizializzare i semaphores devices
 /* Int Array for semaphores*/
-HIDDEN int semaphores[DEVICES_NUMBER]; // we need two semaphore for each device + 1
+HIDDEN int semaphores[SEMAPHORE_QTY];
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -42,6 +39,9 @@ void uTLB_RefillHandler ();
 
 /*placeholder function for exception handling*/
 void fooBar();
+
+/* Draft scheduler */
+void placeholder_scheduler();
 
 int main()
 {
@@ -56,19 +56,13 @@ int main()
     passupvector->exception_stackPtr = (memaddr) 0x20001000;
     passupvector->exception_handler = (memaddr) fooBar; // exception handling function callback
 
-    
-    /// TODO: Qui dobbiamo mettere un for che inizializza i semafori dei device appena sappiamo come
-    /// questi sono definiti...
-
-    for(int i = 0; i < DEVICES_NUMBER ; i++)
-    {
+    for(int i = 0; i < SEMAPHORE_QTY; i++)
         semaphores[i] = 0;
-    }
     
-    LDIT(TIMERVALUE);
+    LDIT(PSECOND); // carichiamo il valore dell'interval timer con 100 millis
 
     /* Start the process initialization */
-    pcb_PTR proc = allocPcb() ;
+    pcb_PTR proc = allocPcb();
     
     insertProcQ(&(readyQueue), proc);
     
@@ -78,16 +72,41 @@ int main()
     proc->p_time = 0;
     proc->p_semAdd = NULL;
     proc->p_supportStruct = NULL;
-    // nel 28* registro del GPR c'è lo stack pointer del programma, dobbiamo scrivere li dentro il valore di RAMTOP
-    //((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))))
-    proc->p_s.gpr[28] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE)));
+    
+    // nel 28esimo (che e' 26 causa umps3 che non conta 2 entry) registro del GPR c'è lo stack pointer 
+    // del programma, dobbiamo scrivere li dentro il valore di RAMTOP
+    // ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))))
+
+    RAMTOP(proc->p_s.gpr[26]); // Equivalente di proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE)));
 
     //PC
     proc->p_s.pc_epc = (memaddr) test; 
 
-    // 00001000000000000000000000001100 == 134217737 passare un numero che mette i bit dello status register come vogliamo?
-    proc->p_s.status = setSTATUS(134217737);
+    // il primo 1 indica che attiviamo l'interval timer per il processo, e il secondo 
+    // che stiamo attivando tutti gli interrupt.
+    // 00001000000000000000000000000100 == 134217732
+    proc->p_s.status = INIT_STATUS;    //se non va, mettiamo setSTATUS(134217732); 
+
+    proc->p_s.gpr[24] = (memaddr) test; 
+
+    //// CALL THE SCHEDULER ////
+    placeholder_scheduler();
 }
+
+void placeholder_scheduler()
+{
+    if (!emptyProcQ(readyQueue))
+    {
+        currentProcess = removeProcQ(&readyQueue);
+        int status = setTIMER(TIMERVALUE(5000));
+        LDST ((state_t *) &(currentProcess->p_s)); // carichiamo lo stato del processo corrente
+    } else
+    {
+        
+    }
+
+}
+
 
 
 void uTLB_RefillHandler () {
