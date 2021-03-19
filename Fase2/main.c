@@ -67,7 +67,7 @@ int main()
     insertProcQ(&(readyQueue), proc);
     
     processCount += 1;
-
+    //we are not initialiazing p_s pointer , and even if we do that how can we accede to it later on ?
     initializePcbt(proc);
     proc->p_time = 0;
     proc->p_semAdd = NULL;
@@ -77,7 +77,7 @@ int main()
     // del programma, dobbiamo scrivere li dentro il valore di RAMTOP
     // ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))))
 
-    RAMTOP(proc->p_s.gpr[26]); // Equivalente di proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE)));
+    RAMTOP(proc->p_s.reg_sp); // Equivalente di proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE)));
 
     //PC
     proc->p_s.pc_epc = (memaddr) test; 
@@ -87,7 +87,7 @@ int main()
     // 00001000000000000000000000000100 == 134217732
     proc->p_s.status = INIT_STATUS;    //se non va, mettiamo setSTATUS(134217732); 
 
-    proc->p_s.gpr[24] = (memaddr) test; 
+    proc->p_s.reg_t9 = (memaddr) test; 
 
     //// CALL THE SCHEDULER ////
     placeholder_scheduler();
