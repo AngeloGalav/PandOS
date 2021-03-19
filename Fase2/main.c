@@ -124,7 +124,6 @@ void placeholder_scheduler()
         {
             //DEADLOCK YOU ARE FCKD
             PANIC();
-
         }
     }
 }
@@ -154,10 +153,26 @@ void fooBar()
     else if (exceptionCode == 8)
     {
         //TODO
+        //Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare
+        SyscallExceptionHandler(excepetionState->reg_a0);
     }
     else
     {
-        //TODO
+        //TODO        
+        
+    }
+}
+
+void SyscallExceptionHandler(unsigned int sysCallCode)
+{
+    switch (sysCallCode)
+    {
+        case 1:
+            SYS1();
+            break;
+    
+        default:
+            break;
     }
 }
 
