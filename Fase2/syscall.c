@@ -21,4 +21,6 @@ void SYS1(state_t arg1,support_t* arg2)
     newproc->p_s = arg1;
     if(arg2 != NULL)
         newproc->p_supportStruct = arg2;
+    else    
+        newproc->p_supportStruct = NULL;
 }
