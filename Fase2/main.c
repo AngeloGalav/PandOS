@@ -122,7 +122,7 @@ void placeholder_scheduler()
         }
         else if ((softBlockCount == 0) && (processCount > 0))
         {
-            //DEADLOCK YOU ARE FCKD
+        
             PANIC();
         }
     }
@@ -140,7 +140,7 @@ void fooBar()
      * */
 
     state_t *excepetionState = (memaddr) BIOS_DATA_PAGE_BASE;
-    unsigned int exceptionCode = excepetionState->cause & 124;
+    unsigned int exceptionCode = (unsigned int)excepetionState->cause & 124;
     exceptionCode >>= 2;
     if(exceptionCode == 0)
     {
@@ -152,9 +152,22 @@ void fooBar()
     }
     else if (exceptionCode == 8)
     {
-        //TODO
-        //Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare
-        SyscallExceptionHandler(excepetionState->reg_a0);
+        /**
+        *
+        * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
+        * value in the range [1..8] then the Nucleus should perform one of the services
+        * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
+        * se la kernel mode fosse attiva o meno.
+        * 
+        **/    
+       if (checkMode(excepetionState->status))
+       {
+            SyscallExceptionHandler(excepetionState); 
+       }
+       else
+       {
+           //Call some sort of trap
+       }
     }
     else
     {
@@ -163,17 +176,39 @@ void fooBar()
     }
 }
 
-void SyscallExceptionHandler(unsigned int sysCallCode)
+void SyscallExceptionHandler(state_t* exception_state)
 {
+    unsigned int sysCallCode = (unsigned int) exception_state->reg_a0;
+
     switch (sysCallCode)
     {
         case 1:
-            SYS1();
+            state_t new_pstate = *((state_t*) exception_state->reg_a1);
+            support_t new_suppt = *((support_t*) exception_state->reg_a2)
+            if(new_suppt == NULL)
+                SYS1(new_pstate,NULL)
+            else 
+                SYS1(new_pstate, new_suppt);
             break;
     
         default:
             break;
     }
+}
+//Se il KUp bit è a 0 allora è in kernel mode
+int checkMode(unsigned int status_register)
+{
+    unsigned int statuscode = status_register & 8;
+    statuscode >>= 3;
+    if(statuscode == 0)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+
 }
 
 unsigned int bitExtractor(unsigned int value, int start, int end)
