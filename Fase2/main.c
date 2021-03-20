@@ -89,6 +89,8 @@ int main()
 
     proc->p_s.reg_t9 = (memaddr) test; 
 
+    currentProcess = proc;
+
     //// CALL THE SCHEDULER ////
     placeholder_scheduler();
 }
@@ -184,9 +186,9 @@ void SyscallExceptionHandler(state_t* exception_state)
     {
         case 1:
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t new_suppt = *((support_t*) exception_state->reg_a2)
+            support_t* new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
-                SYS1(new_pstate,NULL)
+                SYS1(new_pstate,NULL);
             else 
                 SYS1(new_pstate, new_suppt);
             break;
