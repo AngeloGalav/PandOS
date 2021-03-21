@@ -206,6 +206,7 @@ void SyscallExceptionHandler(state_t* exception_state)
         case CLOCKWAIT:
             break;
         case GETSUPPORTPTR:
+            SYS8(exception_state);
             break;
         default:
             break;
