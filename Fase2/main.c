@@ -184,7 +184,7 @@ void SyscallExceptionHandler(state_t* exception_state)
 
     switch (sysCallCode)
     {
-        case 1:
+        case CREATEPROCESS:
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t* new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
@@ -192,7 +192,21 @@ void SyscallExceptionHandler(state_t* exception_state)
             else 
                 SYS1(new_pstate, new_suppt);
             break;
-    
+
+        case TERMPROCESS:
+            break;
+        case PASSEREN:
+            break;
+        case VERHOGEN:
+            break;
+        case IOWAIT:
+            break;
+        case GETTIME:
+            break;
+        case CLOCKWAIT:
+            break;
+        case GETSUPPORTPTR:
+            break;
         default:
             break;
     }
