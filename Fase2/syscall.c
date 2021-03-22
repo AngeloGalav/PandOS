@@ -25,6 +25,17 @@ void SYS1(state_t arg1,support_t* arg2)
         newproc->p_supportStruct = NULL;
 }
 
+void SYS2()
+{
+    pcb_PTR root_child;
+    /* We return and eliminate the first child of the process tree */
+    root_child = outChild(currentProcess->p_child);
+    
+
+
+
+}
+
 void SYS8(state_t* arg1) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
 {
     arg1->reg_v0 = currentProcess->p_supportStruct;
