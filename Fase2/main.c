@@ -197,6 +197,8 @@ void SyscallExceptionHandler(state_t* exception_state)
         
             break;
         case PASSEREN:
+            int* semaddr = (int *) exception_state->reg_a1;
+            SYS3(semaddr);
             break;
         case VERHOGEN:
             break;
