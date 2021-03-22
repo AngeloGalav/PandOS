@@ -194,10 +194,6 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
 
         case TERMPROCESS:
-<<<<<<< Updated upstream
-=======
-        
->>>>>>> Stashed changes
             break;
         case PASSEREN:
             break;
@@ -247,11 +243,7 @@ void uTLB_RefillHandler () {
 	TLBWR();	
 	
 	LDST ((state_t *) 0x0FFFF000);
-<<<<<<< Updated upstream
 }
 
 
 
-=======
-}
->>>>>>> Stashed changes
