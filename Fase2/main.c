@@ -15,18 +15,18 @@
 extern void test();
 
 /* Number of started, but not yet terminated processes. */
-HIDDEN unsigned int processCount = 0;
+unsigned int processCount = 0;
 
 /* Number of started, but not terminated 
 processes that in are the “blocked” state 
 due to an I/O or timer request */
-HIDDEN unsigned int softBlockCount = 0;
+unsigned int softBlockCount = 0;
 
 /* Tail pointer to a queue of pcbs that are in the “ready” state. */
-HIDDEN pcb_PTR readyQueue;
+pcb_PTR readyQueue;
 
 /* Pointer to the current pcb that is in running state */ 
-HIDDEN pcb_PTR currentProcess = NULL;
+pcb_PTR currentProcess = NULL;
 
 /* Int Array for semaphores*/
 HIDDEN int semaphores[SEMAPHORE_QTY];
@@ -194,6 +194,10 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
 
         case TERMPROCESS:
+<<<<<<< Updated upstream
+=======
+        
+>>>>>>> Stashed changes
             break;
         case PASSEREN:
             break;
@@ -243,7 +247,11 @@ void uTLB_RefillHandler () {
 	TLBWR();	
 	
 	LDST ((state_t *) 0x0FFFF000);
+<<<<<<< Updated upstream
 }
 
 
 
+=======
+}
+>>>>>>> Stashed changes
