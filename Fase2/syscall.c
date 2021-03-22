@@ -25,13 +25,22 @@ void SYS1(state_t arg1,support_t* arg2)
         newproc->p_supportStruct = NULL;
 }
 
-void SYS2()
+void SYS2(pcb_PTR root_child)
 {
-    pcb_PTR root_child;
     /* We return and eliminate the first child of the process tree */
     root_child = outChild(currentProcess->p_child);
     
+    while(root_child->p_child != NULL)
+    {
+        SYS2(root_child);
+        pcb_PTR old_child = outChild(root_child->p_child);
+        if(old_child->p_semAdd)
+        {
 
+        }
+        root_child = old_child;
+
+    }
 
 
 }
