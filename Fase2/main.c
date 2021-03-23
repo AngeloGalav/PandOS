@@ -10,6 +10,7 @@
 #include "../Libraries/asl.h"
 #include "../Libraries/libraries.h"
 #include "../Libraries/definitions.h"
+#include "../Libraries/syscall.h"
 
 /* Include the test function */
 extern void test();
@@ -29,7 +30,7 @@ pcb_PTR readyQueue;
 pcb_PTR currentProcess = NULL;
 
 /* Int Array for semaphores*/
-HIDDEN int semaphores[SEMAPHORE_QTY];
+HIDDEN int device_semaphores[SEMAPHORE_QTY]; //TODO: Questi sono i device semaphores giusto?
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -57,7 +58,7 @@ int main()
     passupvector->exception_handler = (memaddr) fooBar; // exception handling function callback
 
     for(int i = 0; i < SEMAPHORE_QTY; i++)
-        semaphores[i] = 0;
+        device_semaphores[i] = 0;
     
     LDIT(PSECOND); // carichiamo il valore dell'interval timer con 100 millis
 
@@ -155,7 +156,7 @@ void fooBar()
     else if (exceptionCode == 8)
     {
         /**
-        *
+        * 
         * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
         * value in the range [1..8] then the Nucleus should perform one of the services
         * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
@@ -188,17 +189,15 @@ void SyscallExceptionHandler(state_t* exception_state)
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t* new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
-                SYS1(new_pstate,NULL);
+                SYS1(new_pstate, NULL); //wtf
             else 
-                SYS1(new_pstate, new_suppt);
+                SYS1(new_pstate, new_suppt); /// TODO: FIX THIS !!! 
             break;
 
         case TERMPROCESS:
         
             break;
         case PASSEREN:
-            int* semaddr = (int *) exception_state->reg_a1;
-            SYS3(semaddr);
             break;
         case VERHOGEN:
             break;
