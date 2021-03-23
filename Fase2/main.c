@@ -187,7 +187,7 @@ void SyscallExceptionHandler(state_t* exception_state)
     {
         case CREATEPROCESS:
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t* new_suppt = (support_t*) exception_state->reg_a2;
+            support_t *new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
                 SYS1(new_pstate, NULL); //wtf
             else 
@@ -195,7 +195,7 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
 
         case TERMPROCESS:
-        
+
             break;
         case PASSEREN:
             break;

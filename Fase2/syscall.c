@@ -11,7 +11,7 @@ extern unsigned int processCount;
 extern unsigned int softBlockedCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 
-void SYS1(state_t arg1,support_t* arg2)
+void SYS1(state_t arg1, support_t* arg2)
 {
     pcb_PTR newproc = allocPcb(); 
 
@@ -35,11 +35,12 @@ void SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
     outChild(currentProcess);
+    TerminateSingleProcess(currentProcess);
     KillRec(currentProcess->p_child);
 }
 
 
-static void TerminateSingleProcess(pcb_t* to_terminate) // static because it can only be called in this file scope.
+HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can only be called in this file scope.
 {
     // Se il valore del semaforo e' negativo, allora il numero dei processi bloccati corrisponde in quel semaforo corrisponde
     // al valore assoluto del valore del semaforo stesso. Questo valore, se un processo bloccato viene terminato, va aggiustato.
@@ -62,17 +63,16 @@ static void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
  * 
  * @param: the child of the root process we want to kill.
  */
-void KillRec(pcb_PTR root_child)
+HIDDEN void KillRec(pcb_PTR root_child)
 {
     if (root_child == NULL) return;
 
-    TerminateSingleProcess(root_child);
-
     KillRec(root_child->p_next_sib);
     KillRec(root_child->p_child); // We repeat this recursevely for each child of the process
+    TerminateSingleProcess(root_child);
 }
 
-void SYS3(int** semAddr) // abilitare mutex?
+void SYS3(int** semAddr) 
 {
     if (*semAddr > 0) *semAddr = *semAddr - 1;
     else 
@@ -82,15 +82,28 @@ void SYS3(int** semAddr) // abilitare mutex?
     }
 }
 
-void SYS4(int** semAddr) // abilitare mutex?
+void SYS4(int** semAddr) 
 {
     *semAddr = *semAddr + 1;
     removeBlocked(semAddr);
 }
 
-
-void SYS8(state_t* arg1) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
+void SYS5(state_t * exceptionState)
 {
-    arg1->reg_v0 = currentProcess->p_supportStruct;
+    //In caso di problemi testare a1 e a2 come unsigned int e passare il puntatore alla funzione
+    int * a1 = currentProcess->p_s.reg_a1;
+    int * a2 = currentProcess->p_s.reg_a2;
+    int index = (*a1-3)*8 + *a2;
+    insertBlocked(&device_semaphores[index],currentProcess);
+    while(currentProcess->p_s.reg_a3);//da verificare
+    exceptionState->reg_v0 = currentProcess->p_s.status;
+
+
+}
+
+
+void SYS8(state_t* exceptionState) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
+{
+    exceptionState->reg_v0 = currentProcess->p_supportStruct;
 }
 
