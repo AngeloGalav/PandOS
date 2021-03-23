@@ -72,6 +72,22 @@ void KillRec(pcb_PTR root_child)
     KillRec(root_child->p_child); // We repeat this recursevely for each child of the process
 }
 
+void SYS3(int** semAddr) // abilitare mutex?
+{
+    if (*semAddr > 0) *semAddr = *semAddr - 1;
+    else 
+    {
+        insertBlocked(semAddr, currentProcess);
+        softBlockedCount = softBlockedCount + 1;     
+    }
+}
+
+void SYS4(int** semAddr) // abilitare mutex?
+{
+    *semAddr = *semAddr + 1;
+    removeBlocked(semAddr);
+}
+
 
 void SYS8(state_t* arg1) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
 {

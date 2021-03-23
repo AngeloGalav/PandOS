@@ -29,7 +29,7 @@ pcb_PTR readyQueue;
 /* Pointer to the current pcb that is in running state */ 
 pcb_PTR currentProcess = NULL;
 
-/* Int Array for semaphores*/
+/* Int Array for device semaphores*/
 HIDDEN int device_semaphores[SEMAPHORE_QTY]; //TODO: Questi sono i device semaphores giusto?
 
 /* Inizialize pass-up-vector with the addressess needed */
@@ -214,28 +214,14 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
     }
 }
+
 //Se il KUp bit è a 0 allora è in kernel mode
 int checkMode(unsigned int status_register)
 {
     unsigned int statuscode = status_register & 8;
     statuscode >>= 3;
-    if(statuscode == 0)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-
+    return statuscode;
 }
-
-unsigned int bitExtractor(unsigned int value, int start, int end)
-{
-    unsigned int mask = (1 << (end-start)) -1;
-    return (value >> start) & mask;
-}
-
 
 
 void uTLB_RefillHandler () {
