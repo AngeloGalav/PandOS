@@ -281,7 +281,7 @@ pcb_t *outChild(pcb_t* p)
         if (p->p_next_sib != NULL)  // Se ha un fratello destro, collego quest'ultimo con il fratello precedente
             p->p_next_sib->p_prev_sib = tmp;
 
-        initializePcbt(p);
+        //initializePcbt(p);
 
         return p;
     }

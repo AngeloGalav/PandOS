@@ -9,6 +9,7 @@ HIDDEN semd_t* semdFree_h;
 // Puntatore alla lista dei semafori attualmente in uso
 HIDDEN semd_t* semd_h;
 
+
 /**
  *  Viene inserito il PCB puntato da p nella coda dei processi bloccati associata al SEMD
  *  con chiave semAdd. Se il semaforo corrispondente non è presente nella ASL, alloca un

@@ -10,6 +10,7 @@
 #include "../Libraries/asl.h"
 #include "../Libraries/libraries.h"
 #include "../Libraries/definitions.h"
+#include "../Libraries/syscall.h"
 
 /* Include the test function */
 extern void test();
@@ -28,8 +29,8 @@ pcb_PTR readyQueue;
 /* Pointer to the current pcb that is in running state */ 
 pcb_PTR currentProcess = NULL;
 
-/* Int Array for semaphores*/
-HIDDEN int semaphores[SEMAPHORE_QTY];
+/* Int Array for device semaphores*/
+HIDDEN int device_semaphores[SEMAPHORE_QTY]; //TODO: Questi sono i device semaphores giusto?
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -57,7 +58,7 @@ int main()
     passupvector->exception_handler = (memaddr) fooBar; // exception handling function callback
 
     for(int i = 0; i < SEMAPHORE_QTY; i++)
-        semaphores[i] = 0;
+        device_semaphores[i] = 0;
     
     LDIT(PSECOND); // carichiamo il valore dell'interval timer con 100 millis
 
@@ -155,7 +156,7 @@ void fooBar()
     else if (exceptionCode == 8)
     {
         /**
-        *
+        * 
         * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
         * value in the range [1..8] then the Nucleus should perform one of the services
         * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
@@ -186,14 +187,15 @@ void SyscallExceptionHandler(state_t* exception_state)
     {
         case CREATEPROCESS:
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t* new_suppt = (support_t*) exception_state->reg_a2;
+            support_t *new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
-                SYS1(new_pstate,NULL);
+                SYS1(new_pstate, NULL); //wtf
             else 
-                SYS1(new_pstate, new_suppt);
+                SYS1(new_pstate, new_suppt); /// TODO: FIX THIS !!! 
             break;
 
         case TERMPROCESS:
+
             break;
         case PASSEREN:
             break;
@@ -212,28 +214,14 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
     }
 }
+
 //Se il KUp bit è a 0 allora è in kernel mode
 int checkMode(unsigned int status_register)
 {
     unsigned int statuscode = status_register & 8;
     statuscode >>= 3;
-    if(statuscode == 0)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
-
+    return statuscode;
 }
-
-unsigned int bitExtractor(unsigned int value, int start, int end)
-{
-    unsigned int mask = (1 << (end-start)) -1;
-    return (value >> start) & mask;
-}
-
 
 
 void uTLB_RefillHandler () {
