@@ -2,13 +2,14 @@
 #include "../Libraries/asl.h"
 #include "../Libraries/libraries.h"
 #include "../Libraries/definitions.h"
+#include "../Libraries/syscall.h"
 
 extern pcb_PTR readyQueue;
 
 extern pcb_PTR currentProcess;
 
 extern unsigned int processCount;
-extern unsigned int softBlockedCount;
+extern unsigned int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 
 void SYS1(state_t arg1, support_t* arg2)
@@ -23,7 +24,7 @@ void SYS1(state_t arg1, support_t* arg2)
 
     newproc->p_semAdd = NULL;
     newproc->p_time = 0; 
-    newproc->p_s = arg1;
+    //newproc->p_s = arg1; //this causes a memcpy error
     if(arg2 != NULL)
         newproc->p_supportStruct = arg2;
     else    
@@ -55,7 +56,7 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
     if (removeBlocked(to_terminate->p_semAdd) != NULL) // controllare se e' un device semaphore... (Come si fa?) 
     {
             *(to_terminate->p_semAdd) = *(to_terminate->p_semAdd) + 1;
-            softBlockedCount = softBlockedCount - 1;
+            softBlockCount = softBlockCount - 1;
     }
 }
 
@@ -78,7 +79,7 @@ void SYS3(int** semAddr)
     else 
     {
         insertBlocked(semAddr, currentProcess);
-        softBlockedCount = softBlockedCount + 1;     
+        softBlockCount = softBlockCount + 1;     
     }
 }
 
@@ -88,7 +89,9 @@ void SYS4(int** semAddr)
     removeBlocked(semAddr);
 }
 
-void SYS5(state_t * exceptionState)
+// DOBBIAMO CONTROLLARE IL BIOSDATAPAGE, li' ci sono i valori
+
+void SYS5(state_t * exceptionState) // sbagliata 
 {
     //In caso di problemi testare a1 e a2 come unsigned int e passare il puntatore alla funzione
     int * a1 = currentProcess->p_s.reg_a1;
@@ -100,6 +103,12 @@ void SYS5(state_t * exceptionState)
 
 
 }
+
+void SYS6()
+{
+
+}
+
 
 
 void SYS8(state_t* exceptionState) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.

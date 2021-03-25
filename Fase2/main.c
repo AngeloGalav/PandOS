@@ -30,19 +30,22 @@ pcb_PTR readyQueue;
 pcb_PTR currentProcess = NULL;
 
 /* Int Array for device semaphores*/
-HIDDEN int device_semaphores[SEMAPHORE_QTY]; //TODO: Questi sono i device semaphores giusto?
+int device_semaphores[SEMAPHORE_QTY]; 
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
 
 /*Placeholder function for TLB-Refill*/
-void uTLB_RefillHandler ();
+extern uTLB_RefillHandler ();
 
 /*placeholder function for exception handling*/
 void fooBar();
 
 /* Draft scheduler */
 void placeholder_scheduler();
+
+/* Handler of the syscall excp */
+void SyscallExceptionHandler(state_t* exception_state);
 
 int main()
 {
@@ -185,14 +188,18 @@ void SyscallExceptionHandler(state_t* exception_state)
 
     switch (sysCallCode)
     {
-        case CREATEPROCESS:
-            state_t new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t *new_suppt = (support_t*) exception_state->reg_a2;
+        {
+        case CREATEPROCESS: ;
+            state_t new_pstate;
+            //new_pstate = *((state_t*) exception_state->reg_a1);
+            support_t *new_suppt; 
+            //new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
-                SYS1(new_pstate, NULL); //wtf
+                SYS1(new_pstate, NULL);
             else 
-                SYS1(new_pstate, new_suppt); /// TODO: FIX THIS !!! 
+                SYS1(new_pstate, new_suppt); 
             break;
+        }
 
         case TERMPROCESS:
 
@@ -222,16 +229,5 @@ int checkMode(unsigned int status_register)
     statuscode >>= 3;
     return statuscode;
 }
-
-
-void uTLB_RefillHandler () {
-		
-	setENTRYHI(0x80000000);
-	setENTRYLO(0x00000000);
-	TLBWR();	
-	
-	LDST ((state_t *) 0x0FFFF000);
-}
-
 
 
