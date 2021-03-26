@@ -141,41 +141,39 @@ void fooBar()
      * Code8: SYSCALL exception handler (3.5 pandos)
      * */
 
-    state_t *exceptionState = (memaddr) BIOSDATAPAGE;
-    currentProcess->p_s = *exceptionState; // updates the current process status
-    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
-    exceptionCode >>= 2;
-    if(exceptionCode == 0)
-    {
-        //TODO
-    }
-    else if ((exceptionCode >= 1) && (exceptionCode <= 3))
-    {
-        //TODO
-    }
-    else if (exceptionCode == 8)
-    {
-        /**
-        * 
-        * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
-        * value in the range [1..8] then the Nucleus should perform one of the services
-        * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
-        * se la kernel mode fosse attiva o meno.
-        * 
-        **/    
-       if (checkMode(exceptionState->status))
-       {
-            SyscallExceptionHandler(exceptionState); 
-       }
-       else
-       {
-           //Call some sort of trap
-       }
-    }
-    else
-    {
-        //TODO        
-    }
+    //unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
+    //exceptionCode >>= 2;
+    // if(exceptionCode == 0)
+    // {
+    //     //TODO
+    // }
+    // else if ((exceptionCode >= 1) && (exceptionCode <= 3))
+    // {
+    //     //TODO
+    // }
+    // else if (exceptionCode == 8)
+    // {
+    //     /**
+    //     * 
+    //     * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
+    //     * value in the range [1..8] then the Nucleus should perform one of the services
+    //     * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
+    //     * se la kernel mode fosse attiva o meno.
+    //     * 
+    //     **/    
+    //    if (checkMode(exceptionState->status))
+    //    {
+    //         SyscallExceptionHandler(exceptionState); 
+    //    }
+    //    else
+    //    {
+    //        //Call some sort of trap
+    //    }
+    // }
+    // else
+    // {
+    //     //TODO        
+    // }
 }
 
 void SyscallExceptionHandler(state_t* exception_state)
