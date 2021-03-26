@@ -93,23 +93,33 @@ void SYS4(int** semAddr)
 
 void SYS5(state_t * exceptionState) // sbagliata 
 {
+
+    //retrieve a1 & a2 from BIOS DATA PAGE
+
+    // 
+
     //In caso di problemi testare a1 e a2 come unsigned int e passare il puntatore alla funzione
     int * a1 = currentProcess->p_s.reg_a1;
     int * a2 = currentProcess->p_s.reg_a2;
     int index = (*a1-3)*8 + *a2;
+    // devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) //Location of status word
+    // devStatusWord = devAddrBase + 
+    // mask with 0x000F
+    
     insertBlocked(&device_semaphores[index],currentProcess);
-    while(currentProcess->p_s.reg_a3);//da verificare
-    exceptionState->reg_v0 = currentProcess->p_s.status;
-
-
+    while(currentProcess->p_s.reg_a3);  //da verificare
+    exceptionState->reg_v0 = currentProcess->p_s.status;    //this is wrong
 }
 
 void SYS6()
 {
-
+    currentProcess->p_s.reg_v0 = currentProcess->p_time;
 }
 
-
+void SYS7()
+{
+    SYS3(&device_semaphores[48]);
+}
 
 void SYS8(state_t* exceptionState) //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
 {

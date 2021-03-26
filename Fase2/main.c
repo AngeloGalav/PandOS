@@ -144,9 +144,14 @@ void fooBar()
      * Code 4-7,9-12: Kernel Program Trap exception handler (3.7.2 pandos)
      * Code8: SYSCALL exception handler (3.5 pandos)
      * */
+    int a = 0;
+    int *ap = &a;
+    int c = *ap;
 
-    state_t *excepetionState = (memaddr) BIOS_DATA_PAGE_BASE;
-    unsigned int exceptionCode = (unsigned int)excepetionState->cause & 124;
+
+    state_t *exceptionState = (memaddr) BIOSDATAPAGE;
+    //currentProcess->p_s = *excepetionState; // updates the current process status (causes memcpy error)
+    unsigned int exceptionCode = (unsigned int)exceptionState->cause & 124;
     exceptionCode >>= 2;
     if(exceptionCode == 0)
     {
@@ -166,9 +171,9 @@ void fooBar()
         * se la kernel mode fosse attiva o meno.
         * 
         **/    
-       if (checkMode(excepetionState->status))
+       if (checkMode(exceptionState->status))
        {
-            SyscallExceptionHandler(excepetionState); 
+            SyscallExceptionHandler(exceptionState); 
        }
        else
        {
