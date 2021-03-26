@@ -30,19 +30,22 @@ pcb_PTR readyQueue;
 pcb_PTR currentProcess = NULL;
 
 /* Int Array for device semaphores*/
-HIDDEN int device_semaphores[SEMAPHORE_QTY]; //TODO: Questi sono i device semaphores giusto?
+int device_semaphores[SEMAPHORE_QTY]; 
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
 
 /*Placeholder function for TLB-Refill*/
-void uTLB_RefillHandler ();
+extern uTLB_RefillHandler ();
 
 /*placeholder function for exception handling*/
 void fooBar();
 
 /* Draft scheduler */
 void placeholder_scheduler();
+
+/* Handler of the syscall excp */
+void SyscallExceptionHandler(state_t* exception_state);
 
 int main()
 {
@@ -105,11 +108,8 @@ void placeholder_scheduler()
         LDST ((state_t *) &(currentProcess->p_s)); // 
 
         //IF BLOCKING SYSCALL PUT THE PROCESS IN THE EVENT QUEUE
-
-
         //ELSE IF NON-BLOCKING SYSCALL PUT THE PROCESS IN THE READY QUEUE WITH ROUNDROBIN
-
-
+        
     } else // IF  READY QUEUE IT'S EMPTY
     {
         if ( processCount == 0)
@@ -134,7 +134,6 @@ void placeholder_scheduler()
 void fooBar()
 {
     /**
-     * Leggere dal registro cause del state_t il codice dell'eccezione (3.3-pops)
      * In base a questo exception code foobar passa:
      * Code 0: Kernel device interrupt handler (3.6 pandos)
      * Code 1-3: Kernel TLB exception handler (3.7.3 pandos)
@@ -142,8 +141,9 @@ void fooBar()
      * Code8: SYSCALL exception handler (3.5 pandos)
      * */
 
-    state_t *excepetionState = (memaddr) BIOS_DATA_PAGE_BASE;
-    unsigned int exceptionCode = (unsigned int)excepetionState->cause & 124;
+    state_t *exceptionState = (memaddr) BIOSDATAPAGE;
+    currentProcess->p_s = *exceptionState; // updates the current process status
+    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
     exceptionCode >>= 2;
     if(exceptionCode == 0)
     {
@@ -163,9 +163,9 @@ void fooBar()
         * se la kernel mode fosse attiva o meno.
         * 
         **/    
-       if (checkMode(excepetionState->status))
+       if (checkMode(exceptionState->status))
        {
-            SyscallExceptionHandler(excepetionState); 
+            SyscallExceptionHandler(exceptionState); 
        }
        else
        {
@@ -175,7 +175,6 @@ void fooBar()
     else
     {
         //TODO        
-        
     }
 }
 
@@ -185,27 +184,34 @@ void SyscallExceptionHandler(state_t* exception_state)
 
     switch (sysCallCode)
     {
-        case CREATEPROCESS:
+        {
+        case CREATEPROCESS: ;
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t *new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
-                SYS1(new_pstate, NULL); //wtf
+                SYS1(new_pstate, NULL);
             else 
-                SYS1(new_pstate, new_suppt); /// TODO: FIX THIS !!! 
+                SYS1(new_pstate, new_suppt); 
             break;
+        }
 
         case TERMPROCESS:
-
+            SYS2();
             break;
         case PASSEREN:
+            //SYS3();
             break;
         case VERHOGEN:
+            //SYS4();
             break;
         case IOWAIT:
+            SYS5();
             break;
         case GETTIME:
+            SYS6();
             break;
         case CLOCKWAIT:
+            SYS7();
             break;
         case GETSUPPORTPTR:
             SYS8(exception_state);
@@ -222,16 +228,3 @@ int checkMode(unsigned int status_register)
     statuscode >>= 3;
     return statuscode;
 }
-
-
-void uTLB_RefillHandler () {
-		
-	setENTRYHI(0x80000000);
-	setENTRYLO(0x00000000);
-	TLBWR();	
-	
-	LDST ((state_t *) 0x0FFFF000);
-}
-
-
-

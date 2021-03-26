@@ -113,8 +113,6 @@ pcb_t* removeBlocked(int *semAdd)
 
 
 
-
-
 /**
  *  Rimuove il PCB puntato da p dalla coda del semaforo su cui è bloccato
  *  (indicato da p->p_semAdd). Se il PCB non compare in tale coda, allora restituisce NULL

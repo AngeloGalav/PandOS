@@ -12,6 +12,7 @@
         "pcb.h": "c",
         "asl.h": "c",
         "pandos_types.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "libraries.C": "cpp"
     }
 }
