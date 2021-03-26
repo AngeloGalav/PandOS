@@ -150,7 +150,7 @@ void fooBar()
 
 
     state_t *exceptionState = (memaddr) BIOSDATAPAGE;
-    //currentProcess->p_s = *excepetionState; // updates the current process status (causes memcpy error)
+    currentProcess->p_s = *exceptionState; // updates the current process status (causes memcpy error)
     unsigned int exceptionCode = (unsigned int)exceptionState->cause & 124;
     exceptionCode >>= 2;
     if(exceptionCode == 0)
@@ -195,10 +195,8 @@ void SyscallExceptionHandler(state_t* exception_state)
     {
         {
         case CREATEPROCESS: ;
-            state_t new_pstate;
-            //new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t *new_suppt; 
-            //new_suppt = (support_t*) exception_state->reg_a2;
+            state_t new_pstate = *((state_t*) exception_state->reg_a1);
+            support_t *new_suppt = (support_t*) exception_state->reg_a2;
             if(new_suppt == NULL)
                 SYS1(new_pstate, NULL);
             else 
@@ -234,5 +232,3 @@ int checkMode(unsigned int status_register)
     statuscode >>= 3;
     return statuscode;
 }
-
-

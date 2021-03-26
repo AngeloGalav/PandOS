@@ -1,6 +1,7 @@
 #include "asl.h"
 #include "pcb.h"
 
+void *memcpy(void *dest, const void *src, size_t n);
 
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate);
 

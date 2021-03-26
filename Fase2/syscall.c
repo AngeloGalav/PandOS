@@ -12,6 +12,14 @@ extern unsigned int processCount;
 extern unsigned int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 
+void *memcpy(void *dest, const void *src, size_t n)
+{
+    for (size_t i = 0; i < n; i++)
+    {
+        ((char*)dest)[i] = ((char*)src)[i];
+    }
+}
+
 void SYS1(state_t arg1, support_t* arg2)
 {
     pcb_PTR newproc = allocPcb(); 
@@ -24,7 +32,7 @@ void SYS1(state_t arg1, support_t* arg2)
 
     newproc->p_semAdd = NULL;
     newproc->p_time = 0; 
-    //newproc->p_s = arg1; //this causes a memcpy error
+    newproc->p_s = arg1;
     if(arg2 != NULL)
         newproc->p_supportStruct = arg2;
     else    

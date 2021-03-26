@@ -12,6 +12,7 @@
 
 typedef signed int   cpu_t;
 typedef unsigned int memaddr;
+typedef unsigned int size_t;
 
 
 typedef struct context_t {
