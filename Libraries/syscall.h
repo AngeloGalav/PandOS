@@ -16,6 +16,6 @@ void SYS3(int** semAddr);
 
 void SYS4(int** semAddr);
 
-void SYS5(state_t * exceptionState);
+void SYS5();
 
-void SYS8(state_t* exceptionState);
+void SYS8();

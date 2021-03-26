@@ -108,11 +108,8 @@ void placeholder_scheduler()
         LDST ((state_t *) &(currentProcess->p_s)); // 
 
         //IF BLOCKING SYSCALL PUT THE PROCESS IN THE EVENT QUEUE
-
-
         //ELSE IF NON-BLOCKING SYSCALL PUT THE PROCESS IN THE READY QUEUE WITH ROUNDROBIN
-
-
+        
     } else // IF  READY QUEUE IT'S EMPTY
     {
         if ( processCount == 0)
@@ -137,21 +134,16 @@ void placeholder_scheduler()
 void fooBar()
 {
     /**
-     * Leggere dal registro cause del state_t il codice dell'eccezione (3.3-pops)
      * In base a questo exception code foobar passa:
      * Code 0: Kernel device interrupt handler (3.6 pandos)
      * Code 1-3: Kernel TLB exception handler (3.7.3 pandos)
      * Code 4-7,9-12: Kernel Program Trap exception handler (3.7.2 pandos)
      * Code8: SYSCALL exception handler (3.5 pandos)
      * */
-    int a = 0;
-    int *ap = &a;
-    int c = *ap;
-
 
     state_t *exceptionState = (memaddr) BIOSDATAPAGE;
-    currentProcess->p_s = *exceptionState; // updates the current process status (causes memcpy error)
-    unsigned int exceptionCode = (unsigned int)exceptionState->cause & 124;
+    currentProcess->p_s = *exceptionState; // updates the current process status
+    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
     exceptionCode >>= 2;
     if(exceptionCode == 0)
     {
@@ -183,7 +175,6 @@ void fooBar()
     else
     {
         //TODO        
-        
     }
 }
 
@@ -205,17 +196,22 @@ void SyscallExceptionHandler(state_t* exception_state)
         }
 
         case TERMPROCESS:
-
+            SYS2();
             break;
         case PASSEREN:
+            //SYS3();
             break;
         case VERHOGEN:
+            //SYS4();
             break;
         case IOWAIT:
+            SYS5();
             break;
         case GETTIME:
+            SYS6();
             break;
         case CLOCKWAIT:
+            SYS7();
             break;
         case GETSUPPORTPTR:
             SYS8(exception_state);

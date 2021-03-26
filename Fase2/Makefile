@@ -37,7 +37,7 @@ kernel : main.o asl.o syscall.o p2test.o pcb.o crtso.o libumps.o
 	@echo "** Compilation successfull!"
 	
 clean :
-	@echo "** Cleaning unused object files..."
+	@echo "** Cleaning object files..."
 	-rm -f *.o
 
 clean_all :
