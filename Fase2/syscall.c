@@ -86,7 +86,7 @@ void SYS3(int** semAddr)
     *semAddr -= 1;
     if (*semAddr < 0) 
     {
-        insertBlocked(semAddr, currentProcess); // if the value is negative, the process gets blockede
+        insertBlocked(semAddr, currentProcess); // if the value is negative, the process gets blocked
         softBlockCount += 1;     
     }
 }
@@ -99,19 +99,16 @@ void SYS4(int** semAddr)
 
 void SYS5()
 {
-    //retrieve a1 & a2 from BIOS DATA PAGE
-
-    //In caso di problemi testare a1 e a2 come unsigned int e passare il puntatore alla funzione
-    int * a1 = currentProcess->p_s.reg_a1;
-    int * a2 = currentProcess->p_s.reg_a2;
-    int index = (*a1-3)*8 + *a2;
-    // devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) //Location of status word
-    // devStatusWord = devAddrBase + 
-    // mask with 0x000F
+    currentProcess->p_s.pc_epc += 4;
     
-    insertBlocked(&device_semaphores[index],currentProcess);
-    while(currentProcess->p_s.reg_a3);  //da verificare
-    currentProcess->p_s.reg_v0 = currentProcess->p_s.status;    //this is wrong
+    state_t *exceptionState = (memaddr) BIOSDATAPAGE;
+    currentProcess->p_s = *exceptionState;
+
+    //update the accumulated CPU time
+
+    SYS3(currentProcess->p_semAdd);
+
+    //call scheduler
 }
 
 void SYS6()
