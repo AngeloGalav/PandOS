@@ -115,11 +115,10 @@ void Passeren_SYS3(int* semAddr)
         currentProcess->p_s = *saved_state;
 
         softBlockCount += 1;
-        STCK(currentProcess->blocked_TOD);
         insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
 
         /* a process gets unlocked */
-        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->blocked_TOD; 
+        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark; 
         Scheduler();
     }
 }
@@ -143,7 +142,8 @@ void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 void Get_CPU_Time_SYS6()
 {
     GET_STATUS(saved_state);
-    saved_state->reg_v0 = currentProcess->p_time;
+    saved_state->reg_v0 = currentProcess->p_time + 
+        ((((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark);
 }
 
 void Wait_For_Clock_SYS7() 
@@ -164,6 +164,5 @@ HIDDEN void BlockingSyscallAdjustments() ///DEVNOTE: we are keeping this in case
     currentProcess->p_s = *saved_state;
     
     ///TODO: accumulated CPU time update in current process ///
-    
 } 
 

@@ -46,7 +46,7 @@ typedef struct pcb_t {
     /* add more fields here */
     int *      p_semAdd;
     support_t *p_supportStruct;
-    unsigned int   blocked_TOD; /* time mark (TOD) in which the process gets blocked */
+    unsigned int   untracked_TOD_mark; /* time mark (TOD) in which the process enters an exception */
 
 } pcb_t, *pcb_PTR;
 

@@ -4,6 +4,8 @@ extern pcb_PTR currentProcess;
 
 void fooBar()
 {
+    STCK(currentProcess->untracked_TOD_mark);
+    
     state_t *exceptionState = (state_t*) BIOSDATAPAGE;
     currentProcess->p_s = *exceptionState; // updates the current process status
     unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
