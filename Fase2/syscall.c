@@ -1,7 +1,3 @@
-#include "../Libraries/pcb.h"
-#include "../Libraries/asl.h"
-#include "../Libraries/libraries.h"
-#include "../Libraries/definitions.h"
 #include "../Libraries/syscall.h"
 
 extern pcb_PTR readyQueue;

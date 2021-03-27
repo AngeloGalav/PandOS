@@ -1,6 +1,8 @@
 #ifndef SYSCALL_H_INCLUDED
 #define SYSCALL_H_INCLUDED
 
+#include "libraries.h"
+#include "definitions.h"
 #include "asl.h"
 #include "pcb.h"
 

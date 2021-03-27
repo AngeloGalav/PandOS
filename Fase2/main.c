@@ -21,17 +21,11 @@ int device_semaphores[SEMAPHORE_QTY];
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
 
-/*placeholder function for exception handling*/
-void fooBar();
-
-/* Handler of the syscall excp */
-void SyscallExceptionHandler(state_t* exception_state);
-
 /* Include the test function, in order to execute p2test.c */
 extern void test();
 
 /*Placeholder function for TLB-Refill*/
-extern uTLB_RefillHandler ();
+extern uTLB_RefillHandler();
 
 int main()
 {

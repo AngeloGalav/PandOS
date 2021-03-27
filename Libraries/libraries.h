@@ -4,7 +4,6 @@
 #include "../Libraries/pandos_types.h"
 #include "../Libraries/pandos_const.h"
 
-
 /* Sets the ExeCode of the exceptionsStatus to a value (used if syscall is called in usermode) */
 void setExeCode(state_t* exceptionStatus, unsigned int toSet);
 

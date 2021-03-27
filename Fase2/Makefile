@@ -32,7 +32,7 @@ all : kernel.core.umps clean
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
 	
-kernel : main.o asl.o syscall.o p2test.o pcb.o crtso.o libumps.o
+kernel : main.o asl.o syscall.o scheduler.o libraries.o interrupt_handler.o p2test.o pcb.o crtso.o libumps.o
 	$(LD) -o $@ $^ $(LDFLAGS)
 	@echo "** Compilation successfull!"
 	
