@@ -14,32 +14,24 @@ unsigned int processCount;
 /* Pointer to the current pcb that is in running state */ 
 pcb_PTR currentProcess = NULL;
 
-void scheduler()
+void Scheduler()
 {
     if (!emptyProcQ(readyQueue))
     {
         currentProcess = removeProcQ(&readyQueue);
-        int status = setTIMER(TIMERVALUE(5000));
-        LDST ((state_t *) &(currentProcess->p_s)); // 
-
-        //IF BLOCKING SYSCALL PUT THE PROCESS IN THE EVENT QUEUE
-        //ELSE IF NON-BLOCKING SYSCALL PUT THE PROCESS IN THE READY QUEUE WITH ROUNDROBIN
+        int status = setTIMER(TIMERVALUE(5000));    /// TODO: chiedere al maldus se questa riga va bene
+        LDST ((state_t *) &(currentProcess->p_s)); 
         
-    } else // IF  READY QUEUE IT'S EMPTY
+    } else // If ready queue is empty
     {
         if (processCount == 0)
-        {
-            //TO-DO we should be in KERNEL MODE
-            HALT();
-        }
+            HALT(); // If the executing process is not in kernel mode
         else if ((processCount && softBlockCount) > 0)
         {
             setSTATUS(WAIT_STATUS);
             WAIT();
         }
         else if ((softBlockCount == 0) && (processCount > 0))
-        {
-            PANIC();
-        }
+            PANIC(); // Deadlock caused kernel panic
     }
 }

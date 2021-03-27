@@ -7,7 +7,7 @@
 #include "../Libraries/libraries.h"
 #include "../Libraries/syscall.h"
 #include "../Libraries/scheduler.h"
-#include "../Libraries/interrupt_handler.h"
+#include "../Libraries/exception_handler.h"
 
 /* Scheduler related variables */
 extern unsigned int processCount;
@@ -34,9 +34,9 @@ int main()
     initASL();
 
     /* Fill up pass-up-vector*/
-    passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler; //Codice già dato nel p2test.c
+    passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler; 
     passupvector->tlb_refill_stackPtr = (memaddr) 0x20001000;
-    passupvector->exception_stackPtr = (memaddr) 0x20001000;
+    passupvector->exception_stackPtr = (memaddr) 0x20001000; // fresh new stack for the exception handler
     passupvector->exception_handler = (memaddr) fooBar; // exception handling function callback
 
     for(int i = 0; i < SEMAPHORE_QTY; i++)
@@ -46,32 +46,27 @@ int main()
 
     /* Start the process initialization */
     pcb_PTR proc = allocPcb();
-    
     insertProcQ(&(readyQueue), proc);
-    
     processCount += 1;
-    //we are not initialiazing p_s pointer , and even if we do that how can we accede to it later on ?
+
     initializePcbt(proc);
     proc->p_time = 0;
     proc->p_semAdd = NULL;
     proc->p_supportStruct = NULL;
     
-    // nel 26 esimo (che e' 26 causa umps3 che non conta 2 entry) registro del GPR c'è lo stack pointer 
-    // del programma, dobbiamo scrivere li dentro il valore di RAMTOP
-    RAMTOP(proc->p_s.reg_sp); // Equivalente di proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE)));
+    /* Equivalent to proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))); */
+    RAMTOP(proc->p_s.reg_sp);
 
-    //PC
+    //setting PC, in order to execute p2test functions
     proc->p_s.pc_epc = (memaddr) test; 
+    proc->p_s.reg_t9 = (memaddr) test;
 
-    // il primo 1 indica che attiviamo l'interval timer per il processo, e il secondo 
+    // bit 1 indicates that the PLT is enabled for this process, e il secondo 
     // che stiamo attivando tutti gli interrupt.
     // 00001000000000000000000000000100 == 134217732
     proc->p_s.status = INIT_STATUS;    //se non va, mettiamo setSTATUS(134217732); 
 
-    proc->p_s.reg_t9 = (memaddr) test; 
+    currentProcess = proc; // now the first process is also the current process
 
-    currentProcess = proc;
-
-    //// CALL THE SCHEDULER ////
-    scheduler();
+    Scheduler();
 }

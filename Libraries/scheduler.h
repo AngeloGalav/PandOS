@@ -4,7 +4,7 @@
 #include "definitions.h"
 #include "asl.h" 
 
-/* Process scheduler */
-void scheduler();
+/* The scheduler function of the kernel */
+void Scheduler();
 
 #endif

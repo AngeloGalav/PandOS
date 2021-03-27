@@ -18,24 +18,21 @@ void SyscallExceptionHandler(state_t* exception_state)
         case CREATEPROCESS: ;
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t *new_suppt = (support_t*) exception_state->reg_a2;
-            if(new_suppt == NULL)
-                Create_Process_SYS1(new_pstate, NULL);
-            else 
-                Create_Process_SYS1(new_pstate, new_suppt); 
+            Create_Process_SYS1(new_pstate, new_suppt); 
             break;
         }
-
         case TERMPROCESS:
             Terminate_Process_SYS2();
             break;
         case PASSEREN:
-            //Passeren_SYS3();
+            Passeren_SYS3((int*) exception_state->reg_a1);
             break;
         case VERHOGEN:
-            //Verhogen_SYS4();
+            Verhogen_SYS4((int*) exception_state->reg_a1);
             break;
         case IOWAIT:
-            Wait_For_IO_Device_SYS5();
+            Wait_For_IO_Device_SYS5(*((int*) exception_state->reg_a1),
+            *((int*) exception_state->reg_a2) , *((int*) exception_state->reg_a3));
             break;
         case GETTIME:
             Get_CPU_Time_SYS6();
@@ -64,10 +61,7 @@ void Create_Process_SYS1(state_t arg1, support_t* arg2)
     newproc->p_semAdd = NULL;
     newproc->p_time = 0; 
     newproc->p_s = arg1;
-    if(arg2 != NULL)
-        newproc->p_supportStruct = arg2;
-    else    
-        newproc->p_supportStruct = NULL;
+    newproc->p_supportStruct = arg2;
 }
 
 
@@ -86,33 +80,29 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
     // al valore assoluto del valore del semaforo stesso. Questo valore, se un processo bloccato viene terminato, va aggiustato.
     processCount -= 1;
     freePcb(to_terminate);
-
-    for (int i = 0; i < SEMAPHORE_QTY; i++)
-    {
-        if (to_terminate->p_semAdd == device_semaphores[i]) return; // Se e' un device semaphore, ho gia' fatto le mie operazioni
-    }
-
-    if (removeBlocked(to_terminate->p_semAdd) != NULL) // controllare se e' un device semaphore... (Come si fa?) 
-    {
-            *(to_terminate->p_semAdd) += 1;
+    
+    if (to_terminate->p_semAdd != NULL)
+    {   
+        // Device semaphore check && elimination from semaphore
+        if (!(to_terminate->p_semAdd >= &device_semaphores[0] || to_terminate->p_semAdd <= &device_semaphores[48]) 
+            && removeBlocked(to_terminate->p_semAdd) != NULL)
+        {
+            if (*(to_terminate->p_semAdd) < 0) *(to_terminate->p_semAdd) += 1;
             softBlockCount -= 1;
+        }
     }
 }
 
-/** Kills a process recursively
- * 
- * @param: the child of the root process we want to kill.
- */
-HIDDEN void KillRec(pcb_PTR root_child)
+HIDDEN void KillRec(pcb_PTR proc_elem)
 {
-    if (root_child == NULL) return;
+    if (proc_elem == NULL) return;
 
-    KillRec(root_child->p_next_sib);
-    KillRec(root_child->p_child); // We repeat this recursevely for each child of the process
-    TerminateSingleProcess(root_child);
+    KillRec(proc_elem->p_next_sib);
+    KillRec(proc_elem->p_child); // We repeat this recursevely for each child of the process
+    TerminateSingleProcess(proc_elem);
 }
 
-void Passeren_SYS3(int** semAddr) 
+void Passeren_SYS3(int* semAddr) 
 {
     *semAddr -= 1;
     if (*semAddr < 0) 
@@ -122,27 +112,20 @@ void Passeren_SYS3(int** semAddr)
     }
 }
 
-void Verhogen_SYS4(int** semAddr) 
+void Verhogen_SYS4(int* semAddr) 
 {
-    *semAddr += 1;
+    if (*semAddr < 0) *semAddr += 1;
     removeBlocked(semAddr);
 }
 
-void Wait_For_IO_Device_SYS5()
+void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 {
-    //retrieve a1 & a2 from BIOS DATA PAGE
-
-    //In caso di problemi testare a1 e a2 come unsigned int e passare il puntatore alla funzione
-    int * a1 = currentProcess->p_s.reg_a1;
-    int * a2 = currentProcess->p_s.reg_a2;
-    int index = (*a1-3)*8 + *a2;
-    // devAddrBase = 0x1000.0054 + ((IntlineNo - 3) * 0x80) + (DevNo * 0x10) //Location of status word
-    // devStatusWord = devAddrBase + 
-    // mask with 0x000F
-    
+    int index = (intlNo - 3) * 8 + dnum;
+  
     insertBlocked(&device_semaphores[index],currentProcess);
     while(currentProcess->p_s.reg_a3);  //da verificare
-    currentProcess->p_s.reg_v0 = currentProcess->p_s.status;    //this is wrong
+    currentProcess->p_s.reg_v0 = (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10)) & 0x000F; // we're considering only 
+                                                                                                // status word bits
 }
 
 void Get_CPU_Time_SYS6()
@@ -161,8 +144,8 @@ void Get_Support_Data_SYS8() //Indecisione su quale registro salvare il dato, se
     currentProcess->p_s.reg_v0 = currentProcess->p_supportStruct; // DA CHIEDERE A MALDINI
 }
 
-void SyscallAccessDenied()
+HIDDEN void BlockProcess()
 {
-   
-}
+    
+} 
 
