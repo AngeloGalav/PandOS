@@ -3,15 +3,15 @@
 
 #include "../Libraries/pandos_types.h"
 #include "../Libraries/pandos_const.h"
+#include "umps3/umps/libumps.h"
+
+#define GET_STATUS(T) state_t* T = (state_t*) BIOSDATAPAGE;
 
 /* Sets the ExeCode of the exceptionsStatus to a value (used if syscall is called in usermode) */
-void setExeCode(state_t* exceptionStatus, unsigned int toSet);
+void setExcCode(state_t* exceptionStatus, unsigned int toSet);
 
-/* Set the processor in kernel mode */
-void setKernelMode(); //TODO
-
-/* Set the processor in user mode */
-void setUserMode(); //TODO
+/* Sets the processor user-mode/kernel-mode bit and reloads the status */
+void setProcessorMode(int mode);
 
 /* Checks the KUp bit to see if we are in kernel mode */
 int checkMode(unsigned int status_register);

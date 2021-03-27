@@ -45,7 +45,9 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
         default:
             break;
-    }
+    } 
+
+    LDST((state_t*) BIOSDATAPAGE);
 }
 
 void Create_Process_SYS1(state_t arg1, support_t* arg2)
@@ -64,11 +66,11 @@ void Create_Process_SYS1(state_t arg1, support_t* arg2)
     newproc->p_supportStruct = arg2;
 }
 
-
+///TODO: Should we check if the process is in the readyQueue? ///
 void Terminate_Process_SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
-    outChild(currentProcess); // 
+    outChild(currentProcess);
     TerminateSingleProcess(currentProcess);
     KillRec(currentProcess->p_child);
 }
@@ -103,12 +105,22 @@ HIDDEN void KillRec(pcb_PTR proc_elem)
 }
 
 void Passeren_SYS3(int* semAddr) 
-{
+{   
     *semAddr -= 1;
-    if (*semAddr < 0) 
+    
+    if (*semAddr < 0)  // if the value is negative, the process gets blocked
     {
-        insertBlocked(semAddr, currentProcess); // if the value is negative, the process gets blockede
-        softBlockCount += 1;     
+        GET_STATUS(saved_state);    /* Additional steps in between blocking a processs */
+        saved_state->pc_epc += 4;
+        currentProcess->p_s = *saved_state;
+
+        softBlockCount += 1;
+        STCK(currentProcess->interrupt_TOD);
+        insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
+
+        /* a process gets unlocked */
+        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->interrupt_TOD; 
+        Scheduler();
     }
 }
 
@@ -122,29 +134,36 @@ void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 {
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
+    GET_STATUS(saved_state);
+    saved_state->reg_v0 = (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10)) & 0x000F; // we're considering only 
+                                                                                         // the status word bits
     Passeren_SYS3(&device_semaphores[index]);
-    currentProcess->p_s.reg_v0 = (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10)) & 0x000F; // we're considering only 
-                                                                                                // status word bits
 }
 
 void Get_CPU_Time_SYS6()
 {
-    currentProcess->p_s.reg_v0 = currentProcess->p_time;
+    GET_STATUS(saved_state);
+    saved_state->reg_v0 = currentProcess->p_time;
 }
 
 void Wait_For_Clock_SYS7() 
 {
     Passeren_SYS3(&device_semaphores[48]);
-    //call scheduler
 }
 
 void Get_Support_Data_SYS8()
 {
-    currentProcess->p_s.reg_v0 = currentProcess->p_supportStruct;
+    GET_STATUS(saved_state);
+    saved_state->reg_v0 = currentProcess->p_supportStruct;
 }
 
-HIDDEN void BlockProcess()
+HIDDEN void BlockingSyscallAdjustments() ///DEVNOTE: we are keeping this in case 
 {
+    GET_STATUS(saved_state);
+    saved_state->pc_epc += 4;
+    currentProcess->p_s = *saved_state;
+    
+    ///TODO: accumulated CPU time update in current process ///
     
 } 
 

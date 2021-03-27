@@ -27,7 +27,7 @@ VPATH = $(UMPS3_DATA_DIR)
 .PHONY : all clean
 
 all : kernel.core.umps clean
-	@echo "** Remember to load the kernel file after compilation"
+	@echo "** All successfull! Good Luck!! :) [use "make clean_all" to remove all built files if needed]"
 
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<

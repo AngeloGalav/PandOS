@@ -31,6 +31,7 @@ void Wait_For_Clock_SYS7();
 
 void Get_Support_Data_SYS8();
 
-HIDDEN void BlockProcess();
+/* Additional measures adopted in syscall that can block processes (i.e. SYS3, SYS5 and SYS7) */
+HIDDEN void BlockingSyscallAdjustments();
 
 #endif

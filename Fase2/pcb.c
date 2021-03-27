@@ -6,8 +6,6 @@ HIDDEN pcb_t* pcbFree_h;
 // Array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti.
 HIDDEN pcb_t pcbFree_table[MAXPROC];
 
-
-
 /** Inizializzazione della lista pcbFree_h.
     Per inizializzarla, aggiunge alla lista ogni elemento degli array dei processi.
 */
@@ -157,7 +155,7 @@ pcb_t* removeProcQ(pcb_t **tp)
         pcb_t* tmp = head->p_prev;
         tmp->p_next = (*tp);
 
-        initializePcbt(head);
+        //initializePcbt(head);
         return head;
     }
 }
@@ -178,7 +176,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             {
                 tmp->p_prev->p_next = tmp->p_next;
                 tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                initializePcbt(tmp);
+                //initializePcbt(tmp);
                 return tmp;
             }
             tmp = tmp->p_prev;
@@ -190,7 +188,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         pcb_t* tmp = (*tp);
         *tp = NULL;
 
-        initializePcbt(tmp);
+        //initializePcbt(tmp);
         return tmp;
     }
     else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui la sentinella punta a p
@@ -202,7 +200,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         (*tp)->p_prev = tmp->p_prev;
         tmp->p_prev->p_next = (*tp);
 
-        initializePcbt(tmp);
+        //initializePcbt(tmp);
         return tmp;
     }
     else return NULL;
@@ -255,7 +253,7 @@ pcb_t* removeChild(pcb_t *p)
         }
 
         // Ri-inizializzazione dei campi, in modo che non ci sia piu' traccia dell'albero di partenza
-        initializePcbt(tmp);
+        //initializePcbt(tmp);
 
         return tmp;
     }

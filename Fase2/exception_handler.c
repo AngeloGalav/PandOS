@@ -4,12 +4,12 @@ extern pcb_PTR currentProcess;
 
 void fooBar()
 {
-    state_t *exceptionState = (memaddr) BIOSDATAPAGE;
+    state_t *exceptionState = (state_t*) BIOSDATAPAGE;
     currentProcess->p_s = *exceptionState; // updates the current process status
     unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
     exceptionCode >>= 2;
     
-    if(exceptionCode == 0)
+    if (exceptionCode == 0)
     {
         // Kernel device interrupt handler (3.6 pandos)
     }
@@ -17,20 +17,14 @@ void fooBar()
     {
         // Kernel TLB exception handler (3.7.3 pandos)
     }
-    else if (exceptionCode == 8)
+    else if (exceptionCode == 8) /* Syscall exception handler */
     {
-        // SYSCALL exception handler (3.5 pandos)
-        /**
-        * In particular, if the process making a SYSCALLrequest was in kernel-mode and a0 contained a
-        * value in the range [1..8] then the Nucleus should perform one of the services
-        * Leggere il valore di a0 che contiene l'indicazione alla SYSCALL da invocare dopo aver controllato
-        * se la kernel mode fosse attiva o meno.
-        **/    
-       if (checkMode(exceptionState->status))
+       if (!(checkMode(exceptionState->status))) // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
             SyscallExceptionHandler(exceptionState); 
        else
        {
-           //Call some sort of trap
+           setExcCode(exceptionState, RESERVEDINSTRUCTION);
+           //fooBar();
        }
     }
     else

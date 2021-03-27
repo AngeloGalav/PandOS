@@ -15,8 +15,8 @@ extern unsigned int softBlockCount;
 extern pcb_PTR readyQueue;
 extern pcb_PTR currentProcess;
 
-/* Int Array for semaphores*/
-HIDDEN int semaphores[SEMAPHORE_QTY];
+/* Int Array for device semaphores*/
+int device_semaphores[SEMAPHORE_QTY]; 
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -26,9 +26,6 @@ extern void test();
 
 /*Placeholder function for TLB-Refill*/
 extern uTLB_RefillHandler();
-
-/* Draft scheduler */
-void placeholder_scheduler();
 
 int main()
 {
@@ -43,9 +40,9 @@ int main()
     passupvector->exception_handler = (memaddr) fooBar; // exception handling function callback
 
     for(int i = 0; i < SEMAPHORE_QTY; i++)
-        semaphores[i] = 0;
+        device_semaphores[i] = 0;
     
-    LDIT(PSECOND); // carichiamo il valore dell'interval timer con 100 millis
+    LDIT(PSECOND); // loading Interval Timer with 1000 millis
 
     /* Start the process initialization */
     pcb_PTR proc = allocPcb();
