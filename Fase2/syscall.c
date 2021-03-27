@@ -12,15 +12,50 @@ extern unsigned int processCount;
 extern unsigned int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 
-void *memcpy(void *dest, const void *src, size_t n)
+void SyscallExceptionHandler(state_t* exception_state)
 {
-    for (size_t i = 0; i < n; i++)
+    unsigned int sysCallCode = (unsigned int) exception_state->reg_a0;
+
+    switch (sysCallCode)
     {
-        ((char*)dest)[i] = ((char*)src)[i];
+        {
+        case CREATEPROCESS: ;
+            state_t new_pstate = *((state_t*) exception_state->reg_a1);
+            support_t *new_suppt = (support_t*) exception_state->reg_a2;
+            if(new_suppt == NULL)
+                Create_Process_SYS1(new_pstate, NULL);
+            else 
+                Create_Process_SYS1(new_pstate, new_suppt); 
+            break;
+        }
+
+        case TERMPROCESS:
+            Terminate_Process_SYS2();
+            break;
+        case PASSEREN:
+            //Passeren_SYS3();
+            break;
+        case VERHOGEN:
+            //Verhogen_SYS4();
+            break;
+        case IOWAIT:
+            Wait_For_IO_Device_SYS5();
+            break;
+        case GETTIME:
+            Get_CPU_Time_SYS6();
+            break;
+        case CLOCKWAIT:
+            Wait_For_Clock_SYS7();
+            break;
+        case GETSUPPORTPTR:
+            Get_Support_Data_SYS8(exception_state);
+            break;
+        default:
+            break;
     }
 }
 
-void SYS1(state_t arg1, support_t* arg2)
+void Create_Process_SYS1(state_t arg1, support_t* arg2)
 {
     pcb_PTR newproc = allocPcb(); 
 
@@ -40,7 +75,7 @@ void SYS1(state_t arg1, support_t* arg2)
 }
 
 
-void SYS2()
+void Terminate_Process_SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
     outChild(currentProcess); // 
@@ -81,7 +116,7 @@ HIDDEN void KillRec(pcb_PTR root_child)
     TerminateSingleProcess(root_child);
 }
 
-void SYS3(int** semAddr) 
+void Passeren_SYS3(int** semAddr) 
 {
     *semAddr -= 1;
     if (*semAddr < 0) 
@@ -91,13 +126,13 @@ void SYS3(int** semAddr)
     }
 }
 
-void SYS4(int** semAddr) 
+void Verhogen_SYS4(int** semAddr) 
 {
     *semAddr += 1;
     removeBlocked(semAddr);
 }
 
-void SYS5()
+void Wait_For_IO_Device_SYS5()
 {
     //retrieve a1 & a2 from BIOS DATA PAGE
 
@@ -114,24 +149,24 @@ void SYS5()
     currentProcess->p_s.reg_v0 = currentProcess->p_s.status;    //this is wrong
 }
 
-void SYS6()
+void Get_CPU_Time_SYS6()
 {
     currentProcess->p_s.reg_v0 = currentProcess->p_time;
 }
 
-void SYS7() 
+void Wait_For_Clock_SYS7() 
 {
-    SYS3(&device_semaphores[48]);
+    Passeren_SYS3(&device_semaphores[48]);
     //call scheduler
 }
 
-void SYS8() //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
+void Get_Support_Data_SYS8() //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
 {
     currentProcess->p_s.reg_v0 = currentProcess->p_supportStruct; // DA CHIEDERE A MALDINI
 }
 
 void SyscallAccessDenied()
 {
-   // currentProcess->p_s.cause;
+   
 }
 

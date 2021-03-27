@@ -13,6 +13,7 @@
         "asl.h": "c",
         "pandos_types.h": "c",
         "types.h": "c",
-        "libraries.C": "cpp"
+        "libraries.C": "cpp",
+        "libraries.h": "c"
     }
 }

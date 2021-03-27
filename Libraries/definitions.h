@@ -10,8 +10,9 @@
 /* Timer converter to get the right time */
 #define TIMERVALUE(T)  ((T) * (*((cpu_t *) TIMESCALEADDR)))
 
+/* Value to assign to ExeCode of cause register if entering a syscall in usermode */
+#define RESERVEDINSTRUCTION 10
+
 #define DEVICES_NUMBER 17
-
-
 
 #endif 
