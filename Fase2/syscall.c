@@ -120,10 +120,9 @@ void Verhogen_SYS4(int* semAddr)
 
 void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 {
+    if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
-  
-    insertBlocked(&device_semaphores[index],currentProcess);
-    while(currentProcess->p_s.reg_a3);  //da verificare
+    Passeren_SYS3(&device_semaphores[index]);
     currentProcess->p_s.reg_v0 = (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10)) & 0x000F; // we're considering only 
                                                                                                 // status word bits
 }
@@ -139,9 +138,9 @@ void Wait_For_Clock_SYS7()
     //call scheduler
 }
 
-void Get_Support_Data_SYS8() //Indecisione su quale registro salvare il dato, se nel current process oppure nell'exception state.
+void Get_Support_Data_SYS8()
 {
-    currentProcess->p_s.reg_v0 = currentProcess->p_supportStruct; // DA CHIEDERE A MALDINI
+    currentProcess->p_s.reg_v0 = currentProcess->p_supportStruct;
 }
 
 HIDDEN void BlockProcess()

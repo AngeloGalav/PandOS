@@ -14,6 +14,7 @@
         "pandos_types.h": "c",
         "types.h": "c",
         "libraries.C": "cpp",
-        "libraries.h": "c"
+        "libraries.h": "c",
+        "variant": "c"
     }
 }

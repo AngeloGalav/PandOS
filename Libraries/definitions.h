@@ -3,7 +3,7 @@
 
 #define INIT_STATUS 0x8000004 
 
-#define WAIT_STATUS 0x0000001 // Disables PLT interrupts and activates 
+#define WAIT_STATUS 0x0000001 // Disables PLT interrupts 
 
 /* Total number of semaphores in PandOS */
 #define SEMAPHORE_QTY 49
