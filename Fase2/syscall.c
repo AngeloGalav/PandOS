@@ -115,11 +115,11 @@ void Passeren_SYS3(int* semAddr)
         currentProcess->p_s = *saved_state;
 
         softBlockCount += 1;
-        STCK(currentProcess->interrupt_TOD);
+        STCK(currentProcess->blocked_TOD);
         insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
 
         /* a process gets unlocked */
-        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->interrupt_TOD; 
+        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->blocked_TOD; 
         Scheduler();
     }
 }
