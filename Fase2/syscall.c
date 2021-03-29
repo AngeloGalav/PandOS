@@ -14,13 +14,12 @@ void SyscallExceptionHandler(state_t* exception_state)
 
     switch (sysCallCode)
     {
-        {
-        case CREATEPROCESS: ;
+        
+        case CREATEPROCESS: 
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t *new_suppt = (support_t*) exception_state->reg_a2;
             Create_Process_SYS1(new_pstate, new_suppt); 
             break;
-        }
         case TERMPROCESS:
             Terminate_Process_SYS2();
             break;
@@ -45,6 +44,7 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
         default:
             break;
+        
     } 
 
     LDST((state_t*) BIOSDATAPAGE);

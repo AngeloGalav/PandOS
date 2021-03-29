@@ -2,6 +2,7 @@
 
 extern pcb_PTR currentProcess;
 
+//Change this name
 void fooBar()
 {
     STCK(currentProcess->untracked_TOD_mark);
@@ -23,13 +24,13 @@ void fooBar()
     }
     else if (exceptionCode == 8) /* Syscall exception handler */
     {
-       if (!(checkMode(exceptionState->status))) // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
+        if (!(checkMode(exceptionState->status))) // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
             SyscallExceptionHandler(exceptionState); 
-       else
-       {
+        else
+        {
            setExcCode(exceptionState, RESERVEDINSTRUCTION);
            //fooBar();
-       }
+        }
     }
     else
     {

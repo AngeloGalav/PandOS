@@ -6,7 +6,10 @@
 #include "asl.h" 
 #include "devinterrupt_handler.h"
 
-/* The exception handler function of the kernel */
+/**
+ *  The exception handler function of the kernel
+ *  Change this name 
+*/
 void fooBar();
 
 #endif

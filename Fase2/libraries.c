@@ -9,9 +9,12 @@ void setExcCode(state_t* exceptionStatus, unsigned int toSet)
 
 int checkMode(unsigned int status_register)
 {
+    /*
     unsigned int statuscode = status_register & 8;
     statuscode >>= 3;
     return statuscode; //if the KUp bit is 0 then kernel mode is on
+    */
+    return BitExtractor(status_register,8,3);
 }
 
 void setProcessorMode(int mode)
@@ -27,4 +30,11 @@ void *memcpy(void *dest, const void *src, size_t n)
     {
         ((char*)dest)[i] = ((char*)src)[i];
     }
+}
+
+unsigned int BitExtractor(unsigned int reg, int mask, int shift)
+{
+    reg = reg & mask;
+    reg >>= shift;
+    return reg;
 }

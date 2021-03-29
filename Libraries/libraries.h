@@ -19,4 +19,6 @@ int checkMode(unsigned int status_register);
 /* Used as a substitute for stdlib's memcpy */
 void *memcpy(void *dest, const void *src, size_t n);
 
+unsigned int BitExtractor(unsigned int reg, int mask, int shift);
+
 #endif
