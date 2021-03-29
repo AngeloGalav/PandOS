@@ -33,5 +33,5 @@ void InterruptLineDeviceCheck(int line)
 
 void InterruptHandler(int line, int device)
 {
-    unsigned int devAddrBase = 0x10000054 + ((line - 3) * 0x80) + (device * 0x10);
+    unsigned int status_word = GetStatusWord(line, device, device % 2);
 }

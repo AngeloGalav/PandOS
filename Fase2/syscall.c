@@ -133,9 +133,10 @@ void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 {
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
+    
     GET_STATUS(saved_state);
-    saved_state->reg_v0 = (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10)) & 0x000F; // we're considering only 
-                                                                                         // the status word bits
+    saved_state->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
+
     Passeren_SYS3(&device_semaphores[index]);
 }
 

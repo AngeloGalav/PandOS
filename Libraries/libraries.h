@@ -21,4 +21,7 @@ void *memcpy(void *dest, const void *src, size_t n);
 
 unsigned int BitExtractor(unsigned int reg, int mask, int shift);
 
+/* Returns the status word of a device register */
+unsigned int GetStatusWord(int intlNo, int dnum, int waitForTermRead);
+
 #endif

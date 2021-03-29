@@ -38,3 +38,19 @@ unsigned int BitExtractor(unsigned int reg, int mask, int shift)
     reg >>= shift;
     return reg;
 }
+
+unsigned int GetStatusWord(int intlNo, int dnum, int isReadTerm)
+{
+    devreg_t* device_register;
+    if (2 < intlNo && intlNo < 7)
+    {
+        device_register = (devreg_t*) (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10));
+        return device_register->dtp.status;
+    }
+    else
+    {
+        device_register = (devreg_t*) (0x10000054 + ((intlNo - 3) * 0x80) + (dnum * 0x10));
+        if (isReadTerm) return device_register->term.recv_status;
+        else return device_register->term.transm_status;
+    }
+}
