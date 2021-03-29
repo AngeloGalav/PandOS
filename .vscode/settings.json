@@ -16,7 +16,9 @@
         "libraries.C": "cpp",
         "libraries.h": "c",
         "variant": "c",
-        "exception_handler.h": "c"
+        "exception_handler.h": "c",
+        "definitions.h": "c",
+        "devinterrupt_handler.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

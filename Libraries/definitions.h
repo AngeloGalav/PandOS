@@ -14,4 +14,7 @@
 /* Value to assign to ExeCode of cause register if entering a syscall in usermode */
 #define RESERVEDINSTRUCTION 10
 
+/* Base addr for interrupting device area, which tells us which device has a pending interrupt*/
+#define IDEVBITMAP 0x10000040 
+
 #endif 

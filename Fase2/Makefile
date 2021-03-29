@@ -21,6 +21,8 @@ CFLAGS = $(CFLAGS_LANG) $(CFLAGS_MIPS) -I$(UMPS3_INCLUDE_DIR) -I$(UMPS3_INCLUDE_
 
 LDFLAGS = -G 0 -nostdlib -T $(UMPS3_DATA_DIR)/umpscore.ldscript
 
+SRC = $(wildcard *.c)
+OBJS = $(SRC:.c=.o)	# Auto-updated obj listing
 
 VPATH = $(UMPS3_DATA_DIR)
 
@@ -32,7 +34,7 @@ all : kernel.core.umps clean
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
 	
-kernel : main.o asl.o syscall.o scheduler.o libraries.o exception_handler.o p2test.o pcb.o crtso.o libumps.o
+kernel : $(OBJS) crtso.o libumps.o
 	$(LD) -o $@ $^ $(LDFLAGS)
 	@echo "** Compilation successfull!"
 	

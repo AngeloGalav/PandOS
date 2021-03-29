@@ -6,14 +6,16 @@ void fooBar()
 {
     STCK(currentProcess->untracked_TOD_mark);
     
+    //GET_STATUS(exceptionState);
     state_t *exceptionState = (state_t*) BIOSDATAPAGE;
     currentProcess->p_s = *exceptionState; // updates the current process status
     unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
     exceptionCode >>= 2;
     
     if (exceptionCode == 0)
-    {
+    {   
         // Kernel device interrupt handler (3.6 pandos)
+        InterruptPendingChecker();
     }
     else if ((exceptionCode >= 1) && (exceptionCode <= 3))
     {
@@ -33,9 +35,4 @@ void fooBar()
     {
          //* Code 4-7,9-12: Kernel Program Trap exception handler (3.7.2 pandos)  
     }
-}
-
-HIDDEN void SyscallAccessDenied()
-{
-   
 }
