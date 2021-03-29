@@ -16,7 +16,7 @@ void fooBar()
     if (exceptionCode == 0)
     {   
         // Kernel device interrupt handler (3.6 pandos)
-        InterruptPendingChecker();
+        InterruptPendingChecker(exceptionState->cause);
     }
     else if ((exceptionCode >= 1) && (exceptionCode <= 3))
     {
