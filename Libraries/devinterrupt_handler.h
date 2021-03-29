@@ -8,4 +8,10 @@
 /* Cycles and handles all pending interrupts from highest to lowest priority */
 void InterruptPendingChecker();
 
+/* Cycles and handles all internal pending interrupts from highest to lowest priority*/
+void InterruptLineDeviceCheck(int line);
+
+/* */
+void InterruptHandler();
+
 #endif
