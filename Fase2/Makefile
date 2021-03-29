@@ -27,7 +27,7 @@ VPATH = $(UMPS3_DATA_DIR)
 .PHONY : all clean
 
 all : kernel.core.umps clean
-	@echo "** All successfull! Good Luck!! :) [use "make clean_all" to remove all built files if needed]"
+	@echo "** All successfull! Good Luck!! :) [remember to set the TLB Floor Address to 0x8000.000 in UMPS3!!]"
 
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
