@@ -1,14 +1,16 @@
 #include "../Libraries/devinterrupt_handler.h"
+#include "../Libraries/debugger.h"
 
 extern pcb_PTR readyQueue;
 
 extern pcb_PTR currentProcess;
 
+unsigned int * device; ///TODO: TOGLI E DICHIARA DENTRO LA FUNZIONE
+
 extern int device_semaphores[SEMAPHORE_QTY];
 
 void InterruptPendingChecker(unsigned int cause_reg)
 {
-    
     unsigned int ip_reg = BitExtractor(cause_reg, 0xFF00, 8);
     int mask = 2;
     // if(ip_reg & 1)
@@ -29,20 +31,14 @@ void InterruptLineDeviceCheck(int line)
 {
     if (line > 2)
     {
-        unsigned int * device = (memaddr) IDEVBITMAP + (line * 0x4);
-        
-        int devices = 8;
-        if (line == 7) devices = 16;
-        
-        if ((line >= 3) && (line <= 6))
+        device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
+
+        int mask = 1;
+        for (int i = 0; i < DEVPERINT; i++)
         {
-            int mask = 1;
-            for (int i = 0; i < devices; i++)
-            {
-                if (*device & mask)
-                    InterruptHandler(line, i);
-                mask *= 2;
-            }
+            if (*device & mask)
+                InterruptHandler(line, i);
+            mask *= 2;
         }
     }
     else
@@ -60,25 +56,29 @@ void InterruptHandler(int line, int device)
         device_register->dtp.command = ACK;
     else if (line == 7)
     {
-        if(device_register->term.recv_status != READY)
-            device_register->term.recv_command = ACK;
-        
-        
-        if(device_register->term.transm_status != READY)
-            device_register->term.transm_command = ACK;
-        
-        if (device % 2) device_register->term.transm_command = ACK;
-        else device_register->term.recv_command = ACK;
+        device *= 2;
 
-        device = 2 * device + device % 2; //+ waitForTermRead; Risolvere il fatto dei 8/16 device per il terminale
+        if(device_register->term.recv_status != READY)
+        {
+            device_register->term.recv_command = ACK;
+            device += 1;
+        }
+
+        if(device_register->term.transm_status != READY)
+            device_register->term.transm_command = ACK; // <- arriva qui
     }
 
     int index = (line - 3) * 8 + device; 
     
     pcb_t* resumedProcess = Verhogen_SYS4(&device_semaphores[index]);
     
-    if (resumedProcess != NULL) resumedProcess->p_s.reg_v0 = status_word;
-    
     GET_BDP_STATUS(status_to_load);
+    if (resumedProcess != NULL) 
+    {   
+        resumedProcess->p_s.reg_v0 = status_word;
+        status_to_load->reg_v0 = status_word;
+    }
+    
+    bp();
     LDST(status_to_load);
 }

@@ -1,4 +1,5 @@
 #include "../Libraries/exception_handler.h"
+#include "../Libraries/debugger.h"
 
 extern pcb_PTR currentProcess;
 
@@ -14,7 +15,7 @@ void fooBar()
     exceptionCode >>= 2;
     
     if (exceptionCode == 0)
-    {   
+    {  
         // Kernel device interrupt handler (3.6 pandos)
         InterruptPendingChecker(exceptionState->cause);
     }

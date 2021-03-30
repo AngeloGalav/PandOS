@@ -125,7 +125,6 @@ void print(char *msg) {
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);	
 		if ((status & TERMSTATMASK) != RECVD)
 		{
-			bp();
 			PANIC();
 		}
 		s++;	

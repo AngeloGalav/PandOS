@@ -27,12 +27,15 @@ void Scheduler()
     {
         if (processCount == 0)
             HALT(); // If the executing process is not in kernel mode
-        else if ((processCount && softBlockCount) > 0)
+        else if ((processCount > 0) && (softBlockCount > 0))
         {
-            setSTATUS(WAIT_STATUS);
+            ///TODO: se non va prova con currentProcess->p_s.status & ~DISABLEINTS & ~LOCALTIMERINT
+            setSTATUS(IMON | IECON); 
             WAIT();
         }
-        else if ((softBlockCount == 0) && (processCount > 0));
-            PANIC(); // Deadlock caused kernel panic
+        else if ((softBlockCount == 0) && (processCount > 0))
+        {   
+            PANIC(); // Deadlock induced kernel panic
+        }
     }
 }

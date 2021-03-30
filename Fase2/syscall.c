@@ -113,14 +113,14 @@ void Passeren_SYS3(int* semAddr)
     {
         currentProcess->p_semAdd = semAddr;
         softBlockCount += 1;
-
+        
         insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
         outProcQ(&readyQueue, currentProcess);
 
-        currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark; 
-        
+        currentProcess->p_time += TIMERVALUE((*((memaddr *) TODLOADDR))) - currentProcess->untracked_TOD_mark; 
         currentProcess->p_s = *cached_exceptionState;
         currentProcess->p_s.pc_epc += 4;        
+        
         Scheduler();
     }
 }
@@ -144,16 +144,14 @@ void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
 
-    GET_BDP_STATUS(saved_state);
-    saved_state->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
+    cached_exceptionState->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
     Passeren_SYS3(&device_semaphores[index]);
 }
 
 void Get_CPU_Time_SYS6()
 {
-    GET_BDP_STATUS(saved_state);
-    saved_state->reg_v0 = currentProcess->p_time + 
-        ((((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark);
+    cached_exceptionState->reg_v0 = currentProcess->p_time + 
+        (TIMERVALUE((*((memaddr *) TODLOADDR))) - currentProcess->untracked_TOD_mark);
 }
 
 void Wait_For_Clock_SYS7() 
