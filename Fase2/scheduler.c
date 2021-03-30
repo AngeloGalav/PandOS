@@ -1,4 +1,5 @@
 #include "../Libraries/scheduler.h"
+#include "../Libraries/debugger.h"
 
 /* Tail pointer to a queue of pcbs that are in the “ready” state. */
 pcb_PTR readyQueue;
@@ -12,16 +13,16 @@ unsigned int softBlockCount = 0;
 unsigned int processCount;
 
 /* Pointer to the current pcb that is in running state */ 
-pcb_PTR currentProcess = NULL;
+pcb_PTR currentProcess;
 
 void Scheduler()
-{
-    if (!emptyProcQ(readyQueue))
+{    
+    if (!(emptyProcQ(readyQueue)))
     {
         currentProcess = removeProcQ(&readyQueue);
-        int status = setTIMER(TIMERVALUE(5000));    /// TODO: chiedere al maldus se questa riga va bene
+        int status = setTIMER(TIMERVALUE(5000));    ///TODO: chiedere al maldus se questa riga va bene
         LDST ((state_t *) &(currentProcess->p_s)); 
-        
+
     } else // If ready queue is empty
     {
         if (processCount == 0)
@@ -31,7 +32,7 @@ void Scheduler()
             setSTATUS(WAIT_STATUS);
             WAIT();
         }
-        else if ((softBlockCount == 0) && (processCount > 0))
+        else if ((softBlockCount == 0) && (processCount > 0));
             PANIC(); // Deadlock caused kernel panic
     }
 }

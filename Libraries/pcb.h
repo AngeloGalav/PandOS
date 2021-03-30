@@ -11,7 +11,7 @@
 #include "pandos_types.h"
 
 void initPcbs();
-void initializePcbt(pcb_t* node);
+void initializePcb(pcb_t* node);
 void freePcb(pcb_t* p);
 pcb_t *allocPcb();
 

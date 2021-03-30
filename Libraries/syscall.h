@@ -21,7 +21,7 @@ void Terminate_Process_SYS2();
 
 void Passeren_SYS3(int* semAddr);
 
-void Verhogen_SYS4(int* semAddr);
+pcb_t* Verhogen_SYS4(int* semAddr);
 
 void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead);
 
@@ -31,7 +31,7 @@ void Wait_For_Clock_SYS7();
 
 void Get_Support_Data_SYS8();
 
-/* Additional measures adopted in syscall that can block processes (i.e. SYS3, SYS5 and SYS7) */
-HIDDEN void BlockingSyscallAdjustments();
+/* Additional measures adopted when returning from a syscall*/
+void SYSCALL_Return();
 
 #endif

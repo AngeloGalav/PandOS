@@ -1,7 +1,7 @@
 #include "../Libraries/syscall.h"
 
 extern pcb_PTR readyQueue;
-
+HIDDEN state_t* cached_exceptionState; ///TODO: Re-integrate for caching
 extern pcb_PTR currentProcess;
 
 extern unsigned int processCount;
@@ -10,16 +10,18 @@ extern int device_semaphores[SEMAPHORE_QTY];
 
 void SyscallExceptionHandler(state_t* exception_state)
 {
+    cached_exceptionState = exception_state;
     unsigned int sysCallCode = (unsigned int) exception_state->reg_a0;
 
     switch (sysCallCode)
     {
-        
-        case CREATEPROCESS: 
+        {
+        case CREATEPROCESS: ;
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t *new_suppt = (support_t*) exception_state->reg_a2;
             Create_Process_SYS1(new_pstate, new_suppt); 
             break;
+        }
         case TERMPROCESS:
             Terminate_Process_SYS2();
             break;
@@ -46,15 +48,13 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
         
     } 
-
-    LDST((state_t*) BIOSDATAPAGE);
 }
 
 void Create_Process_SYS1(state_t arg1, support_t* arg2)
 {
     pcb_PTR newproc = allocPcb(); 
 
-    initializePcbt(newproc);
+    initializePcb(newproc);
     insertProcQ(&(readyQueue), newproc);
     insertChild(currentProcess, newproc);
 
@@ -66,33 +66,34 @@ void Create_Process_SYS1(state_t arg1, support_t* arg2)
     newproc->p_supportStruct = arg2;
 }
 
-///TODO: Should we check if the process is in the readyQueue? ///
 void Terminate_Process_SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
     outChild(currentProcess);
-    TerminateSingleProcess(currentProcess);
     KillRec(currentProcess->p_child);
+    TerminateSingleProcess(currentProcess);
 }
-
 
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can only be called in this file scope.
 {
     // Se il valore del semaforo e' negativo, allora il numero dei processi bloccati corrisponde in quel semaforo corrisponde
     // al valore assoluto del valore del semaforo stesso. Questo valore, se un processo bloccato viene terminato, va aggiustato.
     processCount -= 1;
-    freePcb(to_terminate);
+    outProcQ(&readyQueue, to_terminate);
+    
     
     if (to_terminate->p_semAdd != NULL)
     {   
         // Device semaphore check && elimination from semaphore
-        if (!(to_terminate->p_semAdd >= &device_semaphores[0] || to_terminate->p_semAdd <= &device_semaphores[48]) 
+        if (!(to_terminate->p_semAdd >= &device_semaphores[0] && to_terminate->p_semAdd <= &device_semaphores[48]) 
             && removeBlocked(to_terminate->p_semAdd) != NULL)
         {
             if (*(to_terminate->p_semAdd) < 0) *(to_terminate->p_semAdd) += 1;
             softBlockCount -= 1;
         }
     }
+
+    freePcb(to_terminate);
 }
 
 HIDDEN void KillRec(pcb_PTR proc_elem)
@@ -107,42 +108,50 @@ HIDDEN void KillRec(pcb_PTR proc_elem)
 void Passeren_SYS3(int* semAddr) 
 {   
     *semAddr -= 1;
-    
-    if (*semAddr < 0)  // if the value is negative, the process gets blocked
+
+    if (*semAddr < 0) // if the value is negative, the process gets blocked
     {
-        GET_STATUS(saved_state);    /* Additional steps in between blocking a processs */
-        saved_state->pc_epc += 4;
-        currentProcess->p_s = *saved_state;
-
+        currentProcess->p_semAdd = semAddr;
         softBlockCount += 1;
-        insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
 
-        /* a process gets unlocked */
+        insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
+        outProcQ(&readyQueue, currentProcess);
+
         currentProcess->p_time += (((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark; 
+        
+        currentProcess->p_s = *cached_exceptionState;
+        currentProcess->p_s.pc_epc += 4;        
         Scheduler();
     }
 }
 
-void Verhogen_SYS4(int* semAddr) 
+pcb_t* Verhogen_SYS4(int* semAddr) 
 {
-    if (*semAddr < 0) *semAddr += 1;
-    removeBlocked(semAddr);
+    *semAddr += 1;
+    pcb_t* unlockedProcess = removeBlocked(semAddr);
+
+    if (unlockedProcess != NULL) 
+    {
+        unlockedProcess->p_semAdd = NULL;
+        softBlockCount -= 1;
+        insertProcQ(&readyQueue, unlockedProcess);
+    }
+    return unlockedProcess;
 }
 
 void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
 {
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
-    
-    GET_STATUS(saved_state);
-    saved_state->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
 
+    GET_BDP_STATUS(saved_state);
+    saved_state->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
     Passeren_SYS3(&device_semaphores[index]);
 }
 
 void Get_CPU_Time_SYS6()
 {
-    GET_STATUS(saved_state);
+    GET_BDP_STATUS(saved_state);
     saved_state->reg_v0 = currentProcess->p_time + 
         ((((*((cpu_t *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))) - currentProcess->untracked_TOD_mark);
 }
@@ -154,16 +163,11 @@ void Wait_For_Clock_SYS7()
 
 void Get_Support_Data_SYS8()
 {
-    GET_STATUS(saved_state);
-    saved_state->reg_v0 = currentProcess->p_supportStruct;
+    cached_exceptionState->reg_v0 = currentProcess->p_supportStruct;
 }
 
-HIDDEN void BlockingSyscallAdjustments() ///DEVNOTE: we are keeping this in case 
+void SYSCALL_Return()
 {
-    GET_STATUS(saved_state);
-    saved_state->pc_epc += 4;
-    currentProcess->p_s = *saved_state;
-    
-    ///TODO: accumulated CPU time update in current process ///
-} 
-
+    cached_exceptionState->pc_epc += 4;
+    LDST(cached_exceptionState);
+}

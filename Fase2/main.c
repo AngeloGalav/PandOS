@@ -8,6 +8,7 @@
 #include "../Libraries/syscall.h"
 #include "../Libraries/scheduler.h"
 #include "../Libraries/exception_handler.h"
+#include "../Libraries/debugger.h"
 
 /* Scheduler related variables */
 extern unsigned int processCount;
@@ -33,6 +34,8 @@ int main()
     initPcbs(); 
     initASL();
 
+    passupvector = (passupvector_t*) PASSUPVECTOR;
+    
     /* Fill up pass-up-vector*/
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler; 
     passupvector->tlb_refill_stackPtr = (memaddr) 0x20001000;
@@ -46,10 +49,10 @@ int main()
 
     /* Start the process initialization */
     pcb_PTR proc = allocPcb();
+    initializePcb(proc);
     insertProcQ(&(readyQueue), proc);
     processCount += 1;
 
-    initializePcbt(proc);
     proc->p_time = 0;
     proc->p_semAdd = NULL;
     proc->p_supportStruct = NULL;
@@ -64,7 +67,7 @@ int main()
     // bit 1 indicates that the PLT is enabled for this process, e il secondo 
     // che stiamo attivando tutti gli interrupt.
     // 00001000000000000000000000000100 == 134217732
-    proc->p_s.status = INIT_STATUS;    //se non va, mettiamo setSTATUS(134217732); 
+    proc->p_s.status = TEBITON | IEPON;    //se non va, mettiamo setSTATUS(134217732); 
 
     currentProcess = proc; // now the first process is also the current process
 

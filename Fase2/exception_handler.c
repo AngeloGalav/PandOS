@@ -7,7 +7,7 @@ void fooBar()
 {
     STCK(currentProcess->untracked_TOD_mark);
     
-    //GET_STATUS(exceptionState);
+    //GET_BDP_STATUS(exceptionState);
     state_t *exceptionState = (state_t*) BIOSDATAPAGE;
     currentProcess->p_s = *exceptionState; // updates the current process status
     unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
@@ -24,8 +24,11 @@ void fooBar()
     }
     else if (exceptionCode == 8) /* Syscall exception handler */
     {
-        if (!(checkMode(exceptionState->status))) // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
+        if (!(checkMode(exceptionState->status)))
+        {                                               // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
             SyscallExceptionHandler(exceptionState); 
+            SYSCALL_Return();
+        }
         else
         {
            setExcCode(exceptionState, RESERVEDINSTRUCTION);

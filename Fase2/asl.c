@@ -1,4 +1,5 @@
 #include "../Libraries/asl.h"
+#include "../Libraries/debugger.h"
 
 // Array di semafori non attivi
 HIDDEN semd_t semd_table[MAXPROC + 2];

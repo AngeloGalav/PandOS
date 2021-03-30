@@ -30,6 +30,7 @@ VPATH = $(UMPS3_DATA_DIR)
 
 all : kernel.core.umps clean
 	@echo "** All successfull! Good Luck!! :) [remember to set the TLB Floor Address to 0x8000.000 in UMPS3!!]"
+	@echo "** remember to remove all breakpoints, todos and debugging libs"
 
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
@@ -43,7 +44,7 @@ clean :
 	-rm -f *.o
 
 clean_all :
-	@echo "** Cleaning all umps built files..."
+	@echo "** Cleaning all generated umps files..."
 	-rm -f *.o kernel *.umps
 
 %.o : %.S

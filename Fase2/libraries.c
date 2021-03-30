@@ -19,7 +19,7 @@ int checkMode(unsigned int status_register)
 
 void setProcessorMode(int mode)
 {
-    GET_STATUS(current_status);                 // creates a pointer to the biosdatapage status 
+    GET_BDP_STATUS(current_status);                 // creates a pointer to the biosdatapage status 
     if (mode) current_status->status &= !(8);   // disables the KUp bit (kernel mode on)
     else current_status->status |= 8;           // enables the KUp bit (user mode on)
 }

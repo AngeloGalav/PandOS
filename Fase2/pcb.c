@@ -1,4 +1,5 @@
 #include "../Libraries/pcb.h"
+#include "../Libraries/debugger.h"
 
 // Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
 HIDDEN pcb_t* pcbFree_h;
@@ -27,7 +28,7 @@ void initPcbs()
 }
 
 /** Inizializza i campi di un pcb_t a NULL*/
-void initializePcbt(pcb_t* node)
+void initializePcb(pcb_t* node)
 {
     if (node != NULL)
     {
@@ -69,7 +70,7 @@ pcb_t *allocPcb()
         pcb_t* temp = pcbFree_h;
         pcbFree_h = pcbFree_h->p_next;  // Prende un pcb_t dalla lista dei pcbFree.
 
-        initializePcbt(temp);           // Lo inizializza, e poi lo ritorna.
+        initializePcb(temp);           // Lo inizializza, e poi lo ritorna.
 
         return temp;
     }
@@ -112,7 +113,7 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
 
         (*tp) = p;      // ... e aggiorno la sentinella.
     }
-    else if (p != NULL && (*tp) == NULL)
+    else if ((*tp) == NULL && p != NULL)
     {
         (*tp) = p;
         (*tp)->p_next = (*tp);
@@ -137,15 +138,16 @@ pcb_t *headProcQ(pcb_t *tp)
 */
 pcb_t* removeProcQ(pcb_t **tp)
 {
-    if (*tp == NULL) return NULL;
+    if (*tp == NULL) 
+    {
+        return NULL;
+    }
 
     else if (*tp == (*tp)->p_prev) // Caso in cui ho un singolo elemento nella coda.
     {
         pcb_t* head = *tp;
-        initializePcbt(head);
 
         *tp = NULL; // Rimuove l'unico elemento della coda, quindi la coda diventa vuota.
-
         return head;
     }
     else    // Caso in cui ho piu' di un elemento nella coda.
@@ -155,7 +157,6 @@ pcb_t* removeProcQ(pcb_t **tp)
         pcb_t* tmp = head->p_prev;
         tmp->p_next = (*tp);
 
-        //initializePcbt(head);
         return head;
     }
 }

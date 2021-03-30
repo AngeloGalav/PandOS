@@ -5,7 +5,7 @@
 #include "../Libraries/pandos_const.h"
 #include "umps3/umps/libumps.h"
 
-#define GET_STATUS(T) state_t* T = (state_t*) BIOSDATAPAGE
+#define GET_BDP_STATUS(T) state_t* T = (state_t*) BIOSDATAPAGE
 
 /* Sets the ExeCode of the exceptionsStatus to a value (used if syscall is called in usermode) */
 void setExcCode(state_t* exceptionStatus, unsigned int toSet);
