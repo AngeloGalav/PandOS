@@ -3,6 +3,8 @@
 
 extern pcb_PTR readyQueue;
 
+state_t* status_to_ll;
+
 extern pcb_PTR currentProcess;
 
 unsigned int * device; ///TODO: TOGLI E DICHIARA DENTRO LA FUNZIONE
@@ -22,9 +24,8 @@ void InterruptPendingChecker(unsigned int cause_reg)
             InterruptLineDeviceCheck(i);
         mask *= 2;
     }
-    
-    ///TODO: non-device interrupts
-        
+
+    ///TODO: non-device interrupts    
 }
 
 void InterruptLineDeviceCheck(int line)
@@ -43,7 +44,7 @@ void InterruptLineDeviceCheck(int line)
     }
     else
     {
-
+        bp_extra();
     }
 }
 
@@ -71,14 +72,16 @@ void InterruptHandler(int line, int device)
     int index = (line - 3) * 8 + device; 
     
     pcb_t* resumedProcess = Verhogen_SYS4(&device_semaphores[index]);
-    
+
+    status_to_ll = (state_t*) BIOSDATAPAGE;
     GET_BDP_STATUS(status_to_load);
+
     if (resumedProcess != NULL) 
     {   
         resumedProcess->p_s.reg_v0 = status_word;
-        status_to_load->reg_v0 = status_word;
     }
-    
-    bp();
-    LDST(status_to_load);
+
+    //status_to_load->pc_epc += 4;
+
+    LDST((state_t *) status_to_load);
 }

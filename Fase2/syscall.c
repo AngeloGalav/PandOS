@@ -136,6 +136,9 @@ pcb_t* Verhogen_SYS4(int* semAddr)
         softBlockCount -= 1;
         insertProcQ(&readyQueue, unlockedProcess);
     }
+
+    cached_exceptionState->pc_epc += 4;
+
     return unlockedProcess;
 }
 

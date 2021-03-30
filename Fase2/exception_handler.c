@@ -16,6 +16,7 @@ void fooBar()
     
     if (exceptionCode == 0)
     {  
+        bp();
         // Kernel device interrupt handler (3.6 pandos)
         InterruptPendingChecker(exceptionState->cause);
     }

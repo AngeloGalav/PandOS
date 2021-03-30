@@ -34,8 +34,6 @@ void Scheduler()
             WAIT();
         }
         else if ((softBlockCount == 0) && (processCount > 0))
-        {   
             PANIC(); // Deadlock induced kernel panic
-        }
     }
 }
