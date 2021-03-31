@@ -46,7 +46,6 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
         default:
             break;
-        
     } 
 }
 

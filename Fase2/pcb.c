@@ -34,6 +34,7 @@ void initializePcb(pcb_t* node)
     {
         node->p_next = NULL;
         node->p_prev = NULL;
+        
 
         node->p_child = NULL;
         node->p_next_sib = NULL;

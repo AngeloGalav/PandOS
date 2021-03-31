@@ -44,6 +44,7 @@ void InterruptLineDeviceCheck(int line)
     }
     else
     {
+        // we have to gestire sta parte (TIMERS)
         bp_extra();
     }
 }
