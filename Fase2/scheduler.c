@@ -20,7 +20,7 @@ void Scheduler()
     if (!(emptyProcQ(readyQueue)))
     {
         currentProcess = removeProcQ(&readyQueue);
-        int status = setTIMER(TIMERVALUE(5000));    ///TODO: chiedere al maldus se questa riga va bene
+        setTIMER(TIMERVALUE(5000));    ///TODO: chiedere al maldus se questa riga va bene
         LDST ((state_t *) &(currentProcess->p_s)); 
 
     } else // If ready queue is empty

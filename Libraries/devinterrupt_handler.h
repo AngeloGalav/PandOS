@@ -3,6 +3,7 @@
 
 #include "libraries.h"
 #include "definitions.h"
+#include "scheduler.h"
 #include "asl.h" 
 #include "syscall.h"
 

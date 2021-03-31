@@ -46,6 +46,11 @@ void InterruptLineDeviceCheck(int line)
     {
         // we have to gestire sta parte (TIMERS)
         bp_extra();
+
+        setTIMER(TIMERVALUE(5000));
+        currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
+        insertProcQ(&readyQueue, currentProcess);
+        Scheduler();
     }
 }
 
