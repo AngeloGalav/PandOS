@@ -30,7 +30,7 @@ void InterruptPendingChecker(unsigned int cause_reg)
 
 void InterruptLineDeviceCheck(int line)
 {
-    if (line > 2)
+    if (line > 2) /* Non-timer device interrupt line*/
     {
         device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
 
@@ -42,15 +42,19 @@ void InterruptLineDeviceCheck(int line)
             mask *= 2;
         }
     }
-    else
+    else if (line == 2) /* PLT timer interrupt line */
     {
-        // we have to gestire sta parte (TIMERS)
         bp_extra();
 
         setTIMER(TIMERVALUE(5000));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
         insertProcQ(&readyQueue, currentProcess);
+        
         Scheduler();
+    }
+    else /* Interval timer interrupt line */
+    {
+
     }
 }
 
