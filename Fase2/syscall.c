@@ -135,7 +135,6 @@ pcb_t* Verhogen_SYS4(int* semAddr)
 
     if (unlockedProcess != NULL) 
     {
-        bp_extra();
         unlockedProcess->p_semAdd = NULL;
         softBlockCount -= 1;
         insertProcQ(&readyQueue, unlockedProcess);
@@ -156,7 +155,6 @@ void Wait_For_IO_Device_SYS5()
     int index = (intlNo - 3) * 8 + dnum;
 
     cached_exceptionState->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
-    bp_syscall_();
     Passeren_SYS3(&device_semaphores[index]);
 }
 
@@ -168,7 +166,6 @@ void Get_CPU_Time_SYS6()
 
 void Wait_For_Clock_SYS7() 
 {
-    bp_adel();
     Passeren_SYS3(&device_semaphores[SEMAPHORE_QTY - 1]);
 }
 

@@ -35,7 +35,6 @@ void fooBar()
         }
         else
         {
-            bp();
             setExcCode(exceptionState, RESERVEDINSTRUCTION);
         }
     }

@@ -37,7 +37,6 @@ void Scheduler()
         else if ((processCount > 0) && (softBlockCount > 0))
         {
             ///TODO: se non va prova con currentProcess->p_s.status & ~DISABLEINTS & ~LOCALTIMERINT
-            bp_wait();
             setSTATUS(currentProcess->p_s.status | IMON | IECON); 
             WAIT();
         }
@@ -45,5 +44,4 @@ void Scheduler()
             PANIC(); // Deadlock induced kernel panic
     }
     
-    bp_scheduler_error();
 }
