@@ -5,21 +5,19 @@ extern pcb_PTR currentProcess;
 int TOD_timer_start;
 
 //Change this name
-void fooBar()
+void exceptionHandler()
 {
     // The BIOS has now saved the processor state in the BIOSDATAPAGE
 
-    STCK(TOD_timer_start);
+    //STCK(TOD_timer_start);
     
     GET_BDP_STATUS(exceptionState); /* Retrieve the info stored in the BIOSDATAPAGE */
-    currentProcess->p_s = *exceptionState; /* We update the status of the current process*/
-    
-    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; /* Extraction of the ExecCode (exception code)*/
+    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 0x3c; /* Extraction of the ExecCode (exception code)*/
     exceptionCode >>= 2;
     
     if (exceptionCode == 0) /* Device Interrupt handler */
     {  
-        InterruptPendingChecker(exceptionState->cause);
+        getInterruptLine(exceptionState->cause);
     }
     else if ((exceptionCode >= 1) && (exceptionCode <= 3)) /* TLB exception handler */
     {
@@ -36,6 +34,8 @@ void fooBar()
         else
         {
             setExcCode(exceptionState, RESERVEDINSTRUCTION);
+            if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
+            else PassUp(GENERALEXCEPT, exceptionState);
         }
     }
     else /* Program Trap exception */

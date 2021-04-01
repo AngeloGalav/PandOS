@@ -10,7 +10,7 @@
  *  The exception handler function of the kernel
  *  Change this name 
 */
-void fooBar();
+void exceptionHandler();
 
 void PassUp(int except_type, state_t* exceptionState);
 

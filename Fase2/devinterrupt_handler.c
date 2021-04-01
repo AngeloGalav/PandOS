@@ -4,26 +4,27 @@
 extern pcb_PTR readyQueue;
 extern pcb_PTR currentProcess;
 
-extern unsigned int softBlockCount;
+extern int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 extern int TOD_timer_start;
 
-void InterruptPendingChecker(unsigned int cause_reg)
+void getInterruptLine(unsigned int cause_reg)
 {
     unsigned int ip_reg = BitExtractor(cause_reg, 0xFF00, 8);
     int mask = 2;
-    // if(ip_reg & 1)
-    //     PANIC();
+    
+    if(ip_reg & 1)
+         PANIC();
     
     for (int i = 1; i < 8; i++)
     {
         if (ip_reg & mask) 
-            InterruptTypeCheck(i);
+            GeneralIntHandler(i);
         mask *= 2;
     }
 }
 
-void InterruptTypeCheck(int line)
+void GeneralIntHandler(int line)
 {
     if (line > 2) /* Non-timer device interrupt line*/
     {
@@ -40,24 +41,32 @@ void InterruptTypeCheck(int line)
     else if (line == 1) /* PLT timer interrupt line */
     {
 
-        setTIMER(TIMERVALUE(5000));
+        setTIMER(TIMERVALUE(__INT32_MAX__));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
         insertProcQ(&readyQueue, currentProcess);
-        
         Scheduler();
     }
     else /* Interval timer interrupt line */
     {
+        bp_interval();
         LDIT(PSECOND);
 
-        while(headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
+        while (headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
         {
-            insertProcQ(readyQueue, removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]));
-            softBlockCount -= 1;
+            pcb_t* unlockedProcess = removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]);
+            
+            if (unlockedProcess != NULL)
+            {
+                ///TODO: update-timer
+                insertProcQ(readyQueue, unlockedProcess);
+                softBlockCount -= 1;
+            }
         }
         
         device_semaphores[SEMAPHORE_QTY - 1] = 0;
-        LDST((state_t*) BIOSDATAPAGE);
+
+        if (currentProcess == NULL) Scheduler();
+        else LDST((state_t*) BIOSDATAPAGE);
     }
 }
 
@@ -67,36 +76,39 @@ void NonTimerHandler(int line, int device)
     int isReadTerm = 0;
     unsigned int status_word;
     
-    if ((line >= 3) && (line <= 6))
+    if (2 < line && line < 7)
     {
         device_register->dtp.command = ACK;
-        status_word = GetStatusWord(line, device, 0);
+        status_word = device_register->dtp.status;
     }
     else if (line == 7)
     {
-        if(device_register->term.recv_status != READY)
+        bp_extra();
+        termreg_t* term_register = (devreg_t*) device_register;
+       
+        if(term_register->recv_status != READY)
         {
-            device_register->term.recv_command = ACK;
+            status_word = term_register->recv_status;
+            term_register->recv_command = ACK;
             isReadTerm = 1;
         }
+        else 
+        {
+            status_word = term_register->transm_status;
+            term_register->transm_command = ACK;
+        }
 
-        if(device_register->term.transm_status != READY)
-            device_register->term.transm_command = ACK;
-
-        status_word = GetStatusWord(line, device, isReadTerm);
-        
         device = 2*device + isReadTerm;
     }
     
     int index = (line - 3) * 8 + device; 
+
+    softBlockCount--;
+    pcb_t* unlockedProcess = Verhogen_SYS4(&device_semaphores[index]);
     
-    pcb_t* resumedProcess = Verhogen_SYS4(&device_semaphores[index]);
+    if (unlockedProcess != NULL)
+        unlockedProcess->p_s.reg_v0 = status_word;
 
-    if (resumedProcess != NULL) 
-    {
-        resumedProcess->p_s.reg_v0 = status_word;
-        resumedProcess->p_time += (CURRENT_TOD - TOD_timer_start);
-    }
-
-    LDST((state_t *) BIOSDATAPAGE);
+    if (currentProcess == NULL) Scheduler();
+    else LDST((state_t *) BIOSDATAPAGE);
 }

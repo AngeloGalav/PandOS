@@ -12,7 +12,7 @@ void bp_extra(void);
 void bp_scheduler_error(void);
 
 void bp_adel();
-void process_dispatched();
+void bp_process_dispatched();
 void bp_sys_7();
 void bp_wait();
 void bp_interval();
@@ -22,4 +22,7 @@ void bp_correct();
 void memcpy_start();
 void memcpy_end();
 void zombie_process_excp();
+void bp_terminal_correct();
+void bp_ALERT();
+void bp_wait2();
 

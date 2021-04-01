@@ -7,15 +7,16 @@ extern pcb_PTR currentProcess;
 
 extern int TOD_timer_start;
 
-extern unsigned int processCount;
-extern unsigned int softBlockCount;
+extern int processCount;
+extern int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 
 void SyscallExceptionHandler(state_t* exception_state)
 {
     cached_exceptionState = exception_state;
     unsigned int sysCallCode = (unsigned int) exception_state->reg_a0;
-
+    cached_exceptionState->pc_epc += 4;
+    
     switch (sysCallCode)
     {
         {
@@ -56,16 +57,20 @@ void Create_Process_SYS1(state_t arg1, support_t* arg2)
 {
     pcb_PTR newproc = allocPcb(); 
 
-    initializePcb(newproc);
-    insertProcQ(&(readyQueue), newproc);
-    insertChild(currentProcess, newproc);
+    if (newproc != NULL)
+    {
+        initializePcb(newproc);
+        insertProcQ(&(readyQueue), newproc);
+        insertChild(currentProcess, newproc);
 
-    processCount += 1;
+        processCount += 1;
 
-    newproc->p_semAdd = NULL;
-    newproc->p_time = 0; 
-    newproc->p_s = arg1;
-    newproc->p_supportStruct = arg2;
+        newproc->p_semAdd = NULL;
+        newproc->p_time = 0; 
+        newproc->p_s = arg1;
+        newproc->p_supportStruct = arg2;
+    } 
+    else cached_exceptionState->reg_v0 = NOPROC; 
 }
 
 void Terminate_Process_SYS2()
@@ -74,6 +79,8 @@ void Terminate_Process_SYS2()
     outChild(currentProcess);
     KillRec(currentProcess->p_child);
     TerminateSingleProcess(currentProcess);
+    currentProcess = NULL;
+    Scheduler();
 }
 
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can only be called in this file scope.
@@ -88,7 +95,7 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
     {   
         // Device semaphore check && elimination from semaphore
         if (!(to_terminate->p_semAdd >= &device_semaphores[0] && to_terminate->p_semAdd <= &device_semaphores[48]) 
-            && removeBlocked(to_terminate->p_semAdd) != NULL)
+            && outBlocked(to_terminate->p_semAdd) != NULL)
         {
             if (*(to_terminate->p_semAdd) < 0) *(to_terminate->p_semAdd) += 1;
             softBlockCount -= 1;
@@ -112,18 +119,10 @@ void Passeren_SYS3(int* semAddr)
     *semAddr -= 1;
 
     if (*semAddr < 0) // if the value is negative, the process gets blocked
-    {
-        currentProcess->p_semAdd = semAddr;
-        softBlockCount += 1;
-        
+    {   
+        currentProcess->p_s = *cached_exceptionState; 
         insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
-
-        outProcQ(&readyQueue, currentProcess);
-
-        currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
-        currentProcess->p_s = *cached_exceptionState;
-        currentProcess->p_s.pc_epc += 4;        
-
+        //currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
         Scheduler();
     }
 }
@@ -136,11 +135,8 @@ pcb_t* Verhogen_SYS4(int* semAddr)
     if (unlockedProcess != NULL) 
     {
         unlockedProcess->p_semAdd = NULL;
-        softBlockCount -= 1;
         insertProcQ(&readyQueue, unlockedProcess);
     }
-
-    //cached_exceptionState->pc_epc += 4;
 
     return unlockedProcess;
 }
@@ -153,9 +149,13 @@ void Wait_For_IO_Device_SYS5()
 
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
-
-    cached_exceptionState->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
-    Passeren_SYS3(&device_semaphores[index]);
+    
+    softBlockCount += 1;
+    
+    device_semaphores[index] -= 1;      /* performing a V on the device semaphore */
+    currentProcess->p_s = *cached_exceptionState; 
+    insertBlocked(&(device_semaphores[index]), currentProcess); // (we are not calling the sys7 directly so it's always
+    Scheduler();                                                //  the semaphore is always blocking the current process)
 }
 
 void Get_CPU_Time_SYS6()
@@ -166,7 +166,11 @@ void Get_CPU_Time_SYS6()
 
 void Wait_For_Clock_SYS7() 
 {
-    Passeren_SYS3(&device_semaphores[SEMAPHORE_QTY - 1]);
+    device_semaphores[SEMAPHORE_QTY - 1] -= 1;
+    softBlockCount += 1;
+    currentProcess->p_s = *cached_exceptionState; 
+    insertBlocked(&(device_semaphores[SEMAPHORE_QTY - 1]), currentProcess);
+    Scheduler();
 }
 
 void Get_Support_Data_SYS8()
@@ -176,7 +180,6 @@ void Get_Support_Data_SYS8()
 
 void SyscallReturn()
 {
-    cached_exceptionState->pc_epc += 4;
     currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
     LDST(cached_exceptionState);
 }

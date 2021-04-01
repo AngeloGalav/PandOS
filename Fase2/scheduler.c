@@ -1,47 +1,32 @@
 #include "../Libraries/scheduler.h"
 #include "../Libraries/debugger.h"
 
-/* Tail pointer to a queue of pcbs that are in the “ready” state. */
-pcb_PTR readyQueue;
-
-/** Number of started, but not terminated processes that in are the
-*   “blocked” state  due to an I/O or timer request 
-*/
-unsigned int softBlockCount = 0;
-
-/* Number of started, but not yet terminated processes. */
-unsigned int processCount = 0;
-
-/* Pointer to the current pcb that is in running state */ 
-pcb_PTR currentProcess;
+extern pcb_PTR readyQueue;
+extern int softBlockCount;
+extern int processCount;
+extern pcb_PTR currentProcess;
 
 void Scheduler()
 {    
-    if (!(emptyProcQ(readyQueue)))
+    currentProcess = removeProcQ(&readyQueue);   
+    if(currentProcess != NULL)
     {
-        process_dispatched();
-        currentProcess = removeProcQ(&readyQueue);
-        
-        if (currentProcess != NULL)
-        {
-            setTIMER(TIMERVALUE(5000));
-            LDST ((state_t *) &(currentProcess->p_s)); 
-        }else
-        {
-            zombie_process_excp();
-        }
-    } else // If ready queue is empty
+        setTIMER(TIMERVALUE(TIMESLICE)); // setting the timeslice
+        LDST(&(currentProcess->p_s));   // loading the process state
+    }
+    else // readyQueue is now empty
     {
         if (processCount == 0)
-            HALT(); // If the executing process is not in kernel mode
-        else if ((processCount > 0) && (softBlockCount > 0))
+            HALT();
+        if(processCount > 0 && softBlockCount > 0)
         {
-            ///TODO: se non va prova con currentProcess->p_s.status & ~DISABLEINTS & ~LOCALTIMERINT
-            setSTATUS(currentProcess->p_s.status | IMON | IECON); 
+            setTIMER(TIMERVALUE(__INT32_MAX__));
+            bp_wait();
+            setSTATUS(IECON | IMON);
+            bp_wait2();
             WAIT();
         }
-        else if ((softBlockCount == 0) && (processCount > 0))
-            PANIC(); // Deadlock induced kernel panic
+        else if(processCount > 0 && softBlockCount == 0) // deadlock induced kernel panic
+            PANIC();
     }
-    
 }

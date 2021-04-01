@@ -8,10 +8,10 @@
 #include "syscall.h"
 
 /* Cycles and handles all pending interrupts from highest to lowest priority */
-void InterruptPendingChecker(unsigned int cause_reg);
+void getInterruptLine(unsigned int cause_reg);
 
 /* Cycles and handles all internal pending interrupts from highest to lowest priority*/
-void InterruptTypeCheck(int line);
+void GeneralIntHandler(int line);
 
 /* */
 void NonTimerHandler();

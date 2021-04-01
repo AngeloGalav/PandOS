@@ -123,10 +123,12 @@ void print(char *msg) {
 	while (*s != EOS) {
 		*(base + 3) = PRINTCHR | (((devregtr) *s) << BYTELEN);
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);	
+		bp_wait();
 		if ((status & TERMSTATMASK) != RECVD)
 		{
 			PANIC();
 		}
+		bp_correct();
 		s++;	
 	}
 	SYSCALL(VERHOGEN, (int)&term_mut, 0, 0);				/* V(term_mut) */
