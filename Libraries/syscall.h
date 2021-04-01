@@ -32,6 +32,9 @@ void Wait_For_Clock_SYS7();
 void Get_Support_Data_SYS8();
 
 /* Additional measures adopted when returning from a syscall*/
-void SYSCALL_Return();
+void SyscallReturn();
+
+/* Pass Up or Die applied to the process if the syscall requested is invalid */
+void InvalidSyscall();
 
 #endif

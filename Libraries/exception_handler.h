@@ -12,4 +12,6 @@
 */
 void fooBar();
 
+void PassUp(int except_type, state_t* exceptionState);
+
 #endif

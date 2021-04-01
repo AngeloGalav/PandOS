@@ -5,6 +5,8 @@ extern pcb_PTR readyQueue;
 HIDDEN state_t* cached_exceptionState; ///TODO: Re-integrate for caching
 extern pcb_PTR currentProcess;
 
+extern int TOD_timer_start;
+
 extern unsigned int processCount;
 extern unsigned int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
@@ -45,6 +47,7 @@ void SyscallExceptionHandler(state_t* exception_state)
             Get_Support_Data_SYS8(exception_state);
             break;
         default:
+            InvalidSyscall();
             break;
     } 
 }
@@ -117,10 +120,10 @@ void Passeren_SYS3(int* semAddr)
 
         outProcQ(&readyQueue, currentProcess);
 
-        currentProcess->p_time += TIMERVALUE((*((memaddr *) TODLOADDR))) - currentProcess->untracked_TOD_mark; 
+        currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
         currentProcess->p_s = *cached_exceptionState;
         currentProcess->p_s.pc_epc += 4;        
-        
+
         Scheduler();
     }
 }
@@ -174,8 +177,20 @@ void Get_Support_Data_SYS8()
     cached_exceptionState->reg_v0 = currentProcess->p_supportStruct;
 }
 
-void SYSCALL_Return()
+void SyscallReturn()
 {
     cached_exceptionState->pc_epc += 4;
+    currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
     LDST(cached_exceptionState);
+}
+
+void InvalidSyscall()
+{
+    if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
+    else
+    {
+        (currentProcess->p_supportStruct)->sup_exceptState[GENERALEXCEPT] = *cached_exceptionState;
+        context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[GENERALEXCEPT];
+        LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);
+    }
 }

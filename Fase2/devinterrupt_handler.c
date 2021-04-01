@@ -2,16 +2,11 @@
 #include "../Libraries/debugger.h"
 
 extern pcb_PTR readyQueue;
-
-state_t* status_to_ll;
-
 extern pcb_PTR currentProcess;
 
-unsigned int * device; ///TODO: TOGLI E DICHIARA DENTRO LA FUNZIONE
-
 extern unsigned int softBlockCount;
-
 extern int device_semaphores[SEMAPHORE_QTY];
+extern int TOD_timer_start;
 
 void InterruptPendingChecker(unsigned int cause_reg)
 {
@@ -34,7 +29,7 @@ void InterruptLineDeviceCheck(int line)
 {
     if (line > 2) /* Non-timer device interrupt line*/
     {
-        device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
+        memaddr* device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
 
         int mask = 1;
         for (int i = 0; i < DEVPERINT; i++)
@@ -106,6 +101,7 @@ void InterruptHandler(int line, int device)
     {
         bp_correct();   
         resumedProcess->p_s.reg_v0 = status_word;
+        resumedProcess->p_time += (CURRENT_TOD - TOD_timer_start);
     }
 
     bp_device();
