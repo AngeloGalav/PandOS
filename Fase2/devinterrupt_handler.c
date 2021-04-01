@@ -9,6 +9,8 @@ extern pcb_PTR currentProcess;
 
 unsigned int * device; ///TODO: TOGLI E DICHIARA DENTRO LA FUNZIONE
 
+extern unsigned int softBlockCount;
+
 extern int device_semaphores[SEMAPHORE_QTY];
 
 void InterruptPendingChecker(unsigned int cause_reg)
@@ -42,9 +44,8 @@ void InterruptLineDeviceCheck(int line)
             mask *= 2;
         }
     }
-    else if (line == 2) /* PLT timer interrupt line */
+    else if (line == 1) /* PLT timer interrupt line */
     {
-        bp_extra();
 
         setTIMER(TIMERVALUE(5000));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
@@ -54,7 +55,25 @@ void InterruptLineDeviceCheck(int line)
     }
     else /* Interval timer interrupt line */
     {
+        bp_interval();
+        LDIT(PSECOND);
 
+        if (headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) == NULL)
+        {
+            //bp();
+        }
+        
+        while(headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
+        {
+            insertProcQ(readyQueue, removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]));
+            softBlockCount -= 1;
+        }
+        
+        device_semaphores[SEMAPHORE_QTY - 1] = 0;
+    
+        //bp_extra();
+
+        LDST((state_t*) BIOSDATAPAGE);
     }
 }
 
@@ -83,15 +102,12 @@ void InterruptHandler(int line, int device)
     
     pcb_t* resumedProcess = Verhogen_SYS4(&device_semaphores[index]);
 
-    status_to_ll = (state_t*) BIOSDATAPAGE;
-    GET_BDP_STATUS(status_to_load);
-
     if (resumedProcess != NULL) 
-    {   
+    {
+        bp_correct();   
         resumedProcess->p_s.reg_v0 = status_word;
     }
 
-    //status_to_load->pc_epc += 4;
-
-    LDST((state_t *) status_to_load);
+    bp_device();
+    LDST((state_t *) BIOSDATAPAGE);
 }

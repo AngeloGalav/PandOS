@@ -10,13 +10,13 @@ void fooBar()
     
     //GET_BDP_STATUS(exceptionState);
     state_t *exceptionState = (state_t*) BIOSDATAPAGE;
+
     currentProcess->p_s = *exceptionState; // updates the current process status
     unsigned int exceptionCode = (unsigned int) exceptionState->cause & 124; // extract ExecCode from cause register
     exceptionCode >>= 2;
     
     if (exceptionCode == 0)
     {  
-        bp();
         // Kernel device interrupt handler (3.6 pandos)
         InterruptPendingChecker(exceptionState->cause);
     }
@@ -33,8 +33,9 @@ void fooBar()
         }
         else
         {
-           setExcCode(exceptionState, RESERVEDINSTRUCTION);
-           //fooBar();
+            bp();
+            setExcCode(exceptionState, RESERVEDINSTRUCTION);
+            //fooBar();
         }
     }
     else

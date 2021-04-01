@@ -23,7 +23,7 @@ void Passeren_SYS3(int* semAddr);
 
 pcb_t* Verhogen_SYS4(int* semAddr);
 
-void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead);
+void Wait_For_IO_Device_SYS5();
 
 void Get_CPU_Time_SYS6();
 

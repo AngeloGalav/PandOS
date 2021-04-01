@@ -51,7 +51,9 @@ int main()
     pcb_PTR proc = allocPcb();
     initializePcb(proc);
     insertProcQ(&(readyQueue), proc);
+    
     processCount += 1;
+    
 
     proc->p_time = 0;
     proc->p_semAdd = NULL;

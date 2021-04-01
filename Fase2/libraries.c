@@ -1,4 +1,5 @@
 #include "../Libraries/libraries.h"
+#include "../Libraries/debugger.h"
 
 void setExcCode(state_t* exceptionStatus, unsigned int toSet)
 {
@@ -26,10 +27,12 @@ void setProcessorMode(int mode)
 
 void *memcpy(void *dest, const void *src, size_t n)
 {
+    memcpy_start();
     for (size_t i = 0; i < n; i++)
     {
         ((char*)dest)[i] = ((char*)src)[i];
     }
+    memcpy_end();
 }
 
 unsigned int BitExtractor(unsigned int reg, int mask, int shift)

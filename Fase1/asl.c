@@ -1,5 +1,4 @@
-#include "../Libraries/asl.h"
-#include "../Libraries/libraries.h"
+#include "asl.h"
 
 
 // Array di semafori non attivi

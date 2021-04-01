@@ -10,7 +10,7 @@ pcb_PTR readyQueue;
 unsigned int softBlockCount = 0;
 
 /* Number of started, but not yet terminated processes. */
-unsigned int processCount;
+unsigned int processCount = 0;
 
 /* Pointer to the current pcb that is in running state */ 
 pcb_PTR currentProcess;
@@ -19,10 +19,17 @@ void Scheduler()
 {    
     if (!(emptyProcQ(readyQueue)))
     {
+        process_dispatched();
         currentProcess = removeProcQ(&readyQueue);
-        setTIMER(TIMERVALUE(5000));    ///TODO: chiedere al maldus se questa riga va bene
-        LDST ((state_t *) &(currentProcess->p_s)); 
-
+        
+        if (currentProcess != NULL)
+        {
+            setTIMER(TIMERVALUE(5000));
+            LDST ((state_t *) &(currentProcess->p_s)); 
+        }else
+        {
+            zombie_process_excp();
+        }
     } else // If ready queue is empty
     {
         if (processCount == 0)
@@ -30,10 +37,13 @@ void Scheduler()
         else if ((processCount > 0) && (softBlockCount > 0))
         {
             ///TODO: se non va prova con currentProcess->p_s.status & ~DISABLEINTS & ~LOCALTIMERINT
-            setSTATUS(IMON | IECON); 
+            bp_wait();
+            setSTATUS(currentProcess->p_s.status | IMON | IECON); 
             WAIT();
         }
         else if ((softBlockCount == 0) && (processCount > 0))
             PANIC(); // Deadlock induced kernel panic
     }
+    
+    bp_scheduler_error();
 }

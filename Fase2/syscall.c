@@ -1,4 +1,5 @@
 #include "../Libraries/syscall.h"
+#include "../Libraries/debugger.h"
 
 extern pcb_PTR readyQueue;
 HIDDEN state_t* cached_exceptionState; ///TODO: Re-integrate for caching
@@ -32,8 +33,7 @@ void SyscallExceptionHandler(state_t* exception_state)
             Verhogen_SYS4((int*) exception_state->reg_a1);
             break;
         case IOWAIT:
-            Wait_For_IO_Device_SYS5(*((int*) exception_state->reg_a1),
-            *((int*) exception_state->reg_a2) , *((int*) exception_state->reg_a3));
+            Wait_For_IO_Device_SYS5();
             break;
         case GETTIME:
             Get_CPU_Time_SYS6();
@@ -114,6 +114,7 @@ void Passeren_SYS3(int* semAddr)
         softBlockCount += 1;
         
         insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
+
         outProcQ(&readyQueue, currentProcess);
 
         currentProcess->p_time += TIMERVALUE((*((memaddr *) TODLOADDR))) - currentProcess->untracked_TOD_mark; 
@@ -131,22 +132,28 @@ pcb_t* Verhogen_SYS4(int* semAddr)
 
     if (unlockedProcess != NULL) 
     {
+        bp_extra();
         unlockedProcess->p_semAdd = NULL;
         softBlockCount -= 1;
         insertProcQ(&readyQueue, unlockedProcess);
     }
 
-    cached_exceptionState->pc_epc += 4;
+    //cached_exceptionState->pc_epc += 4;
 
     return unlockedProcess;
 }
 
-void Wait_For_IO_Device_SYS5(int intlNo, int dnum, int waitForTermRead)
+void Wait_For_IO_Device_SYS5()
 {
+    int intlNo = cached_exceptionState->reg_a1;
+    int dnum = cached_exceptionState->reg_a2;
+    int waitForTermRead = cached_exceptionState->reg_a3;
+
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
 
     cached_exceptionState->reg_v0 = GetStatusWord(intlNo, dnum, waitForTermRead);
+    bp_syscall_();
     Passeren_SYS3(&device_semaphores[index]);
 }
 
@@ -158,7 +165,8 @@ void Get_CPU_Time_SYS6()
 
 void Wait_For_Clock_SYS7() 
 {
-    Passeren_SYS3(&device_semaphores[48]);
+    bp_adel();
+    Passeren_SYS3(&device_semaphores[SEMAPHORE_QTY - 1]);
 }
 
 void Get_Support_Data_SYS8()
