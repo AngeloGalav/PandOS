@@ -206,47 +206,6 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             return tmp;
         }
     }
-
-    ///TODO: testare con fase1
-    /*
-    //bp();
-    if ((tp != NULL) && (*tp != NULL) && (p != NULL) && ((*tp) != p)) // Caso generale (p non e' il primo elemento)
-    {
-        pcb_t* tmp = (*tp)->p_prev;
-
-        while (tmp != (*tp))
-        {
-            if (tmp == p)
-            {
-                tmp->p_prev->p_next = tmp->p_next;
-                tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                initializePcb(tmp);
-                return tmp;
-            }
-            tmp = tmp->p_prev;
-        }
-        return NULL;
-    }
-    else if ((*tp) == (*tp)->p_next && (*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui tp ha un solo elemento, ed e' p
-    {
-        pcb_t* tmp = (*tp);
-        *tp = NULL;
-
-        initializePcb(tmp);
-        return tmp;
-    }
-    else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui la sentinella punta a p
-    {
-        pcb_t* tmp = (*tp);
-
-        (*tp) = (*tp)->p_next;
-
-        (*tp)->p_prev = tmp->p_prev;
-        tmp->p_prev->p_next = (*tp);
-
-        initializePcb(tmp);
-        return tmp;
-    }*/
 }
 
 

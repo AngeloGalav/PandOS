@@ -18,14 +18,12 @@ void InterruptPendingChecker(unsigned int cause_reg)
     for (int i = 1; i < 8; i++)
     {
         if (ip_reg & mask) 
-            InterruptLineDeviceCheck(i);
+            InterruptTypeCheck(i);
         mask *= 2;
     }
-
-    ///TODO: non-device interrupts    
 }
 
-void InterruptLineDeviceCheck(int line)
+void InterruptTypeCheck(int line)
 {
     if (line > 2) /* Non-timer device interrupt line*/
     {
@@ -35,7 +33,7 @@ void InterruptLineDeviceCheck(int line)
         for (int i = 0; i < DEVPERINT; i++)
         {
             if (*device & mask)
-                InterruptHandler(line, i);
+                NonTimerHandler(line, i);
             mask *= 2;
         }
     }
@@ -50,14 +48,8 @@ void InterruptLineDeviceCheck(int line)
     }
     else /* Interval timer interrupt line */
     {
-        bp_interval();
         LDIT(PSECOND);
 
-        if (headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) == NULL)
-        {
-            //bp();
-        }
-        
         while(headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
         {
             insertProcQ(readyQueue, removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]));
@@ -65,45 +57,46 @@ void InterruptLineDeviceCheck(int line)
         }
         
         device_semaphores[SEMAPHORE_QTY - 1] = 0;
-    
-        //bp_extra();
-
         LDST((state_t*) BIOSDATAPAGE);
     }
 }
 
-void InterruptHandler(int line, int device)
+void NonTimerHandler(int line, int device)
 {
     devreg_t * device_register = (devreg_t*) (0x10000054 + ((line - 3) * 0x80) + (device * 0x10));
-    unsigned int status_word = GetStatusWord(line, device, device % 2);
+    int isReadTerm = 0;
+    unsigned int status_word;
     
-    if((line >= 3) && (line <= 6))
+    if ((line >= 3) && (line <= 6))
+    {
         device_register->dtp.command = ACK;
+        status_word = GetStatusWord(line, device, 0);
+    }
     else if (line == 7)
     {
-        device *= 2;
-
         if(device_register->term.recv_status != READY)
         {
             device_register->term.recv_command = ACK;
-            device += 1;
+            isReadTerm = 1;
         }
 
         if(device_register->term.transm_status != READY)
-            device_register->term.transm_command = ACK; // <- arriva qui
-    }
+            device_register->term.transm_command = ACK;
 
+        status_word = GetStatusWord(line, device, isReadTerm);
+        
+        device = 2*device + isReadTerm;
+    }
+    
     int index = (line - 3) * 8 + device; 
     
     pcb_t* resumedProcess = Verhogen_SYS4(&device_semaphores[index]);
 
     if (resumedProcess != NULL) 
     {
-        bp_correct();   
         resumedProcess->p_s.reg_v0 = status_word;
         resumedProcess->p_time += (CURRENT_TOD - TOD_timer_start);
     }
 
-    bp_device();
     LDST((state_t *) BIOSDATAPAGE);
 }

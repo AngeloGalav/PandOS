@@ -11,9 +11,9 @@
 void InterruptPendingChecker(unsigned int cause_reg);
 
 /* Cycles and handles all internal pending interrupts from highest to lowest priority*/
-void InterruptLineDeviceCheck(int line);
+void InterruptTypeCheck(int line);
 
 /* */
-void InterruptHandler();
+void NonTimerHandler();
 
 #endif
