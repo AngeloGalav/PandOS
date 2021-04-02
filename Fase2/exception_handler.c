@@ -2,17 +2,13 @@
 #include "../Libraries/debugger.h"
 
 extern pcb_PTR currentProcess;
-int TOD_timer_start;
 
-//Change this name
 void exceptionHandler()
 {
     // The BIOS has now saved the processor state in the BIOSDATAPAGE
-
-    //STCK(TOD_timer_start);
     
     GET_BDP_STATUS(exceptionState); /* Retrieve the info stored in the BIOSDATAPAGE */
-    unsigned int exceptionCode = (unsigned int) exceptionState->cause & 0x3c; /* Extraction of the ExecCode (exception code)*/
+    unsigned int exceptionCode =  exceptionState->cause & 0x3c; /* Extraction of the ExecCode (exception code)*/
     exceptionCode >>= 2;
     
     if (exceptionCode == 0) /* Device Interrupt handler */
@@ -26,17 +22,8 @@ void exceptionHandler()
     }
     else if (exceptionCode == 8) /* Syscall exception handler */
     {
-        if (!(checkMode(exceptionState->status)))
-        {                                               // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
-            SyscallExceptionHandler(exceptionState); 
-            SyscallReturn();
-        }
-        else
-        {
-            setExcCode(exceptionState, RESERVEDINSTRUCTION);
-            if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
-            else PassUp(GENERALEXCEPT, exceptionState);
-        }
+       // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
+        SyscallExceptionHandler(exceptionState); 
     }
     else /* Program Trap exception */
     {

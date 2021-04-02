@@ -5,7 +5,7 @@ extern pcb_PTR readyQueue;
 HIDDEN state_t* cached_exceptionState; ///TODO: Re-integrate for caching
 extern pcb_PTR currentProcess;
 
-extern int TOD_timer_start;
+extern cpu_t startTime;
 
 extern int processCount;
 extern int softBlockCount;
@@ -19,14 +19,9 @@ void SyscallExceptionHandler(state_t* exception_state)
     
     switch (sysCallCode)
     {
-        
-        case CREATEPROCESS: 
-        {
-            state_t new_pstate = *((state_t*) exception_state->reg_a1);
-            support_t *new_suppt = (support_t*) exception_state->reg_a2;
-            Create_Process_SYS1(new_pstate, new_suppt); 
+        case CREATEPROCESS:
+            Create_Process_SYS1(); 
             break;
-        }
         case TERMPROCESS:
             Terminate_Process_SYS2();
             break;
@@ -52,28 +47,36 @@ void SyscallExceptionHandler(state_t* exception_state)
             InvalidSyscall();
             break;
     } 
-
-    PANIC(); //Se va qui qualcosa non va
 }
 
-void Create_Process_SYS1(state_t arg1, support_t* arg2)
+void Create_Process_SYS1()
 {
-    pcb_PTR newproc = allocPcb(); 
+    state_t statep = *((state_t*) cached_exceptionState->reg_a1); /* Gathering info from the state in the BIOSDATAPAGE */
+    support_t *supportp = (support_t*) cached_exceptionState->reg_a2;
 
-    if (newproc != NULL)
+    pcb_PTR newproc = allocPcb(); /* pcb allocation */
+
+    if (newproc != NULL) /* If we can allocate all the resources needed... */
     {
         initializePcb(newproc);
         insertProcQ(&(readyQueue), newproc);
         insertChild(currentProcess, newproc);
+        currentProcess->p_s.reg_v0 = OK;    /* process creation successful, sending 0... */
 
         processCount += 1;
 
         newproc->p_semAdd = NULL;
         newproc->p_time = 0; 
-        newproc->p_s = arg1;
-        newproc->p_supportStruct = arg2;
+        newproc->p_s = statep;
+
+        if (supportp == NULL)   /* TODO: PROVARE A TOGLIERE */
+            newproc->p_supportStruct = NULL;
+        else
+            newproc->p_supportStruct = supportp; /* adding support level "support" (if provided) */
     } 
-    else cached_exceptionState->reg_v0 = NOPROC; 
+    else currentProcess->p_s.reg_v0 = NOPROC; /* process creation unsuccesful, sending -1... */
+
+    SyscallReturn();
 }
 
 void Terminate_Process_SYS2()
@@ -128,9 +131,10 @@ void Passeren_SYS3(int* semAddr)
         //currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
         Scheduler();
     }
+    else SyscallReturn();
 }
 
-pcb_t* Verhogen_SYS4(int* semAddr) 
+void Verhogen_SYS4(int* semAddr) 
 {
     *semAddr += 1;
     pcb_t* unlockedProcess = removeBlocked(semAddr);
@@ -141,7 +145,7 @@ pcb_t* Verhogen_SYS4(int* semAddr)
         insertProcQ(&readyQueue, unlockedProcess);
     }
 
-    return unlockedProcess;
+    SyscallReturn();
 }
 
 void Wait_For_IO_Device_SYS5()
@@ -153,9 +157,9 @@ void Wait_For_IO_Device_SYS5()
     if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
     int index = (intlNo - 3) * 8 + dnum;
     
+    device_semaphores[index] -= 1;      /* performing a V on the device semaphore */
     softBlockCount += 1;
     
-    device_semaphores[index] -= 1;      /* performing a V on the device semaphore */
     currentProcess->p_s = *cached_exceptionState; 
     insertBlocked(&(device_semaphores[index]), currentProcess); // (we are not calling the sys7 directly so it's always
     Scheduler();                                                //  the semaphore is always blocking the current process)
@@ -163,27 +167,33 @@ void Wait_For_IO_Device_SYS5()
 
 void Get_CPU_Time_SYS6()
 {
-    cached_exceptionState->reg_v0 = currentProcess->p_time + 
-        (TIMERVALUE((*((memaddr *) TODLOADDR))) - currentProcess->untracked_TOD_mark);
+    currentProcess->p_time += (CURRENT_TOD - startTime); 
+    cached_exceptionState->reg_v0 = currentProcess->p_time; 
+    STCK(startTime);
+    LDST(cached_exceptionState);
 }
 
 void Wait_For_Clock_SYS7() 
 {
     device_semaphores[SEMAPHORE_QTY - 1] -= 1;
+    
     softBlockCount += 1;
     currentProcess->p_s = *cached_exceptionState; 
     insertBlocked(&(device_semaphores[SEMAPHORE_QTY - 1]), currentProcess);
+    
     Scheduler();
 }
 
 void Get_Support_Data_SYS8()
 {
     cached_exceptionState->reg_v0 = currentProcess->p_supportStruct;
+    SyscallReturn();
 }
 
 void SyscallReturn()
 {
-    currentProcess->p_time += (CURRENT_TOD - TOD_timer_start);
+    //currentProcess->p_time += (CURRENT_TOD - startTime);
+    //STCK(startTime);
     LDST(cached_exceptionState);
 }
 

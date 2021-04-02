@@ -15,13 +15,13 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate);
 HIDDEN void KillRec(pcb_PTR proc_elem);
 
 /* CreateProcess (SYS1)*/
-void Create_Process_SYS1(state_t arg1, support_t* arg2);
+void Create_Process_SYS1();
 
 void Terminate_Process_SYS2();
 
 void Passeren_SYS3(int* semAddr);
 
-pcb_t* Verhogen_SYS4(int* semAddr);
+void Verhogen_SYS4(int* semAddr);
 
 void Wait_For_IO_Device_SYS5();
 

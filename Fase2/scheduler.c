@@ -9,13 +9,17 @@ extern pcb_PTR currentProcess;
 cpu_t startTime;
 
 void Scheduler()
-{    
+{   
+    if (currentProcess != NULL)
+        currentProcess->p_time += (CURRENT_TOD - startTime);
+
     currentProcess = removeProcQ(&readyQueue);   
-    if(currentProcess != NULL)
-    {
-        setTIMER(TIMERVALUE(TIMESLICE)); // setting the timeslice
+    
+    if(currentProcess != NULL) /* If the queue is not null */
+    {  
         STCK(startTime);
-        LDST(&(currentProcess->p_s));   // loading the process state
+        setTIMER(TIMERVALUE(PSECOND)); /* setting the timeslice */
+        LDST(&(currentProcess->p_s));   /* loading the process state */
     }
     else // readyQueue is now empty
     {
@@ -23,10 +27,8 @@ void Scheduler()
             HALT();
         if(processCount > 0 && softBlockCount > 0)
         {
-            setTIMER(TIMERVALUE(__INT32_MAX__));
-            bp_wait();
+            setTIMER(TIMERVALUE(MAXINT));
             setSTATUS(IECON | IMON);
-            bp_wait2();
             WAIT();
         }
         else if(processCount > 0 && softBlockCount == 0) // deadlock induced kernel panic

@@ -123,12 +123,10 @@ void print(char *msg) {
 	while (*s != EOS) {
 		*(base + 3) = PRINTCHR | (((devregtr) *s) << BYTELEN);
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);	
-		bp_wait();
 		if ((status & TERMSTATMASK) != RECVD)
 		{
 			PANIC();
 		}
-		bp_correct();
 		s++;	
 	}
 	SYSCALL(VERHOGEN, (int)&term_mut, 0, 0);				/* V(term_mut) */
@@ -366,8 +364,10 @@ void p3() {
 
 	/* loop until we are delayed at least half of clock V interval */
 	while (time2-time1 < (CLOCKINTERVAL >> 1) )  {
+		bp();
 		STCK(time1);			/* time of day     */
 		SYSCALL(WAITCLOCK, 0, 0, 0);
+		bp_adel();
 		STCK(time2);			/* new time of day */
 	}
 
