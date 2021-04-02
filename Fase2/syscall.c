@@ -86,6 +86,7 @@ void Terminate_Process_SYS2()
     KillRec(currentProcess->p_child);
     TerminateSingleProcess(currentProcess);
     currentProcess = NULL;
+
     Scheduler();
 }
 
@@ -150,6 +151,7 @@ void Verhogen_SYS4(int* semAddr)
 
 void Wait_For_IO_Device_SYS5()
 {
+    bp_ignore();
     int intlNo = cached_exceptionState->reg_a1;
     int dnum = cached_exceptionState->reg_a2;
     int waitForTermRead = cached_exceptionState->reg_a3;
@@ -178,8 +180,12 @@ void Wait_For_Clock_SYS7()
     device_semaphores[SEMAPHORE_QTY - 1] -= 1;
     
     softBlockCount += 1;
-    currentProcess->p_s = *cached_exceptionState; 
+   
+   
+    bp_entra_insBlock();
     insertBlocked(&(device_semaphores[SEMAPHORE_QTY - 1]), currentProcess);
+    currentProcess->p_s = *cached_exceptionState; 
+    bp_finitoIns();
     
     Scheduler();
 }

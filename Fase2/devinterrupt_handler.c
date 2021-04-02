@@ -44,10 +44,11 @@ void GeneralIntHandler(int line)
     {
         setTIMER(TIMERVALUE(__INT32_MAX__));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
+        currentProcess->p_time += (CURRENT_TOD - startTime); 
         insertProcQ(&readyQueue, currentProcess);
         Scheduler();
     }
-    else if (line == 2)/* Interval timer interrupt line */
+    else /* Interval timer interrupt line */
     {
         LDIT(PSECOND);
 
@@ -58,7 +59,7 @@ void GeneralIntHandler(int line)
             if (unlockedProcess != NULL)
             {
                 unlockedProcess->p_time += CURRENT_TOD - interruptStartTime;
-                insertProcQ(readyQueue, unlockedProcess);
+                insertProcQ(&readyQueue, unlockedProcess);
                 softBlockCount -= 1;
             }
         }

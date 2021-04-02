@@ -59,6 +59,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
                 // Aggiornamento degli indirizzi dei semafori
                 toAdd->s_semAdd = semAdd;
 
+                bp_primoif();
                 return FALSE;
             }
         }
@@ -66,6 +67,7 @@ int insertBlocked(int *semAdd, pcb_t *p)
         hd = hd->s_next;
     }
 
+    bp_bhochestrano();
     return FALSE;
 }
 

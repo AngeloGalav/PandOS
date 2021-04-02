@@ -250,7 +250,10 @@ void test() {
 
 	print("p3 is started\n");
 
+	bp_p_inizio();
 	SYSCALL(PASSERN, (int)&endp3, 0, 0);								/* P(endp3)     */
+
+	bp_finisce_la_p(); // <-----
 
 	SYSCALL(CREATETHREAD, (int)&p4state, (int) NULL, 0);				/* start p4     */
 
@@ -364,10 +367,10 @@ void p3() {
 
 	/* loop until we are delayed at least half of clock V interval */
 	while (time2-time1 < (CLOCKINTERVAL >> 1) )  {
-		bp();
+		bp_INIZIO();
 		STCK(time1);			/* time of day     */
 		SYSCALL(WAITCLOCK, 0, 0, 0);
-		bp_adel();
+		bp_godo();
 		STCK(time2);			/* new time of day */
 	}
 
