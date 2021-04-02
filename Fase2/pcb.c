@@ -1,12 +1,11 @@
 #include "../Libraries/pcb.h"
+#include "../Libraries/debugger.h"
 
 // Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
 HIDDEN pcb_t* pcbFree_h;
 
 // Array di pcb_t di lunghezza MAXPROC = 20. Contiene tutti i processi concorrenti.
 HIDDEN pcb_t pcbFree_table[MAXPROC];
-
-
 
 /** Inizializzazione della lista pcbFree_h.
     Per inizializzarla, aggiunge alla lista ogni elemento degli array dei processi.
@@ -29,12 +28,13 @@ void initPcbs()
 }
 
 /** Inizializza i campi di un pcb_t a NULL*/
-void initializePcbt(pcb_t* node)
+void initializePcb(pcb_t* node)
 {
     if (node != NULL)
     {
         node->p_next = NULL;
         node->p_prev = NULL;
+        
 
         node->p_child = NULL;
         node->p_next_sib = NULL;
@@ -71,7 +71,7 @@ pcb_t *allocPcb()
         pcb_t* temp = pcbFree_h;
         pcbFree_h = pcbFree_h->p_next;  // Prende un pcb_t dalla lista dei pcbFree.
 
-        initializePcbt(temp);           // Lo inizializza, e poi lo ritorna.
+        initializePcb(temp);           // Lo inizializza, e poi lo ritorna.
 
         return temp;
     }
@@ -114,7 +114,7 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
 
         (*tp) = p;      // ... e aggiorno la sentinella.
     }
-    else if (p != NULL && (*tp) == NULL)
+    else if ((*tp) == NULL && p != NULL)
     {
         (*tp) = p;
         (*tp)->p_next = (*tp);
@@ -139,15 +139,16 @@ pcb_t *headProcQ(pcb_t *tp)
 */
 pcb_t* removeProcQ(pcb_t **tp)
 {
-    if (*tp == NULL) return NULL;
+    if (*tp == NULL) 
+    {
+        return NULL;
+    }
 
     else if (*tp == (*tp)->p_prev) // Caso in cui ho un singolo elemento nella coda.
     {
         pcb_t* head = *tp;
-        initializePcbt(head);
 
         *tp = NULL; // Rimuove l'unico elemento della coda, quindi la coda diventa vuota.
-
         return head;
     }
     else    // Caso in cui ho piu' di un elemento nella coda.
@@ -157,7 +158,6 @@ pcb_t* removeProcQ(pcb_t **tp)
         pcb_t* tmp = head->p_prev;
         tmp->p_next = (*tp);
 
-        initializePcbt(head);
         return head;
     }
 }
@@ -167,45 +167,45 @@ pcb_t* removeProcQ(pcb_t **tp)
 */
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
-    if ((tp != NULL) && (*tp != NULL) && (p != NULL) && ((*tp) != p)) // Caso generale (p non e' il primo elemento)
+    if (tp == NULL || *(tp) == NULL || p == NULL) return NULL;
+    else
     {
-        // Scorro la coda partendo dalla testa.
-        pcb_t* tmp = (*tp)->p_prev;
-
-        while (tmp != (*tp))
+        if ((*tp) != p) // Caso generale (in cui p non e' il primo elemento)
         {
-            if (tmp == p)
+            pcb_t* tmp = (*tp)->p_prev;
+
+            while (tmp != (*tp))
             {
-                tmp->p_prev->p_next = tmp->p_next;
-                tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                initializePcbt(tmp);
-                return tmp;
+                if (tmp == p)
+                {
+                    tmp->p_prev->p_next = tmp->p_next;
+                    tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
+                    initializePcb(tmp);
+                    return tmp;
+                }
+                tmp = tmp->p_prev;
             }
-            tmp = tmp->p_prev;
+            return NULL;
+        }else if ((*tp) == (*tp)->p_next && (*tp) == p) // Caso in cui tp ha un solo elemento, ed e' p
+        {
+            pcb_t* tmp = (*tp);
+            *tp = NULL;
+
+            initializePcb(tmp);
+            return tmp;
+        }else                       // Caso in cui la sentinella punta a p e p non è l'unico elemento
+        {
+            pcb_t* tmp = (*tp);
+
+            (*tp) = (*tp)->p_next;
+
+            (*tp)->p_prev = tmp->p_prev;
+            tmp->p_prev->p_next = (*tp);
+
+            initializePcb(tmp);
+            return tmp;
         }
-        return NULL;
     }
-    else if ((*tp) == (*tp)->p_next && (*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui tp ha un solo elemento, ed e' p
-    {
-        pcb_t* tmp = (*tp);
-        *tp = NULL;
-
-        initializePcbt(tmp);
-        return tmp;
-    }
-    else if ((*tp) == p && (tp != NULL) && (*tp) != NULL) // Caso in cui la sentinella punta a p
-    {
-        pcb_t* tmp = (*tp);
-
-        (*tp) = (*tp)->p_next;
-
-        (*tp)->p_prev = tmp->p_prev;
-        tmp->p_prev->p_next = (*tp);
-
-        initializePcbt(tmp);
-        return tmp;
-    }
-    else return NULL;
 }
 
 
@@ -255,7 +255,7 @@ pcb_t* removeChild(pcb_t *p)
         }
 
         // Ri-inizializzazione dei campi, in modo che non ci sia piu' traccia dell'albero di partenza
-        initializePcbt(tmp);
+        //initializePcb(tmp);
 
         return tmp;
     }
@@ -281,7 +281,7 @@ pcb_t *outChild(pcb_t* p)
         if (p->p_next_sib != NULL)  // Se ha un fratello destro, collego quest'ultimo con il fratello precedente
             p->p_next_sib->p_prev_sib = tmp;
 
-        //initializePcbt(p);
+        //initializePcb(p);
 
         return p;
     }

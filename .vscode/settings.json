@@ -13,6 +13,12 @@
         "asl.h": "c",
         "pandos_types.h": "c",
         "types.h": "c",
-        "libraries.C": "cpp"
-    }
+        "libraries.C": "cpp",
+        "libraries.h": "c",
+        "variant": "c",
+        "exception_handler.h": "c",
+        "definitions.h": "c",
+        "devinterrupt_handler.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }

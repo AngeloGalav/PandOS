@@ -1,4 +1,5 @@
-#include "../Libraries/pcb.h"
+#include "pcb.h"
+#include "../Libraries/debugger.h"
 
 
 
@@ -167,6 +168,46 @@ pcb_t* removeProcQ(pcb_t **tp)
 */
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
+        if (tp == NULL || *(tp) == NULL || p == NULL) return NULL;
+    else
+    {
+        if ((*tp) != p) // Caso generale (in cui p non e' il primo elemento)
+        {
+            pcb_t* tmp = (*tp)->p_prev;
+
+            while (tmp != (*tp))
+            {
+                if (tmp == p)
+                {
+                    tmp->p_prev->p_next = tmp->p_next;
+                    tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
+                    initializePcbt(tmp);
+                    return tmp;
+                }
+                tmp = tmp->p_prev;
+            }
+            return NULL;
+        }else if ((*tp) == (*tp)->p_next && (*tp) == p) // Caso in cui tp ha un solo elemento, ed e' p
+        {
+            pcb_t* tmp = (*tp);
+            *tp = NULL;
+
+            initializePcbt(tmp);
+            return tmp;
+        }else                       // Caso in cui la sentinella punta a p e p non è l'unico elemento
+        {
+            pcb_t* tmp = (*tp);
+
+            (*tp) = (*tp)->p_next;
+
+            (*tp)->p_prev = tmp->p_prev;
+            tmp->p_prev->p_next = (*tp);
+
+            initializePcbt(tmp);
+            return tmp;
+        }
+    }
+    /*
     if ((tp != NULL) && (*tp != NULL) && (p != NULL) && ((*tp) != p)) // Caso generale (p non e' il primo elemento)
     {
         // Scorro la coda partendo dalla testa.
@@ -205,7 +246,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         initializePcbt(tmp);
         return tmp;
     }
-    else return NULL;
+    else return NULL;*/
 }
 
 

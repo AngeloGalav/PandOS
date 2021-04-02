@@ -15,6 +15,7 @@
 #include "../Libraries/pandos_const.h"
 #include "../Libraries/pandos_types.h"
 #include <umps3/umps/libumps.h>
+#include "../Libraries/debugger.h"
 
 typedef unsigned int devregtr;
 
@@ -118,11 +119,16 @@ void print(char *msg) {
 	devregtr status;
 	
 	SYSCALL(PASSERN, (int)&term_mut, 0, 0);				/* P(term_mut) */
+	int i = 7;
 	while (*s != EOS) {
 		*(base + 3) = PRINTCHR | (((devregtr) *s) << BYTELEN);
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);	
+		bp_wait();
 		if ((status & TERMSTATMASK) != RECVD)
+		{
 			PANIC();
+		}
+		bp_correct();
 		s++;	
 	}
 	SYSCALL(VERHOGEN, (int)&term_mut, 0, 0);				/* V(term_mut) */
@@ -148,7 +154,7 @@ void uTLB_RefillHandler () {
 void test() {	
 	
 	SYSCALL(VERHOGEN, (int)&testsem, 0, 0);					/* V(testsem)   */
-
+	
 	print("p1 v(testsem)\n");
 
 	/* set up states of the other processes */

@@ -21,18 +21,21 @@ CFLAGS = $(CFLAGS_LANG) $(CFLAGS_MIPS) -I$(UMPS3_INCLUDE_DIR) -I$(UMPS3_INCLUDE_
 
 LDFLAGS = -G 0 -nostdlib -T $(UMPS3_DATA_DIR)/umpscore.ldscript
 
+SRC = $(wildcard *.c)
+OBJS = $(SRC:.c=.o)	# Auto-updated obj listing
 
 VPATH = $(UMPS3_DATA_DIR)
 
 .PHONY : all clean
 
 all : kernel.core.umps clean
-	@echo "** Remember to load the kernel file after compilation"
+	@echo "** All successfull! Good Luck!! :) [remember to set the TLB Floor Address to 0x8000.000 in UMPS3!!]"
+	@echo "** remember to remove all breakpoints, TODOs and debugging libs"
 
 kernel.core.umps : kernel
 	umps3-elf2umps -k $<
 	
-kernel : main.o asl.o syscall.o p2test.o pcb.o crtso.o libumps.o
+kernel : $(OBJS) crtso.o libumps.o
 	$(LD) -o $@ $^ $(LDFLAGS)
 	@echo "** Compilation successfull!"
 	
@@ -41,7 +44,7 @@ clean :
 	-rm -f *.o
 
 clean_all :
-	@echo "** Cleaning all umps built files..."
+	@echo "** Cleaning all generated umps files..."
 	-rm -f *.o kernel *.umps
 
 %.o : %.S
