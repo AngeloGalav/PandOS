@@ -19,8 +19,9 @@ void SyscallExceptionHandler(state_t* exception_state)
     
     switch (sysCallCode)
     {
+        
+        case CREATEPROCESS: 
         {
-        case CREATEPROCESS: ;
             state_t new_pstate = *((state_t*) exception_state->reg_a1);
             support_t *new_suppt = (support_t*) exception_state->reg_a2;
             Create_Process_SYS1(new_pstate, new_suppt); 
@@ -51,6 +52,8 @@ void SyscallExceptionHandler(state_t* exception_state)
             InvalidSyscall();
             break;
     } 
+
+    PANIC(); //Se va qui qualcosa non va
 }
 
 void Create_Process_SYS1(state_t arg1, support_t* arg2)

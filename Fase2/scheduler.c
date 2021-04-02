@@ -6,12 +6,15 @@ extern int softBlockCount;
 extern int processCount;
 extern pcb_PTR currentProcess;
 
+cpu_t startTime;
+
 void Scheduler()
 {    
     currentProcess = removeProcQ(&readyQueue);   
     if(currentProcess != NULL)
     {
         setTIMER(TIMERVALUE(TIMESLICE)); // setting the timeslice
+        STCK(startTime);
         LDST(&(currentProcess->p_s));   // loading the process state
     }
     else // readyQueue is now empty

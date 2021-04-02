@@ -7,6 +7,7 @@ extern pcb_PTR currentProcess;
 extern int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
 extern int TOD_timer_start;
+extern cpu_t startTime;
 
 void getInterruptLine(unsigned int cause_reg)
 {
@@ -29,7 +30,7 @@ void GeneralIntHandler(int line)
     if (line > 2) /* Non-timer device interrupt line*/
     {
         memaddr* device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
-
+        cpu_t endTime;
         int mask = 1;
         for (int i = 0; i < DEVPERINT; i++)
         {
@@ -37,12 +38,16 @@ void GeneralIntHandler(int line)
                 NonTimerHandler(line, i);
             mask *= 2;
         }
+        STCK(endTime);
+        startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
     }
     else if (line == 1) /* PLT timer interrupt line */
     {
-
+        cpu_t endTime;
         setTIMER(TIMERVALUE(__INT32_MAX__));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
+        STCK(endTime);
+        startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
         insertProcQ(&readyQueue, currentProcess);
         Scheduler();
     }
@@ -54,10 +59,14 @@ void GeneralIntHandler(int line)
         while (headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
         {
             pcb_t* unlockedProcess = removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]);
-            
+            cpu_t endTime;
             if (unlockedProcess != NULL)
             {
                 ///TODO: update-timer
+
+                STCK(endTime);
+                startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
+
                 insertProcQ(readyQueue, unlockedProcess);
                 softBlockCount -= 1;
             }
