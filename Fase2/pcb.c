@@ -1,5 +1,4 @@
-#include "../Libraries/pcb.h"
-#include "../Libraries/debugger.h"
+#include "../include/pcb.h"
 
 // Puntatore alla lista monodirezionale dei pcb_t liberi e disponibili, quindi non utilizzati.
 HIDDEN pcb_t* pcbFree_h;
@@ -152,7 +151,6 @@ pcb_t* removeProcQ(pcb_t **tp)
     {
         pcb_t* head = (*tp)->p_next;    // Rimuove l'elemento in testa.
         (*tp)->p_next = head->p_next;
-        //head->p_next->p_prev = (*tp);
 
         pcb_t* tmp = head->p_next;
         tmp->p_prev = (*tp);
@@ -179,7 +177,6 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
                 {
                     tmp->p_prev->p_next = tmp->p_next;
                     tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                    //initializePcb(tmp);
                     return tmp;
                 }
                 tmp = tmp->p_next;
@@ -190,7 +187,6 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             pcb_t* tmp = (*tp);
             *tp = NULL;
 
-            //initializePcb(tmp);
             return tmp;
         }else                       // Caso in cui la sentinella punta a p e p non è l'unico elemento
         {
@@ -201,7 +197,6 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             (*tp)->p_next = tmp->p_next; // puntiamo la nuova coda a head
             tmp->p_next->p_prev = (*tp); // dico a head qual'e' la nuova coda
 
-            //initializePcb(tmp);
             return tmp;
         }
     }
@@ -255,9 +250,6 @@ pcb_t* removeChild(pcb_t *p)
             p->p_child = NULL;  // Se p aveva un solo figlio, setta p->child = null
         }
 
-        // Ri-inizializzazione dei campi, in modo che non ci sia piu' traccia dell'albero di partenza
-        //initializePcb(tmp);
-
         return tmp;
     }
 
@@ -282,8 +274,6 @@ pcb_t *outChild(pcb_t* p)
 
         if (p->p_next_sib != NULL)  // Se ha un fratello destro, collego quest'ultimo con il fratello precedente
             p->p_next_sib->p_prev_sib = tmp;
-
-        //initializePcb(p);
 
         return p;
     }

@@ -1,5 +1,4 @@
-#include "../Libraries/devinterrupt_handler.h"
-#include "../Libraries/debugger.h"
+#include "../include/devinterrupt_handler.h"
 
 extern pcb_PTR readyQueue;
 extern pcb_PTR currentProcess;
@@ -85,9 +84,9 @@ void NonTimerHandler(int line, int device)
     }
     else if (line == 7)
     {
-        termreg_t* term_register = (devreg_t*) device_register;
+        termreg_t* term_register = (termreg_t*) device_register;
        
-        if(term_register->recv_status != READY)
+        if (term_register->recv_status != READY)
         {
             status_word = term_register->recv_status;
             term_register->recv_command = ACK;
