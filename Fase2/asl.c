@@ -26,7 +26,6 @@ int insertBlocked(int *semAdd, pcb_t *p)
 
     while (hd->s_semAdd != (int*)MAXINT)
     {
-
         if (hd->s_semAdd == semAdd)
         {
             insertProcQ(&(hd->s_procQ), p);
@@ -36,38 +35,25 @@ int insertBlocked(int *semAdd, pcb_t *p)
         // Viene effettuato l'inserimento rispettando un ordine non decrescente
         else if (hd->s_next->s_semAdd > semAdd || hd->s_next->s_semAdd == (int*)MAXINT)
         {
-
             if (semdFree_h == NULL)
                 return TRUE;
-
             else
             {
                 semd_t* toAdd = semdFree_h;
-
                 semdFree_h = semdFree_h->s_next;
-
                 toAdd->s_next = hd->s_next;
-
                 hd->s_next = toAdd;
-
                 toAdd->s_procQ = mkEmptyProcQ();
-
                 insertProcQ(&(toAdd->s_procQ), p);
-
                 p->p_semAdd = semAdd;
 
                 // Aggiornamento degli indirizzi dei semafori
                 toAdd->s_semAdd = semAdd;
-
-                bp_primoif();
                 return FALSE;
             }
         }
-
         hd = hd->s_next;
     }
-
-    bp_bhochestrano();
     return FALSE;
 }
 

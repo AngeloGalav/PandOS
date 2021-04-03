@@ -58,6 +58,7 @@ void GeneralIntHandler(int line)
             
             if (unlockedProcess != NULL)
             {
+                unlockedProcess->p_semAdd = NULL;
                 unlockedProcess->p_time += CURRENT_TOD - interruptStartTime;
                 insertProcQ(&readyQueue, unlockedProcess);
                 softBlockCount -= 1;
@@ -103,8 +104,6 @@ void NonTimerHandler(int line, int device)
     
     int index = (line - 3) * 8 + device; 
 
-    softBlockCount--;
-
     device_semaphores[index] += 1;
     pcb_t* unlockedProcess = removeBlocked(&device_semaphores[index]);
 
@@ -113,6 +112,7 @@ void NonTimerHandler(int line, int device)
         unlockedProcess->p_s.reg_v0 = status_word;
         unlockedProcess->p_semAdd = NULL; 
         unlockedProcess->p_time += CURRENT_TOD - interruptStartTime;
+        softBlockCount -= 1;
         insertProcQ(&readyQueue, unlockedProcess);
     }
 
