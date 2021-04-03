@@ -84,11 +84,20 @@ void Terminate_Process_SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
     outChild(currentProcess);
-    KillRec(currentProcess->p_child);
-    TerminateSingleProcess(currentProcess);
+    TerminateTree(currentProcess);    
     
     currentProcess = NULL;
     Scheduler();
+}
+
+HIDDEN void TerminateTree(pcb_t* to_terminate)
+{
+    if (to_terminate == NULL) return;
+
+    while (!(emptyChild(to_terminate)))
+        TerminateTree(removeChild(to_terminate));
+
+    TerminateSingleProcess(to_terminate);
 }
 
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can only be called in this file scope.
@@ -101,24 +110,14 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
     if (to_terminate->p_semAdd != NULL)
     {   
         // Device semaphore check && elimination from semaphore
-        if (!(to_terminate->p_semAdd >= &device_semaphores[0] && to_terminate->p_semAdd <= &device_semaphores[48]) 
-            && outBlocked(to_terminate->p_semAdd) != NULL)
-        {
-            if (*(to_terminate->p_semAdd) <= 0) *(to_terminate->p_semAdd) += 1;
-            softBlockCount -= 1;
-        }
+        if (&(device_semaphores[0]) <= to_terminate->p_semAdd && to_terminate->p_semAdd <= &(device_semaphores[48]))
+            softBlockCount -= 1; // the process is blocked in a device sem
+        else
+            *(to_terminate->p_semAdd) += 1; // the process is blocked in a normal sem
+        
+        outBlocked(to_terminate);
     }
-
     freePcb(to_terminate);
-}
-
-HIDDEN void KillRec(pcb_PTR proc_elem)
-{
-    if (proc_elem == NULL) return;
-
-    KillRec(proc_elem->p_next_sib);
-    KillRec(proc_elem->p_child); // We repeat this recursevely for each child of the process
-    TerminateSingleProcess(proc_elem);
 }
 
 void Passeren_SYS3(int* semAddr) 

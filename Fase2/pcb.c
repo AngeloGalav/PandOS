@@ -179,7 +179,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
                 {
                     tmp->p_prev->p_next = tmp->p_next;
                     tmp->p_next->p_prev = tmp->p_prev;  // Rimuovo l'elemento (se lo trovo)
-                    initializePcb(tmp);
+                    //initializePcb(tmp);
                     return tmp;
                 }
                 tmp = tmp->p_next;
@@ -190,7 +190,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             pcb_t* tmp = (*tp);
             *tp = NULL;
 
-            initializePcb(tmp);
+            //initializePcb(tmp);
             return tmp;
         }else                       // Caso in cui la sentinella punta a p e p non è l'unico elemento
         {
@@ -201,7 +201,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
             (*tp)->p_next = tmp->p_next; // puntiamo la nuova coda a head
             tmp->p_next->p_prev = (*tp); // dico a head qual'e' la nuova coda
 
-            initializePcb(tmp);
+            //initializePcb(tmp);
             return tmp;
         }
     }
@@ -271,7 +271,8 @@ pcb_t* removeChild(pcb_t *p)
 */
 pcb_t *outChild(pcb_t* p)
 {
-    if (p->p_prnt == NULL) return NULL;
+    if (p == NULL) return NULL;
+    if (p->p_prnt == NULL) return NULL; // creaimo due if per evitare un possibile segfault
 
     if (p->p_prev_sib == NULL) return removeChild(p->p_prnt); // Se p non ha un fratello sinistro, e' il primo figlio.
                                                               // Si puo' quindi applicare la funzione precedente.

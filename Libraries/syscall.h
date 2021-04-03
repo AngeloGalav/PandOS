@@ -11,8 +11,8 @@ void SyscallExceptionHandler(state_t* exception_state);
 /* Terminates a process */
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate);
 
-/* Kills a process tree (and siblings) recursively */
-HIDDEN void KillRec(pcb_PTR proc_elem);
+/* Kills a process tree recursively */
+HIDDEN void TerminateTree(pcb_t* to_terminate);
 
 /* CreateProcess (SYS1)*/
 void Create_Process_SYS1();
