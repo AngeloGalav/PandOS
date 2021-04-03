@@ -22,50 +22,39 @@ HIDDEN semd_t* semd_h;
 */
 int insertBlocked(int *semAdd, pcb_t *p)
 {
-    semd_t* hd = semd_h;
+    semd_t* cursor = semd_h;    // prendiamo il primo nodo dummy
 
-    while (hd->s_semAdd != (int*)MAXINT)
+    while (cursor->s_semAdd != (int*)MAXINT)
     {
-
-        if (hd->s_semAdd == semAdd)
+        if (cursor->s_semAdd == semAdd)
         {
-            insertProcQ(&(hd->s_procQ), p);
+            insertProcQ(&(cursor->s_procQ), p);
             p->p_semAdd = semAdd;
             return FALSE;
         }
         // Viene effettuato l'inserimento rispettando un ordine non decrescente
-        else if (hd->s_next->s_semAdd > semAdd || hd->s_next->s_semAdd == (int*)MAXINT)
+        else if (cursor->s_next->s_semAdd > semAdd || cursor->s_next->s_semAdd == (int*)MAXINT)
         {
-
             if (semdFree_h == NULL)
                 return TRUE;
-
             else
             {
-                semd_t* toAdd = semdFree_h;
-
+                semd_t* toAdd = semdFree_h; // prendiamo dalla lista dei descrittori liberi
                 semdFree_h = semdFree_h->s_next;
-
-                toAdd->s_next = hd->s_next;
-
-                hd->s_next = toAdd;
-
+                toAdd->s_next = cursor->s_next;
+                cursor->s_next = toAdd;
                 toAdd->s_procQ = mkEmptyProcQ();
-
                 insertProcQ(&(toAdd->s_procQ), p);
-
-                p->p_semAdd = semAdd;
-
-                // Aggiornamento degli indirizzi dei semafori
+                
+                // Aggiornamento l'indirizzo del descrittore
                 toAdd->s_semAdd = semAdd;
-
+                
+                p->p_semAdd = semAdd;
                 return FALSE;
             }
         }
-
-        hd = hd->s_next;
+        cursor = cursor->s_next;
     }
-
     return FALSE;
 }
 
@@ -79,35 +68,30 @@ int insertBlocked(int *semAdd, pcb_t *p)
 */
 pcb_t* removeBlocked(int *semAdd)
 {
-    semd_t* hd = semd_h->s_next;
+    semd_t* cursor = semd_h->s_next;
+    semd_t* cursor_previous = semd_h;
 
-    semd_t* hdPrevious = semd_h;
-
-    while (hd->s_semAdd != (int*)MAXINT)
+    while (cursor->s_semAdd != (int*)MAXINT)
     {
-        if (hd->s_semAdd == semAdd)
+        if (cursor->s_semAdd == semAdd)
         {
-            pcb_t* toReturn = removeProcQ(&(hd->s_procQ));
+            pcb_t* toReturn = removeProcQ(&(cursor->s_procQ));
 
-            if (emptyProcQ(hd->s_procQ))
-            {
-                hdPrevious->s_next = hd->s_next;
+            if (emptyProcQ(cursor->s_procQ))    // caso in cui il semaforo è stato svuotato, 
+            {                                   // lo togliamo dalla ASL
+                cursor_previous->s_next = cursor->s_next;  
 
-                semd_t* toAdd = hd;
+                semd_t* toAdd = cursor;     // aggiungiamo il descrittore tolto alla lista dei descrittori liberi
 
-                // Inserimento in testa a semdFree_h
-                toAdd->s_next = semdFree_h;
-
+                toAdd->s_next = semdFree_h;  // Inserimento in testa a semdFree_h
                 semdFree_h = toAdd;
-
             }
-
+            
+            if (toReturn != NULL) toReturn->p_semAdd = NULL;
             return toReturn;
         }
-
-        hdPrevious = hd;
-
-        hd = hd->s_next;
+        cursor_previous = cursor;   // aggiornamento dei cursori
+        cursor = cursor->s_next;
     }
     return NULL;
 }
@@ -121,25 +105,34 @@ pcb_t* removeBlocked(int *semAdd)
 */
 pcb_t* outBlocked(pcb_t *p)
 {
-    semd_t* hd = semd_h;
+    semd_t* cursor = semd_h->s_next;
+    semd_t* cursor_previous = semd_h;
 
-    if (p == NULL) return NULL;
+    if (p == NULL || p->p_semAdd == NULL) return NULL;
 
-    while (hd->s_semAdd != (int*)MAXINT)
+    while (cursor->s_semAdd != (int*)MAXINT)
     {
         // Se il semAdd è quello cercato ...
-        if(hd->s_semAdd == p->p_semAdd)
+        if(cursor->s_semAdd == p->p_semAdd)
         {
-            // ... e la sua s_procQ è nulla ...
-            if (hd->s_procQ == NULL) return NULL;
-            // ... altrimenti rimuove e ritorna il pcb indicato
-            else return outProcQ(&(hd->s_procQ), p);
+            pcb_t* toReturn = outProcQ(&(cursor->s_procQ), p);
 
+            if (emptyProcQ(cursor->s_procQ))    // caso in cui il semaforo è stato svuotato, 
+            {                                   // lo togliamo dalla ASL
+                cursor_previous->s_next = cursor->s_next;  
+
+                semd_t* toAdd = cursor;     // aggiungiamo il descrittore tolto alla lista dei descrittori liberi
+
+                toAdd->s_next = semdFree_h;  // Inserimento in testa a semdFree_h
+                semdFree_h = toAdd;
+            }
+
+            if (toReturn != NULL) toReturn->p_semAdd = NULL;
+            return toReturn;
         }
-
-        hd = hd->s_next;
+        cursor_previous = cursor;
+        cursor = cursor->s_next;
     }
-
     return NULL;
 }
 
@@ -163,13 +156,11 @@ pcb_t* headBlocked(int *semAdd)
             // ...se la sua s_procQ è vuota ...
             if (hd->s_procQ == NULL) return NULL;
             // ... altrimenti ritorna il pcb in testa senza rimuoverlo
-            else return hd->s_procQ->p_prev;
+            else return (hd->s_procQ)->p_next;
 
         }
-
         hd = hd->s_next;
     }
-
     return NULL;
 }
 

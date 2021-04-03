@@ -6,23 +6,23 @@
 void bp(void);
 
 /* Extra breakpoint */
-void bp_extra(void);
+void bp_INIZIO(void);
 
 /* Scheduler error breakpoint */
-void bp_scheduler_error(void);
+void bp_bhochestrano(void);
 
-void bp_adel();
-void bp_process_dispatched();
-void bp_sys_7();
+void bp_primoif();
+void bp_p_inizio();
+void bp_faPUfine();
 void bp_wait();
 void bp_interval();
-void bp_device();
+void bp_godo();
 void bp_syscall_(void);
 void bp_correct();
 void memcpy_start();
 void memcpy_end();
 void zombie_process_excp();
-void bp_terminal_correct();
-void bp_ALERT();
+void bp_TLBPU();
+void bp_entra_insBlock();
 void bp_wait2();
-
+void bp_ignore();

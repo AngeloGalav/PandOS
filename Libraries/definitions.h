@@ -14,6 +14,6 @@
 #define IDEVBITMAP 0x10000040 
 
 /* Current TOD value */
-#define CURRENT_TOD TIMERVALUE((*((memaddr *) TODLOADDR)))
+#define CURRENT_TOD ((*((memaddr *) TODLOADDR)) / (*((cpu_t *) TIMESCALEADDR)))
 
 #endif 

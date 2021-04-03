@@ -6,11 +6,13 @@ extern pcb_PTR currentProcess;
 
 extern int softBlockCount;
 extern int device_semaphores[SEMAPHORE_QTY];
-extern int TOD_timer_start;
 extern cpu_t startTime;
+
+cpu_t interruptStartTime;
 
 void getInterruptLine(unsigned int cause_reg)
 {
+    STCK(interruptStartTime);
     unsigned int ip_reg = BitExtractor(cause_reg, 0xFF00, 8);
     int mask = 2;
     
@@ -30,7 +32,6 @@ void GeneralIntHandler(int line)
     if (line > 2) /* Non-timer device interrupt line*/
     {
         memaddr* device = (memaddr*) (IDEVBITMAP + ((line - 3) * 0x4));
-        cpu_t endTime;
         int mask = 1;
         for (int i = 0; i < DEVPERINT; i++)
         {
@@ -38,36 +39,28 @@ void GeneralIntHandler(int line)
                 NonTimerHandler(line, i);
             mask *= 2;
         }
-        STCK(endTime);
-        startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
     }
     else if (line == 1) /* PLT timer interrupt line */
     {
-        cpu_t endTime;
         setTIMER(TIMERVALUE(__INT32_MAX__));
         currentProcess->p_s = *((state_t*) BIOSDATAPAGE);
-        STCK(endTime);
-        startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
+        currentProcess->p_time += (CURRENT_TOD - startTime); 
         insertProcQ(&readyQueue, currentProcess);
         Scheduler();
     }
     else /* Interval timer interrupt line */
     {
-        bp_interval();
         LDIT(PSECOND);
 
         while (headBlocked(&device_semaphores[SEMAPHORE_QTY - 1]) != NULL)
         {
             pcb_t* unlockedProcess = removeBlocked(&device_semaphores[SEMAPHORE_QTY - 1]);
-            cpu_t endTime;
+            
             if (unlockedProcess != NULL)
             {
-                ///TODO: update-timer
-
-                STCK(endTime);
-                startTime = startTime +(endTime-startTime); //aggiungo il tempo dell'interrupt al processo. E' corretto?
-
-                insertProcQ(readyQueue, unlockedProcess);
+                unlockedProcess->p_semAdd = NULL;
+                unlockedProcess->p_time += CURRENT_TOD - interruptStartTime;
+                insertProcQ(&readyQueue, unlockedProcess);
                 softBlockCount -= 1;
             }
         }
@@ -92,7 +85,6 @@ void NonTimerHandler(int line, int device)
     }
     else if (line == 7)
     {
-        bp_extra();
         termreg_t* term_register = (devreg_t*) device_register;
        
         if(term_register->recv_status != READY)
@@ -112,11 +104,17 @@ void NonTimerHandler(int line, int device)
     
     int index = (line - 3) * 8 + device; 
 
-    softBlockCount--;
-    pcb_t* unlockedProcess = Verhogen_SYS4(&device_semaphores[index]);
-    
-    if (unlockedProcess != NULL)
+    device_semaphores[index] += 1;
+    pcb_t* unlockedProcess = removeBlocked(&device_semaphores[index]);
+
+    if (unlockedProcess != NULL) 
+    {
         unlockedProcess->p_s.reg_v0 = status_word;
+        unlockedProcess->p_semAdd = NULL; 
+        unlockedProcess->p_time += CURRENT_TOD - interruptStartTime;
+        softBlockCount -= 1;
+        insertProcQ(&readyQueue, unlockedProcess);
+    }
 
     if (currentProcess == NULL) Scheduler();
     else LDST((state_t *) BIOSDATAPAGE);
