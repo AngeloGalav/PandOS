@@ -1,5 +1,6 @@
 #include "../Libraries/libraries.h"
 #include "../Libraries/debugger.h"
+#include "../Libraries/syscall.h"
 
 void setExcCode(state_t* exceptionStatus, unsigned int toSet)
 {

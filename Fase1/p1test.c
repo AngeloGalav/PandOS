@@ -126,7 +126,7 @@ void main() {
 	int i;
 
 	initPcbs();
-	addokbuf("Initialized process control blocks   \n");
+	addokbuf("Initialized process control blocks  BELLA RAGA \n");
 
 	/* Check allocProc */
 	for (i = 0; i < MAXPROC; i++) {

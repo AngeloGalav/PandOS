@@ -79,14 +79,15 @@ void Create_Process_SYS1()
     SyscallReturn();
 }
 
+
 void Terminate_Process_SYS2()
 {
     /* Assuming the current process is the one that executes this functions */
     outChild(currentProcess);
     KillRec(currentProcess->p_child);
     TerminateSingleProcess(currentProcess);
+    
     currentProcess = NULL;
-
     Scheduler();
 }
 
@@ -97,14 +98,13 @@ HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // static because it can
     processCount -= 1;
     outProcQ(&readyQueue, to_terminate);
     
-    
     if (to_terminate->p_semAdd != NULL)
     {   
         // Device semaphore check && elimination from semaphore
         if (!(to_terminate->p_semAdd >= &device_semaphores[0] && to_terminate->p_semAdd <= &device_semaphores[48]) 
             && outBlocked(to_terminate->p_semAdd) != NULL)
         {
-            if (*(to_terminate->p_semAdd) < 0) *(to_terminate->p_semAdd) += 1;
+            if (*(to_terminate->p_semAdd) <= 0) *(to_terminate->p_semAdd) += 1;
             softBlockCount -= 1;
         }
     }
@@ -185,7 +185,7 @@ void Wait_For_Clock_SYS7()
     bp_entra_insBlock();
     insertBlocked(&(device_semaphores[SEMAPHORE_QTY - 1]), currentProcess);
     currentProcess->p_s = *cached_exceptionState; 
-    bp_finitoIns();
+    bp_TLBPU();
     
     Scheduler();
 }

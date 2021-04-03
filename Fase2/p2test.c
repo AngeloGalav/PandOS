@@ -73,6 +73,7 @@ typedef unsigned int devregtr;
 #define NOLEAVES		4	/* number of leaves of p8 process tree */
 #define MAXSEM			20
 
+int volte = 0;
 
 SEMAPHORE term_mut=1,	/* for mutual exclusion on terminal */
 		s[MAXSEM+1],	/* semaphore array */
@@ -253,7 +254,7 @@ void test() {
 	bp_p_inizio();
 	SYSCALL(PASSERN, (int)&endp3, 0, 0);								/* P(endp3)     */
 
-	bp_finisce_la_p(); // <-----
+	bp_faPUfine(); // <-----
 
 	SYSCALL(CREATETHREAD, (int)&p4state, (int) NULL, 0);				/* start p4     */
 
@@ -447,9 +448,10 @@ void p4() {
 void p5gen() {
 	unsigned int exeCode = pFiveSupport.sup_exceptState[GENERALEXCEPT].cause;
 	exeCode = (exeCode & CAUSEMASK) >> 2;
+
 	switch (exeCode) {
 	case BUSERROR:
-		print("Bus Error: Access non-existent memory\n");
+		print("Bus Error: Access non-existent memory (deve succedere)\n");
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].pc_epc = (memaddr)p5a;   /* Continue with p5a() */
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].reg_t9 = (memaddr)p5a;   /* Continue with p5a() */
 		break;

@@ -87,7 +87,7 @@ pcb_t* mkEmptyProcQ()
 }
 
 
-/** Restituisce TRUE se la lista puntata da head è
+/** Restituisce TRUE se la lista puntata da tp è
 *   vuota, FALSE altrimenti.
 */
 int emptyProcQ(pcb_t *tp)
@@ -104,13 +104,13 @@ void insertProcQ(pcb_t** tp, pcb_t* p)
 {
     if ((*tp) != NULL && p != NULL)
     {
-        pcb_t* head = (*tp)->p_prev;
-        p->p_next = (*tp);
-        p->p_prev = head; // Inserisco l'elemento nelle coda della Queue...
+        pcb_t* head = (*tp)->p_next;
+        p->p_prev = (*tp);
+        p->p_next = head; // Inserisco l'elemento nelle coda della Queue...
 
-        head->p_next = p;
+        head->p_prev = p;
 
-        (*tp)->p_prev = p;
+        (*tp)->p_next = p;
 
         (*tp) = p;      // ... e aggiorno la sentinella.
     }
@@ -130,7 +130,7 @@ pcb_t *headProcQ(pcb_t *tp)
 {
     if (tp == NULL) return NULL;
 
-    return tp->p_prev;        // Restituisce l'elemento in testa (ovvero quello precedente alla coda).
+    return tp->p_next;        // Restituisce l'elemento in testa (ovvero quello precedente alla coda).
 }
 
 /** Rimuove l’elemento piu’ vecchio dalla coda tp. Ritorna NULL se
@@ -140,11 +140,8 @@ pcb_t *headProcQ(pcb_t *tp)
 pcb_t* removeProcQ(pcb_t **tp)
 {
     if (*tp == NULL) 
-    {
         return NULL;
-    }
-
-    else if (*tp == (*tp)->p_prev) // Caso in cui ho un singolo elemento nella coda.
+    else if (*tp == (*tp)->p_next) // Caso in cui ho un singolo elemento nella coda.
     {
         pcb_t* head = *tp;
 
@@ -153,10 +150,12 @@ pcb_t* removeProcQ(pcb_t **tp)
     }
     else    // Caso in cui ho piu' di un elemento nella coda.
     {
-        pcb_t* head = (*tp)->p_prev;    // Rimuove l'elemento in testa.
-        (*tp)->p_prev = head->p_prev;
-        pcb_t* tmp = head->p_prev;
-        tmp->p_next = (*tp);
+        pcb_t* head = (*tp)->p_next;    // Rimuove l'elemento in testa.
+        (*tp)->p_next = head->p_next;
+        //head->p_next->p_prev = (*tp);
+
+        pcb_t* tmp = head->p_next;
+        tmp->p_prev = (*tp);
 
         return head;
     }
@@ -167,12 +166,12 @@ pcb_t* removeProcQ(pcb_t **tp)
 */
 pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
 {
-    if (tp == NULL || *(tp) == NULL || p == NULL) return NULL;
+    if (tp == NULL || (*tp) == NULL || p == NULL) return NULL;
     else
     {
         if ((*tp) != p) // Caso generale (in cui p non e' il primo elemento)
         {
-            pcb_t* tmp = (*tp)->p_prev;
+            pcb_t* tmp = (*tp)->p_next; // Iniziamo prima prendendo il puntatore alla
 
             while (tmp != (*tp))
             {
@@ -183,7 +182,7 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
                     initializePcb(tmp);
                     return tmp;
                 }
-                tmp = tmp->p_prev;
+                tmp = tmp->p_next;
             }
             return NULL;
         }else if ((*tp) == (*tp)->p_next && (*tp) == p) // Caso in cui tp ha un solo elemento, ed e' p
@@ -197,15 +196,17 @@ pcb_t* outProcQ(pcb_t **tp, pcb_t *p)
         {
             pcb_t* tmp = (*tp);
 
-            (*tp) = (*tp)->p_next;
+            (*tp) = (*tp)->p_prev;
 
-            (*tp)->p_prev = tmp->p_prev;
-            tmp->p_prev->p_next = (*tp);
+            (*tp)->p_next = tmp->p_next; // puntiamo la nuova coda a head
+            tmp->p_next->p_prev = (*tp); // dico a head qual'e' la nuova coda
 
             initializePcb(tmp);
             return tmp;
         }
     }
+
+    return NULL;
 }
 
 

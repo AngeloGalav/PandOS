@@ -19,6 +19,9 @@ int checkMode(unsigned int status_register);
 /* Used as a substitute for stdlib's memcpy */
 void *memcpy(void *dest, const void *src, size_t n);
 
+/* a procedure to print on terminal 0 */
+void print(char *msg);
+
 unsigned int BitExtractor(unsigned int reg, int mask, int shift);
 
 /* Returns the status word of a device register */

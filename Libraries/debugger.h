@@ -13,7 +13,7 @@ void bp_bhochestrano(void);
 
 void bp_primoif();
 void bp_p_inizio();
-void bp_finisce_la_p();
+void bp_faPUfine();
 void bp_wait();
 void bp_interval();
 void bp_godo();
@@ -22,7 +22,7 @@ void bp_correct();
 void memcpy_start();
 void memcpy_end();
 void zombie_process_excp();
-void bp_finitoIns();
+void bp_TLBPU();
 void bp_entra_insBlock();
 void bp_wait2();
 void bp_ignore();
