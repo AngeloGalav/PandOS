@@ -4,11 +4,14 @@
 /* Total number of device semaphores in PandOS */
 #define SEMAPHORE_QTY 49
 
+/* Interval timer semaphore index */
+#define INTERVALTIMER_INDEX 48
+
 /* Timer converter to get the right time */
 #define TIMERVALUE(T)  ((T) * (*((cpu_t *) TIMESCALEADDR)))
 
 /* Value to assign to ExeCode of cause register if entering a syscall in usermode */
-#define RESERVEDINSTRUCTION 10
+#define RESVINSTR  10
 
 /* Base addr for interrupting device area, which tells us which device has a pending interrupt*/
 #define IDEVBITMAP 0x10000040 
@@ -18,5 +21,8 @@
 
 /* Creates a variable that contains the process state stored in the biosdatapage before an interrupt */
 #define GET_BDP_STATUS(T) state_t* T = (state_t*) BIOSDATAPAGE
+
+/* Start of the device register memory area */
+#define DEVREG 0x10000054
 
 #endif 

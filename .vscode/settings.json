@@ -19,7 +19,8 @@
         "exception_handler.h": "c",
         "definitions.h": "c",
         "devinterrupt_handler.h": "c",
-        "debugger.h": "c"
+        "debugger.h": "c",
+        "syscall.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

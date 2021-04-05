@@ -5,15 +5,16 @@
 #include "definitions.h"
 #include "scheduler.h"
 #include "asl.h" 
+#include "definitions.h"
 #include "syscall.h"
 
 /* Cycles and handles all pending interrupts from highest to lowest priority */
-void getInterruptLine(unsigned int cause_reg);
+void InterruptHandler(unsigned int cause_reg);
 
 /* Cycles and handles all internal pending interrupts from highest to lowest priority*/
-void GeneralIntHandler(int line);
+void InterruptLineHandler(int line);
 
-/* */
+/* Handles the non-timer device interrupts */
 void NonTimerHandler();
 
 #endif

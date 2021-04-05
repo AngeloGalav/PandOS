@@ -445,7 +445,7 @@ void p5gen() {
 
 	switch (exeCode) {
 	case BUSERROR:
-		print("Bus Error: Access non-existent memory (deve succedere)\n");
+		print("Bus Error: Access non-existent memory \n");
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].pc_epc = (memaddr)p5a;   /* Continue with p5a() */
 		pFiveSupport.sup_exceptState[GENERALEXCEPT].reg_t9 = (memaddr)p5a;   /* Continue with p5a() */
 		break;

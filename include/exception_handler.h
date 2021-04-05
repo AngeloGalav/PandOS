@@ -6,12 +6,12 @@
 #include "asl.h" 
 #include "devinterrupt_handler.h"
 
-/**
- *  The exception handler function of the kernel
- *  Change this name 
-*/
+/* The exception handler function of the kernel */
 void exceptionHandler();
 
-void PassUp(int except_type, state_t* exceptionState);
+/*  PassUpOrDie procedure, in which we either pass the support information to the support level in order to
+ *  properly handle the exception, or kill the process if the support info is null.
+ */
+void PassUpOrDie(int except_type, state_t* exceptionState);
 
 #endif

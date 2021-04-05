@@ -6,6 +6,7 @@
 #include "asl.h"
 #include "pcb.h"
 #include "scheduler.h"
+#include "exception_handler.h"
 
 /*  Handles syscall exceptions by executing the syscall function associated with the syscall code 
  *  in the a0 register of the exception_state param.
@@ -41,8 +42,5 @@ void Wait_For_Clock_SYS7();
 
 /* Returns the support level information of the current process */
 void Get_Support_Data_SYS8();
-
-/* Applies a Pass Up or Die to the process if the syscall requested is invalid (i.e. with syscall code above 8) */
-void InvalidSyscall();
 
 #endif

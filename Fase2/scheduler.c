@@ -10,7 +10,7 @@ cpu_t startTime;
 void Scheduler()
 {   
     if (currentProcess != NULL)
-        currentProcess->p_time += (CURRENT_TOD - startTime);  /*  */
+        currentProcess->p_time += (CURRENT_TOD - startTime);  /* we update the CPU time since the this process is probably blocked */
 
     currentProcess = removeProcQ(&readyQueue);  /* Dispatching a process */
     
@@ -24,6 +24,7 @@ void Scheduler()
     {
         if (processCount == 0)
             HALT();
+            
         if(processCount > 0 && softBlockCount > 0) /* we haven't got anymore processes to dispatch... */
         {
             setTIMER(TIMERVALUE(MAXINT));

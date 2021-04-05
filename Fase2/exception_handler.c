@@ -7,33 +7,36 @@ void exceptionHandler()
     // The BIOS has now saved the processor state in the BIOSDATAPAGE
     
     GET_BDP_STATUS(exceptionState); /* Retrieve the info stored in the BIOSDATAPAGE */
-    unsigned int exceptionCode =  exceptionState->cause & 0x3c; /* Extraction of the ExecCode (exception code)*/
+    unsigned int exceptionCode =  exceptionState->cause & 0x3c; /* Extraction of the ExecCode (exception code) */
     exceptionCode >>= 2;
     
     if (exceptionCode == 0) /* Device Interrupt handler */
-    {  
-        getInterruptLine(exceptionState->cause);
-    }
+        InterruptHandler(exceptionState->cause);
+
     else if ((exceptionCode >= 1) && (exceptionCode <= 3)) /* TLB exception handler */
-    {
-        if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
-        else PassUp(PGFAULTEXCEPT, exceptionState);
-    }
+        PassUpOrDie(PGFAULTEXCEPT, exceptionState);
+         
     else if (exceptionCode == 8) /* Syscall exception handler */
     {
-       // TODO: in questo caso mi sa che dobbiamo controllare il KUc bit
-        SyscallExceptionHandler(exceptionState); 
+        if (!(BitExtractor(exceptionState->status, 3, 1)))     /* checking if KU bit is off (kernel mode on) */
+            SyscallExceptionHandler(exceptionState);
+        else
+        {
+            exceptionState->cause = RESVINSTR;   // if the syscall was executed in user mode, we simulate
+            exceptionHandler();                  // a program trap exception
+        }
     }
     else /* Program Trap exception */
-    {
-        if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
-        else PassUp(GENERALEXCEPT, exceptionState);
-    }
+        PassUpOrDie(GENERALEXCEPT, exceptionState);
 }
 
-void PassUp(int except_type, state_t* exceptionState)
+void PassUpOrDie(int except_type, state_t* exceptionState)
 {
-    (currentProcess->p_supportStruct)->sup_exceptState[except_type] = *exceptionState;
-    context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[except_type];
-    LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);
+    if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2(); // Die (process termination)
+    else // PassUp
+    {
+        (currentProcess->p_supportStruct)->sup_exceptState[except_type] = *exceptionState; 
+        context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[except_type]; // passing up the support info
+        LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);                   // to the support level
+    }
 }

@@ -43,7 +43,8 @@ void SyscallExceptionHandler(state_t* exception_state)
             Get_Support_Data_SYS8(exception_state);
             break;
         default:
-            InvalidSyscall();
+            //InvalidSyscall();   /* case in which the syscall code is invalid */
+            PassUpOrDie(GENERALEXCEPT, exception_state);
             break;
     } 
 }
@@ -68,7 +69,7 @@ void Create_Process_SYS1()
         newproc->p_time = 0; 
         newproc->p_s = statep;
 
-        newproc->p_supportStruct = supportp; /* adding support level "support" (if provided) */
+        newproc->p_supportStruct = supportp; /* adding support level info (if provided) */
     } 
     else currentProcess->p_s.reg_v0 = NOPROC; /* process creation unsuccesful, sending -1... */
 
@@ -78,11 +79,11 @@ void Create_Process_SYS1()
 
 void Terminate_Process_SYS2()
 {
-    outChild(currentProcess);   /* */
-    TerminateTree(currentProcess); /*  */    
+    outChild(currentProcess);   /* we cut out the process from its origin tree... */
+    TerminateTree(currentProcess); /* ...and terminate its children recursevely. */    
     
     currentProcess = NULL;
-    Scheduler();
+    Scheduler();  /* we call the scheduler to dispatch a new process */
 }
 
 HIDDEN void TerminateTree(pcb_t* to_terminate)
@@ -90,9 +91,9 @@ HIDDEN void TerminateTree(pcb_t* to_terminate)
     if (to_terminate == NULL) return;
 
     while (!(emptyChild(to_terminate)))
-        TerminateTree(removeChild(to_terminate));   /*  */
+        TerminateTree(removeChild(to_terminate));   /* we proceed recursevely for every child */
 
-    TerminateSingleProcess(to_terminate);   /*  */
+    TerminateSingleProcess(to_terminate);   /* we are now terminating the current process */
 }
 
 HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // declared static so it can only be called in this file's scope.
@@ -119,25 +120,29 @@ void Passeren_SYS3(int* semAddr)
 
     if (*semAddr < 0) // if the value is negative, the process gets blocked
     {   
-        currentProcess->p_s = *cached_exceptionState; 
-        insertBlocked(semAddr, currentProcess); /* currentProcess is now in blocked state */
-        Scheduler();
+        currentProcess->p_s = *cached_exceptionState;
+        
+        if (insertBlocked(semAddr, currentProcess)) // in case we havent got any more semd to allocate
+            PANIC();                                // (i.e. the function returns TRUE) we call a kernel panic.
+        
+        /* currentProcess is now in blocked state */
+        Scheduler(); /* we call the scheduler to dispatch a new process */
     }
-    else LDST(cached_exceptionState);
+    else LDST(cached_exceptionState); /* in case the process doesn't become blocked, we return control to the current process */
 }
 
 void Verhogen_SYS4(int* semAddr) 
 {
     *semAddr += 1;
-    pcb_t* unlockedProcess = removeBlocked(semAddr);
+    pcb_t* unlockedProcess = removeBlocked(semAddr); /* removing the process from the semaphore queue */
 
     if (unlockedProcess != NULL) 
     {
         unlockedProcess->p_semAdd = NULL;
-        insertProcQ(&readyQueue, unlockedProcess);
+        insertProcQ(&readyQueue, unlockedProcess); /* the unlocked process is now in ready state */
     }
 
-    LDST(cached_exceptionState);
+    LDST(cached_exceptionState); /* we return control to the current process */
 }
 
 void Wait_For_IO_Device_SYS5()
@@ -146,18 +151,19 @@ void Wait_For_IO_Device_SYS5()
     int dnum = cached_exceptionState->reg_a2;
     int waitForTermRead = cached_exceptionState->reg_a3;
 
-    if (intlNo == 7) dnum = 2 * dnum + waitForTermRead;
-    int index = (intlNo - 3) * 8 + dnum;
+    if (intlNo == 7) dnum = 2 * dnum + waitForTermRead; // we calculate the index of the device_semaphores array
+    int index = (intlNo - 3) * 8 + dnum;                // using the infot in a1, a2 and a3
 
-    /* performing a V on the device semaphore */
     softBlockCount += 1;
+    
+    /* performing a P on the device semaphore */
     Passeren_SYS3(&(device_semaphores[index]));
 }
 
 void Get_CPU_Time_SYS6()
 {
-    currentProcess->p_time += (CURRENT_TOD - startTime); 
-    cached_exceptionState->reg_v0 = currentProcess->p_time; 
+    currentProcess->p_time += (CURRENT_TOD - startTime);    // we update the process' time...
+    cached_exceptionState->reg_v0 = currentProcess->p_time; // ...and put it into the return register
     STCK(startTime);
     LDST(cached_exceptionState);
 }
@@ -165,22 +171,12 @@ void Get_CPU_Time_SYS6()
 void Wait_For_Clock_SYS7() 
 {
     softBlockCount += 1;
-    Passeren_SYS3(&device_semaphores[SEMAPHORE_QTY - 1]); /* we perform a P on the interval timer semaphore */
+    Passeren_SYS3(&device_semaphores[INTERVALTIMER_INDEX]); /* we perform a P on the interval timer semaphore */
 }
 
 void Get_Support_Data_SYS8()
 {
-    cached_exceptionState->reg_v0 = (unsigned int) currentProcess->p_supportStruct;
+    /* Putting the support info in the return register */
+    cached_exceptionState->reg_v0 = (unsigned int) currentProcess->p_supportStruct; 
     LDST(cached_exceptionState);
-}
-
-void InvalidSyscall()
-{
-    if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2(); /* Die phase */
-    else
-    {
-        (currentProcess->p_supportStruct)->sup_exceptState[GENERALEXCEPT] = *cached_exceptionState;
-        context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[GENERALEXCEPT];
-        LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);
-    }
 }
