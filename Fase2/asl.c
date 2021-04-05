@@ -1,27 +1,25 @@
 #include "../include/asl.h"
 
-// Array di semafori non attivi
+// array of inactive semaphores
 HIDDEN semd_t semd_table[MAXPROC + 2];
 
-// Puntatore alla lista di semafori liberi non in uso
+// pointer to the free semaphores list not being used
 HIDDEN semd_t* semdFree_h;
 
-// Puntatore alla lista dei semafori attualmente in uso
+// pointer to the semaphores list currently being used
 HIDDEN semd_t* semd_h;
 
 
-/**
- *  Viene inserito il PCB puntato da p nella coda dei processi bloccati associata al SEMD
- *  con chiave semAdd. Se il semaforo corrispondente non è presente nella ASL, alloca un
- *  nuovo SEMD dalla lista di quelli liberi (semdFree) e lo inserisce nella ASL,
- *  settando i campi in maniera opportuna (i.e.key e s_procQ). Se non è possibile
- *  allocare un nuovo SEMD perché la lista di quelli liberi è vuota restituisce TRUE.
- *  In tutti gli altri casi, restituisce FALSE.
- *
+/*
+    The PCB pointed by p gets queued up in the blocked process queue paired with SEMD with 
+    a semAdd key (?). If the corresponding semaphore isn't in the ASL, a new SEMD gets allocated
+    from the list of free SEMDs (semdFree), setting the appropriate fields (i.e. key and s_procQ).
+    A TRUE statement is returned if a new SEMD can't be allocated from the free SEMD list.
+    In any other case a FALSE statement is returned.  
 */
 int insertBlocked(int *semAdd, pcb_t *p)
 {
-    semd_t* cursor = semd_h;    // prendiamo il primo nodo dummy
+    semd_t* cursor = semd_h;    // here's our first dummy node
 
     while (cursor->s_semAdd != (int*)MAXINT)
     {
@@ -31,21 +29,22 @@ int insertBlocked(int *semAdd, pcb_t *p)
             p->p_semAdd = semAdd;
             return FALSE;
         }
-        // Viene effettuato l'inserimento rispettando un ordine non decrescente
+        // Viene effettuato l'inserimento rispettando un ordine non decrescente (?)
+        // The list is populated in a nondecreasing way
         else if (cursor->s_next->s_semAdd > semAdd || cursor->s_next->s_semAdd == (int*)MAXINT)
         {
             if (semdFree_h == NULL)
                 return TRUE;
             else
             {
-                semd_t* toAdd = semdFree_h; // prendiamo dalla lista dei descrittori liberi
+                semd_t* toAdd = semdFree_h; // we assign from the free descriptor list
                 semdFree_h = semdFree_h->s_next;
                 toAdd->s_next = cursor->s_next;
                 cursor->s_next = toAdd;
                 toAdd->s_procQ = mkEmptyProcQ();
                 insertProcQ(&(toAdd->s_procQ), p);
                 
-                // Aggiornamento l'indirizzo del descrittore
+                // the address of the descriptor gets updated
                 toAdd->s_semAdd = semAdd;
                 
                 p->p_semAdd = semAdd;
@@ -58,12 +57,13 @@ int insertBlocked(int *semAdd, pcb_t *p)
 }
 
 
-/** Ritorna il primo PCB dalla coda dei processi bloccati (s_procq) associata al SEMD della
- *  ASL con chiave semAdd. Se tale descrittore non esiste nella ASL, restituisce NULL.
- *  Altrimenti, restituisce l’elemento rimosso. Se la coda dei processi bloccati per il semaforo
- *  diventa vuota, rimuove il descrittore  corrispondente dalla ASL e lo inserisce nella coda
- *  dei descrittori liberi (semdFree_h).
- *
+
+/*
+    Returns the first PCB from the blocked process queue (s_procq) associated to 
+    the ASL SEMD with semAdd key. If the descriptor is not in the ASL, NULL is returned,
+    if it is, the removed element is returned. If the semaphore's blocked process queue is emptied,
+    the corresponding descriptor is removed and placed from the ASL to
+    the free descriptor queue (semdFree_h).
 */
 pcb_t* removeBlocked(int *semAdd)
 {
@@ -76,20 +76,20 @@ pcb_t* removeBlocked(int *semAdd)
         {
             pcb_t* toReturn = removeProcQ(&(cursor->s_procQ));
 
-            if (emptyProcQ(cursor->s_procQ))    // caso in cui il semaforo è stato svuotato, 
-            {                                   // lo togliamo dalla ASL
+            if (emptyProcQ(cursor->s_procQ))    // branch were the semaphore is emptied
+            {                                   // it gets removed from the ASL
                 cursor_previous->s_next = cursor->s_next;  
 
-                semd_t* toAdd = cursor;     // aggiungiamo il descrittore tolto alla lista dei descrittori liberi
+                semd_t* toAdd = cursor;     // we add the descriptor removed from the free descriptor list
 
-                toAdd->s_next = semdFree_h;  // Inserimento in testa a semdFree_h
+                toAdd->s_next = semdFree_h;  // LIFO placement into semdFree_h
                 semdFree_h = toAdd;
             }
             
             if (toReturn != NULL) toReturn->p_semAdd = NULL;
             return toReturn;
         }
-        cursor_previous = cursor;   // aggiornamento dei cursori
+        cursor_previous = cursor;   // cursor update
         cursor = cursor->s_next;
     }
     return NULL;
@@ -97,10 +97,9 @@ pcb_t* removeBlocked(int *semAdd)
 
 
 
-/**
- *  Rimuove il PCB puntato da p dalla coda del semaforo su cui è bloccato
- *  (indicato da p->p_semAdd). Se il PCB non compare in tale coda, allora restituisce NULL
- *  (condizione di errore). Altrimenti, restituisce p.
+/*
+    Removes the PCB pointed by p from the blocked semaphore's queue (p->p_semAdd).
+    If a PCB isn't in the queue, returns NULL (error condition). Otherwise p is returned.
 */
 pcb_t* outBlocked(pcb_t *p)
 {
@@ -111,18 +110,18 @@ pcb_t* outBlocked(pcb_t *p)
 
     while (cursor->s_semAdd != (int*)MAXINT)
     {
-        // Se il semAdd è quello cercato ...
+        // if the PCB's semAdd is the one being looked for
         if(cursor->s_semAdd == p->p_semAdd)
         {
             pcb_t* toReturn = outProcQ(&(cursor->s_procQ), p);
 
-            if (emptyProcQ(cursor->s_procQ))    // caso in cui il semaforo è stato svuotato, 
-            {                                   // lo togliamo dalla ASL
+            if (emptyProcQ(cursor->s_procQ))    // empty semaphore -> removed from ASL
+            {
                 cursor_previous->s_next = cursor->s_next;  
 
-                semd_t* toAdd = cursor;     // aggiungiamo il descrittore tolto alla lista dei descrittori liberi
+                semd_t* toAdd = cursor;     // we add the descriptor removed from the free descriptor list
 
-                toAdd->s_next = semdFree_h;  // Inserimento in testa a semdFree_h
+                toAdd->s_next = semdFree_h;  // LIFO population into semdFree_h
                 semdFree_h = toAdd;
             }
 
@@ -136,12 +135,9 @@ pcb_t* outBlocked(pcb_t *p)
 }
 
 
-
-
-/**
- *  Restituisce (senza rimuovere) il puntatore al PCB che si trova in testa alla coda dei processi
- *  associata al SEMD con chiave semAdd. Ritorna NULL se il SEMD non compare nella ASL oppure
- *  se compare ma la sua coda dei processi è vuota.
+/*
+    Returns PCB's head pointer from the process queue associated to the SEMD with the semAdd key.
+    Returns NULL if the SEMD isn't in the ASL or if it is but his process queue is empty. 
 */
 pcb_t* headBlocked(int *semAdd)
 {
@@ -149,12 +145,12 @@ pcb_t* headBlocked(int *semAdd)
 
     while (hd->s_semAdd != (int*)MAXINT)
     {
-        // Corrisponde al semAdd cercato ...
+        
         if(hd->s_semAdd == semAdd)
         {
-            // ...se la sua s_procQ è vuota ...
+            // checking if procQ is empty 
             if (hd->s_procQ == NULL) return NULL;
-            // ... altrimenti ritorna il pcb in testa senza rimuoverlo
+            // if it isn't it returns the heading pcb without removing it
             else return (hd->s_procQ)->p_next;
 
         }
@@ -164,11 +160,11 @@ pcb_t* headBlocked(int *semAdd)
 }
 
 
-/**
- *  Inizializza la lista dei semdFree in modo da contenere tutti gli elementi
- *  della semdTable. Questo metodo viene invocato una volta sola durante
- *  l’inizializzazione della struttura dati.
- *  Vengono utilizzati due nodi "dummies" per ottimizzare il controllo della lista.
+
+/*
+    Initializes the semdFree list so to fit all the semdTable elements.
+    This method is invoked only once per data structure initialization.
+    We use 2 dummy nodes to omptimazie the control over the list. 
 */
 void initASL()
 {
@@ -187,12 +183,12 @@ void initASL()
 
     hd->s_next = NULL;
 
-    // Nodo dummy ad inizio lista
+    // dummy node at the start of the list
     semd_h = &semd_table[0];
     semd_h->s_semAdd = (int*)0x00000000;
     semd_h->s_procQ = NULL;
 
-    // Nodo dummy a fine lista
+    // dummy node to the end of the list
     semd_h->s_next = &semd_table[MAXPROC +1];
     semd_h->s_next->s_semAdd = (int*)MAXINT;
     semd_h->s_next->s_procQ = NULL;
