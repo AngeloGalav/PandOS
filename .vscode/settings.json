@@ -18,7 +18,8 @@
         "variant": "c",
         "exception_handler.h": "c",
         "definitions.h": "c",
-        "devinterrupt_handler.h": "c"
+        "devinterrupt_handler.h": "c",
+        "debugger.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

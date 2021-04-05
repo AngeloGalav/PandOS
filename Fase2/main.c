@@ -4,11 +4,11 @@
 #include "umps3/umps/cp0.h"
 #include "umps3/umps/regdef.h"
 #include "umps3/umps/libumps.h"
-#include "../Libraries/libraries.h"
-#include "../Libraries/syscall.h"
-#include "../Libraries/scheduler.h"
-#include "../Libraries/exception_handler.h"
-#include "../Libraries/debugger.h"
+#include "../include/libraries.h"
+#include "../include/syscall.h"
+#include "../include/scheduler.h"
+#include "../include/exception_handler.h"
+#include "../include/debugger.h"
 
 /* Tail pointer to a queue of pcbs that are in the “ready” state. */
 pcb_PTR readyQueue;
@@ -36,8 +36,8 @@ HIDDEN passupvector_t* passupvector;
 /* Include the test function, in order to execute p2test.c */
 extern void test();
 
-/*Placeholder function for TLB-Refill*/
-extern uTLB_RefillHandler();
+/* Placeholder function for TLB-Refill */
+extern void uTLB_RefillHandler();
 
 int main()
 {
@@ -50,7 +50,7 @@ int main()
 
     passupvector = (passupvector_t*) PASSUPVECTOR;
     
-    /* Fill up pass-up-vector*/
+    /* Filling up the pass-up-vector*/
     passupvector->tlb_refill_handler = (memaddr) uTLB_RefillHandler; 
     passupvector->tlb_refill_stackPtr = (memaddr) KERNELSTACK;
     passupvector->exception_stackPtr = (memaddr) KERNELSTACK; // fresh new stack for the exception handler
@@ -86,4 +86,6 @@ int main()
     insertProcQ(&(readyQueue), proc); /* inserting the current process in the readyQueue so that it can be called later */
 
     Scheduler();
+
+    return 0;
 }

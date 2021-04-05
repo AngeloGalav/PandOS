@@ -1,4 +1,4 @@
-#include "../Libraries/debugger.h"
+#include "../include/debugger.h"
 
 void bp(void){};
 void bp_INIZIO(void){};

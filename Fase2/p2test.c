@@ -12,10 +12,10 @@
  *		Modified by Michael Goldweber on June 19, 2020
  */
 
-#include "../Libraries/pandos_const.h"
-#include "../Libraries/pandos_types.h"
+#include "../include/pandos_const.h"
+#include "../include/pandos_types.h"
 #include <umps3/umps/libumps.h>
-#include "../Libraries/debugger.h"
+#include "../include/debugger.h"
 
 typedef unsigned int devregtr;
 
@@ -120,7 +120,6 @@ void print(char *msg) {
 	devregtr status;
 	
 	SYSCALL(PASSERN, (int)&term_mut, 0, 0);				/* P(term_mut) */
-	int i = 7;
 	while (*s != EOS) {
 		*(base + 3) = PRINTCHR | (((devregtr) *s) << BYTELEN);
 		status = SYSCALL(WAITIO, TERMINT, 0, 0);	
@@ -251,10 +250,7 @@ void test() {
 
 	print("p3 is started\n");
 
-	bp_p_inizio();
 	SYSCALL(PASSERN, (int)&endp3, 0, 0);								/* P(endp3)     */
-
-	bp_faPUfine(); // <-----
 
 	SYSCALL(CREATETHREAD, (int)&p4state, (int) NULL, 0);				/* start p4     */
 
@@ -368,10 +364,8 @@ void p3() {
 
 	/* loop until we are delayed at least half of clock V interval */
 	while (time2-time1 < (CLOCKINTERVAL >> 1) )  {
-		bp_INIZIO();
 		STCK(time1);			/* time of day     */
 		SYSCALL(WAITCLOCK, 0, 0, 0);
-		bp_godo();
 		STCK(time2);			/* new time of day */
 	}
 
