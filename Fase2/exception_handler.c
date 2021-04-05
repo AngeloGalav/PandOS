@@ -1,5 +1,4 @@
-#include "../Libraries/exception_handler.h"
-#include "../Libraries/debugger.h"
+#include "../include/exception_handler.h"
 
 extern pcb_PTR currentProcess;
 
@@ -17,7 +16,6 @@ void exceptionHandler()
     }
     else if ((exceptionCode >= 1) && (exceptionCode <= 3)) /* TLB exception handler */
     {
-        bp_TLBPU();
         if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
         else PassUp(PGFAULTEXCEPT, exceptionState);
     }
@@ -28,7 +26,6 @@ void exceptionHandler()
     }
     else /* Program Trap exception */
     {
-        bp_INIZIO();
         if (currentProcess->p_supportStruct == NULL) Terminate_Process_SYS2();
         else PassUp(GENERALEXCEPT, exceptionState);
     }
@@ -38,6 +35,5 @@ void PassUp(int except_type, state_t* exceptionState)
 {
     (currentProcess->p_supportStruct)->sup_exceptState[except_type] = *exceptionState;
     context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[except_type];
-    bp_faPUfine();
     LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);
 }
