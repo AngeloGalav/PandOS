@@ -1,0 +1,452 @@
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.3
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2020 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
+
+# Make data base, printed on Tue Apr  6 02:05:37 2021
+
+# Variables
+
+# makefile (from 'Makefile', line 24)
+SRC = $(wildcard *.c)
+# environment
+NO_AT_BRIDGE = 1
+# environment
+GTK_RC_FILES = /etc/gtk/gtkrc:/home/agala/.gtkrc:/home/agala/.config/gtkrc
+# environment
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-bd954c31-6b03-4379-ab0c-b79769eb2254.sock
+# makefile (from 'Makefile', line 27)
+VPATH = $(UMPS3_DATA_DIR)
+# environment
+KONSOLE_DBUS_SERVICE = :1.1234
+# environment
+LC_NAME = it_IT.UTF-8
+# environment
+LC_NUMERIC = it_IT.UTF-8
+# environment
+VSCODE_CWD = /home/agala/Corso Informatica/Progetto_Sistemi/Fase2
+# environment
+WINDOWID = 0
+# environment
+LC_ADDRESS = it_IT.UTF-8
+# default
+MAKE_COMMAND := make
+# environment
+GTK3_MODULES = xapp-gtk3-module
+# automatic
+@D = $(patsubst %/,%,$(dir $@))
+# environment
+KONSOLE_VERSION = 201203
+# environment
+VSCODE_HANDLES_UNCAUGHT_ERRORS = true
+# default
+.VARIABLES := 
+# environment
+PWD = /home/agala/Corso Informatica/Progetto_Sistemi/Fase2
+# makefile (from 'Makefile', line 17)
+CFLAGS_LANG = -ffreestanding
+# automatic
+%D = $(patsubst %/,%,$(dir $%))
+# environment
+MAIL = /var/spool/mail/agala
+# makefile (from 'Makefile', line 15)
+UMPS3_INCLUDE_DIR3 = /usr/include 
+# environment
+XDG_DATA_DIRS = /home/agala/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share:/var/lib/snapd/desktop
+# environment
+OLDPWD = /home/agala/Corso Informatica/Progetto_Sistemi
+# automatic
+^D = $(patsubst %/,%,$(dir $^))
+# environment
+VSCODE_LOG_STACK = false
+# automatic
+%F = $(notdir $%)
+# environment
+XDG_SESSION_PATH = /org/freedesktop/DisplayManager/Session1
+# environment
+LANG = en_US.UTF-8
+# environment
+XAUTHORITY = /home/agala/.Xauthority
+# default
+.LOADED := 
+# default
+.INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
+# environment
+COLORFGBG = 15;0
+# makefile
+MAKEFLAGS = pqrR
+# makefile
+CURDIR := /home/agala/Corso Informatica/Progetto_Sistemi/Fase2
+# environment
+VSCODE_PIPE_LOGGING = true
+# environment
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+# automatic
+*D = $(patsubst %/,%,$(dir $*))
+# environment
+PAM_KWALLET5_LOGIN = /run/user/1000/kwallet5.socket
+# environment
+MFLAGS = -pqrR
+# default
+.SHELLFLAGS := -c
+# environment
+QT_LINUX_ACCESSIBILITY_ALWAYS_ON = 1
+# automatic
++D = $(patsubst %/,%,$(dir $+))
+# makefile (from 'Makefile', line 14)
+UMPS3_INCLUDE_DIR2 = $(UMPS3_DIR_PREFIX)/include/umps3/umps
+# environment
+XCURSOR_THEME = We10XOS-cursors
+# environment
+XDG_SESSION_DESKTOP = KDE
+# environment
+VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=e4763487-6d08-43f0-a8cc-99db83825ced&iid=e4763487-6d08-43f0-a8cc-99db83825ced&sid=e4763487-6d08-43f0-a8cc-99db83825ced","uploadToServer":true}
+# makefile (from 'Makefile', line 1)
+MAKEFILE_LIST := Makefile
+# automatic
+@F = $(notdir $@)
+# environment
+VSCODE_VERBOSE_LOGGING = true
+# environment
+VSCODE_PID = 3477
+# environment
+XDG_SESSION_TYPE = x11
+# automatic
+?D = $(patsubst %/,%,$(dir $?))
+# environment
+SESSION_MANAGER = local/angelo-linux-v2:@/tmp/.ICE-unix/1171,unix/angelo-linux-v2:/tmp/.ICE-unix/1171
+# automatic
+*F = $(notdir $*)
+# environment
+CHROME_DESKTOP = code-url-handler.desktop
+# environment
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
+# automatic
+<D = $(patsubst %/,%,$(dir $<))
+# environment
+VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
+# environment
+BREAKPAD_DUMP_LOCATION = /home/agala/.config/Code/exthost Crash Reports
+# default
+MAKE_HOST := x86_64-pc-linux-gnu
+# makefile (from 'Makefile', line 25)
+OBJS = $(SRC:.c=.o)	
+# makefile
+SHELL = /bin/sh
+# default
+MAKECMDGOALS := all
+# environment
+SHLVL = 2
+# environment
+PROFILEHOME = 
+# environment
+MAKELEVEL := 0
+# default
+MAKE = $(MAKE_COMMAND)
+# environment
+PATH = /home/agala/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin
+# default
+MAKEFILES := 
+# environment
+LANGUAGE = 
+# environment
+LC_MONETARY = it_IT.UTF-8
+# environment
+MOTD_SHOWN = pam
+# automatic
+^F = $(notdir $^)
+# environment
+LC_TIME = it_IT.UTF-8
+# environment
+VSCODE_LOG_NATIVE = false
+# environment
+LC_TELEPHONE = it_IT.UTF-8
+# automatic
+?F = $(notdir $?)
+# environment
+KDE_APPLICATIONS_AS_SCOPE = 1
+# environment
+XDG_SEAT = seat0
+# environment
+XDG_CURRENT_DESKTOP = KDE
+# automatic
++F = $(notdir $+)
+# environment
+XDG_SEAT_PATH = /org/freedesktop/DisplayManager/Seat0
+# environment
+DESKTOP_SESSION = /usr/share/xsessions/plasma
+# environment
+ORIGINAL_XDG_CURRENT_DESKTOP = KDE
+# 'override' directive
+GNUMAKEFLAGS := 
+# environment
+BROWSER = /usr/bin/firefox
+# environment
+LOGNAME = agala
+# environment
+XDG_VTNR = 1
+# makefile
+.DEFAULT_GOAL := all
+# environment
+EDITOR = /usr/bin/nano
+# environment
+DISPLAY = :0
+# environment
+GTK_MODULES = canberra-gtk-module
+# environment
+USER = agala
+# default
+MAKE_VERSION := 4.3
+# environment
+KDE_SESSION_UID = 1000
+# environment
+KONSOLE_DBUS_SESSION = /Sessions/1
+# makefile (from 'Makefile', line 22)
+LDFLAGS = -G 0 -nostdlib -T $(UMPS3_DATA_DIR)/umpscore.ldscript
+# environment
+LC_MEASUREMENT = it_IT.UTF-8
+# makefile (from 'Makefile', line 1)
+XT_PRG_PREFIX = mipsel-linux-gnu-
+# environment
+VSCODE_NODE_CACHED_DATA_DIR = /home/agala/.config/Code/CachedData/c185983a683d14c396952dd432459097bc7f757f
+# environment
+_ = /usr/bin/make
+# makefile (from 'Makefile', line 13)
+UMPS3_INCLUDE_DIR = $(UMPS3_DIR_PREFIX)/include/umps3
+# environment
+LC_PAPER = it_IT.UTF-8
+# environment
+XDG_RUNTIME_DIR = /run/user/1000
+# makefile (from 'Makefile', line 19)
+CFLAGS = $(CFLAGS_LANG) $(CFLAGS_MIPS) -I$(UMPS3_INCLUDE_DIR) -I$(UMPS3_INCLUDE_DIR3) -I$(UMPS3_INCLUDE_DIR2) -Wall -O0
+# makefile (from 'Makefile', line 12)
+UMPS3_DATA_DIR = $(UMPS3_DIR_PREFIX)/share/umps3
+# environment
+COLORTERM = truecolor
+# makefile (from 'Makefile', line 7)
+UMPS3_DIR_PREFIX = /usr
+# makefile (from 'Makefile', line 18)
+CFLAGS_MIPS = -mips1 -mabi=32 -mno-gpopt -G 0 -mno-abicalls -fno-pic -mfp32
+# environment
+XDG_SESSION_CLASS = user
+# environment
+VSCODE_AMD_ENTRYPOINT = vs/workbench/services/extensions/node/extensionHostProcess
+# environment
+GTK2_RC_FILES = /etc/gtk-2.0/gtkrc:/home/agala/.gtkrc-2.0:/home/agala/.config/gtkrc-2.0
+# environment
+HOME = /home/agala
+# environment
+ELECTRON_RUN_AS_NODE = 1
+# environment
+VSCODE_IPC_HOOK = /run/user/1000/vscode-fe8cf142-1.55.0-main.sock
+# environment
+TERM = xterm-256color
+# environment
+XDG_SESSION_ID = 2
+# environment
+XCURSOR_SIZE = 24
+# default
+.RECIPEPREFIX := 
+# automatic
+<F = $(notdir $<)
+# default
+SUFFIXES := 
+# makefile (from 'Makefile', line 3)
+LD = $(XT_PRG_PREFIX)ld
+# environment
+QT_AUTO_SCREEN_SCALE_FACTOR = 0
+# environment
+VSCODE_CLI = 1
+# environment
+ELECTRON_NO_ATTACH_CONSOLE = 1
+# environment
+SHELL_SESSION_ID = 058399e41da649c7a830d8d9f6c45ee4
+# environment
+KDE_SESSION_VERSION = 5
+# default
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync check-symlink guile load
+# makefile (from 'Makefile', line 2)
+CC = $(XT_PRG_PREFIX)gcc
+# environment
+KDE_FULL_SESSION = true
+# environment
+LC_IDENTIFICATION = it_IT.UTF-8
+# variable set hash-table stats:
+# Load=132/1024=13%, Rehash=0, Collisions=10/166=6%
+
+# Pattern-specific Variable Values
+
+# No pattern-specific variable values.
+
+# Directories
+
+# /usr/share/umps3 (device 2049, inode 4726787): 11 files, no impossibilities.
+# . (device 2049, inode 14160970): 19 files, 1 impossibilities.
+
+# 30 files, 1 impossibilities in 2 directories.
+
+# Implicit Rules
+
+%.o: %.S
+#  recipe to execute (from 'Makefile', line 50):
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# 1 implicit rules, 0 (0,0%) terminal.
+# Files
+
+# Not a target:
+asl.o:
+#  Implicit rule search has been done.
+#  File does not exist.
+#  File has not been updated.
+
+# Not a target:
+libumps.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+debugger.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+Makefile:
+#  Implicit rule search has been done.
+#  Last modified 2021-04-04 00:44:32.755504209
+#  File has been updated.
+#  Successfully updated.
+
+kernel.core.umps: kernel
+#  Implicit rule search has not been done.
+#  Last modified 2021-04-06 02:04:35.430050181
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 35):
+	umps3-elf2umps -k $<
+	
+
+clean:
+#  Phony target (prerequisite of .PHONY).
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 42):
+	@echo "** Cleaning object files..."
+	-rm -f *.o
+
+clean_all:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 46):
+	@echo "** Cleaning all generated umps files..."
+	-rm -f *.o kernel *.umps
+
+# Not a target:
+exception_handler.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+kernel: asl.o debugger.o devinterrupt_handler.o exception_handler.o libraries.o main.o p2test.o pcb.o scheduler.o syscall.o crtso.o libumps.o
+#  Implicit rule search has not been done.
+#  Last modified 2021-04-06 02:04:35.42005017
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 38):
+	$(LD) -o $@ $^ $(LDFLAGS)
+	@echo "** Compilation successfull!"
+	
+
+# Not a target:
+pcb.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+.DEFAULT:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+all: kernel.core.umps clean
+#  Phony target (prerequisite of .PHONY).
+#  Command line target.
+#  Implicit rule search has not been done.
+#  File does not exist.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 32):
+	@echo "** All successfull! Good Luck!! :) [remember to set the TLB Floor Address to 0x8000.000 in UMPS3!!]"
+
+# Not a target:
+main.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+devinterrupt_handler.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+syscall.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+scheduler.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+libraries.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+.PHONY: all clean
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+p2test.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# Not a target:
+crtso.o:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+
+# files hash-table stats:
+# Load=21/1024=2%, Rehash=0, Collisions=0/60=0%
+# VPATH Search Paths
+
+# No 'vpath' search paths.
+
+# General ('VPATH' variable) search path:
+# /usr/share/umps3
+
+# strcache buffers: 1 (0) / strings = 53 / storage = 549 B / avg = 10 B
+# current buf: size = 8162 B / used = 549 B / count = 53 / avg = 10 B
+
+# strcache performance: lookups = 76 / hit rate = 30%
+# hash-table stats:
+# Load=53/8192=1%, Rehash=0, Collisions=0/76=0%
+# Finished Make data base on Tue Apr  6 02:05:37 2021
+
+ 
+make: *** No rule to make target 'asl.o', needed by 'kernel'.  Stop.
+ 

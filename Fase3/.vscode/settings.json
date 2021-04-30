@@ -1,0 +1,7 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.intelliSenseEngine": "Default",
+    "files.associations": {
+        "random": "c"
+    }
+}
