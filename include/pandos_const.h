@@ -22,12 +22,12 @@
 #define TIMESCALEADDR 0x10000024
 
 /* Memory related constants */
-#define KSEG0        0x00000000 //kernel segment 0...
+#define KSEG0        0x00000000
 #define KSEG1        0x20000000
 #define KSEG2        0x40000000
 #define KUSEG        0x80000000
 #define RAMSTART     0x20000000
-#define BIOSDATAPAGE 0x0FFFF000 //facilitates communication between hardware actions and kernel actions
+#define BIOSDATAPAGE 0x0FFFF000
 #define PASSUPVECTOR 0x0FFFF900
 
 /* Exceptions related constants */
@@ -152,9 +152,6 @@
 #define STATESIZE  0x8C
 #define DEVICECNT  (DEVINTNUM * DEVPERINT)
 #define MAXSTRLENG 128
-
-#define DELAYASID    (UPROCMAX + 1)
-#define KUSEG3SECTNO 0
 
 #define VMDISK        0
 #define MAXPAGES      32

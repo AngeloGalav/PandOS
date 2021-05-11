@@ -37,6 +37,6 @@ void PassUpOrDie(int except_type, state_t* exceptionState)
     {
         (currentProcess->p_supportStruct)->sup_exceptState[except_type] = *exceptionState; 
         context_t info_to_pass = (currentProcess->p_supportStruct)->sup_exceptContext[except_type]; // passing up the support info
-        LDCXT(info_to_pass.c_stackPtr, info_to_pass.c_status, info_to_pass.c_pc);                   // to the support level
+        LDCXT(info_to_pass.stackPtr, info_to_pass.status, info_to_pass.pc);                   // to the support level
     }
 }
