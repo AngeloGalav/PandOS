@@ -37,11 +37,26 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
+    int mask = 40;
+
+
     for(int i = 0; i < UPROCMAX; i++)
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) 0x800000B0; 
-        U_state_structure->reg_sp = (memaddr) 0xC0000000;
-        //TO-DO set the entryHi.ASID and the status of the structure
+        U_state_structure[i].reg_sp = (memaddr) 0xC0000000;
+        U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
+        U_state_structure[i].entry_hi =  mask; // not totally sure of this point
+
+        mask = mask * 2; //we cycle the bits from the 7th to set the ASID
     }
+
+    /* Initialize u'proc support structure */
+
+    for(int i = 0; i < UPROCMAX; i++)
+    {
+        U_support_structure[i].sup_asid = i + 1 ; // are we sure about this ? oidocrop
+        //TO-DO keep on initialize other fields declared at page 60 of pandos
+    }
+    
 
 }
