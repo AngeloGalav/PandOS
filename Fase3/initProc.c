@@ -43,8 +43,6 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
-    int mask = 32;
-
 
     for(int i = 0; i < UPROCMAX; i++)
     {
@@ -52,9 +50,10 @@ void initSupportStructs()
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
-        U_state_structure[i].entry_hi =  mask; // not totally sure of this point
-        //ALERT in this way weset only the first 5 process !!! change this
-        mask = mask * 2; //we cycle the bits from the 7th to set the ASID
+        U_state_structure[i].entry_hi =  i +1;
+        U_state_structure[i].entry_hi <<= ASIDSHIFT;
+         // not totally sure of this point
+        //i insert the Asid and than i shift 6 position everytime
     }
 
     /* Initialize u'proc support structure */
@@ -66,10 +65,12 @@ void initSupportStructs()
 
         U_support_structure[i].sup_exceptContext[0].pc =  PGFAULTEXCEPT;
         U_support_structure[i].sup_exceptContext[1].pc = GENERALEXCEPT ;
+
         //in order, all interrupts, usermode - first bit (if 1 interrupts are counted as valid),
         //please check if this OR is right, page 9 Pops
         U_support_structure[i].sup_exceptContext[0].status = IMON | 0X00000001 | TEBITON ;
         U_support_structure[i].sup_exceptContext[1].status = IMON | 0X00000001 | TEBITON ;
+
         //Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
         //it seems those are two int arrays that describe two memory's areas
         U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]) ;
@@ -77,7 +78,19 @@ void initSupportStructs()
 
         //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
         //we must set VON, ASID, V and D bits
-        //U_support_structure[i].sup_privatePgTbl[31] = ;
+        int j;
+        for(j = 0;j < 31; j ++)
+        {
+            //set the VPN to [0x80000..0x8001E]
+            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI = 0x80000 + j ;
+            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI <<= VPNSHIFT;
+            //TO-DO set the ASID and all the bits for the 31 pages
+
+        }
+        //the last is the stack page and it's apart from the others
+        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI =  0xBFFFF ;
+        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI <<= VPNSHIFT;
+        
 
 
     }
