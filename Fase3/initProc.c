@@ -3,6 +3,9 @@
 /* U-proc state and support structs */
 HIDDEN support_t U_support_structure[UPROCMAX];
 HIDDEN state_t U_state_structure[UPROCMAX];
+int supstackTLB[500];
+int supstackGen[500];
+
 
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
@@ -47,6 +50,7 @@ void initSupportStructs()
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
+        //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
         U_state_structure[i].entry_hi =  mask; // not totally sure of this point
         //ALERT in this way weset only the first 5 process !!! change this
@@ -57,9 +61,28 @@ void initSupportStructs()
 
     for(int i = 0; i < UPROCMAX; i++)
     {
-        U_support_structure[i].sup_asid = i + 1 ; // are we sure about this ? oidocrop
-        //TO-DO keep on initialize other fields declared at page 60 of pandos
+        //only  ASID , exceptContent  and privatePgTbl must be set before SYS1 call !
+        U_support_structure[i].sup_asid = i + 1 ; 
+
+        U_support_structure[i].sup_exceptContext[0].pc =  PGFAULTEXCEPT;
+        U_support_structure[i].sup_exceptContext[1].pc = GENERALEXCEPT ;
+        //in order, all interrupts, usermode - first bit (if 1 interrupts are counted as valid),
+        //please check if this OR is right, page 9 Pops
+        U_support_structure[i].sup_exceptContext[0].status = IMON | 0X00000001 | TEBITON ;
+        U_support_structure[i].sup_exceptContext[1].status = IMON | 0X00000001 | TEBITON ;
+        //Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
+        //it seems those are two int arrays that describe two memory's areas
+        U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]) ;
+        U_support_structure[i].sup_exceptContext[1].stackPtr = &(supstackGen[499]);
+
+        //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
+        //we must set VON, ASID, V and D bits
+        //U_support_structure[i].sup_privatePgTbl[31] = ;
+
+
     }
     
-
+    
+    /*if(tony arbano == coglione)
+        kernel panic() */
 }
