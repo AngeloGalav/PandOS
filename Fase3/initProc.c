@@ -26,7 +26,10 @@ void UProcInitiliazer()
     for (int i = 0; i < UPROCMAX; i++)
     // e vaffanculo porcodio
         SYSCALL(1, (int) &U_state_structure[i], (int) &U_support_structure[i], 0);
+        
+
 }
+
 
 void initSupportStructs()
 {
@@ -37,16 +40,16 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
-    int mask = 40;
+    int mask = 32;
 
 
     for(int i = 0; i < UPROCMAX; i++)
     {
-        U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) 0x800000B0; 
-        U_state_structure[i].reg_sp = (memaddr) 0xC0000000;
+        U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
+        U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
         U_state_structure[i].entry_hi =  mask; // not totally sure of this point
-
+        //ALERT in this way weset only the first 5 process !!! change this
         mask = mask * 2; //we cycle the bits from the 7th to set the ASID
     }
 
