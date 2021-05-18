@@ -29,12 +29,14 @@
 #define DEVREG 0x10000054
 
 /* Set the VPN of a TLB/PageTable entry */
-#define SET_VPN(U, x) (  U =  U | ((x) << VPNSHIFT))
+#define SET_VPN(U, x) ( (unsigned int*) U |=( memaddr) x << VPNSHIFT)
+
+#define SET_VPN(U, x) ( { unsigned int  *_U = &(U) ; *_U |= (memaddr)(x) << VPNSHIFT;}) 
 
 /* Set the ASID of a TLB/PageTable entry */
-#define SET_ASID(U, x) ( U = U | ((x) << ASIDSHIFT ))
+#define SET_ASID(U, x) ( { unsigned int *_U = &(U) ; *_U |= (memaddr) (x) << ASIDSHIFT ;})
 
 /* Set D and G bit of EntryLo of a TLB/PageTable entry */
-#define SET_D_AND_G(U) ( U = U | DIRTYON | GLOBALON)
+#define SET_D_AND_G(U) ( { unsigned int *_U = &(U) ; *_U |=  DIRTYON | GLOBALON;})
 
 #endif 

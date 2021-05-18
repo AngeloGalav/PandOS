@@ -81,7 +81,7 @@ void initSupportStructs()
         for(j = 0;j < 31; j ++)
         {
             //set the VPN to [0x80000..0x8001E]
-            SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
+            SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI,  0x80000 + j);
             SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
             SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
         }
