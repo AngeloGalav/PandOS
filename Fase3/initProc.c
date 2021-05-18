@@ -12,7 +12,7 @@ int supstackGen[500];
 swap_t swap_table[POOLSIZE];
 
 /* Swap pool devices semaphores*/
-int swap_semaphores[UPROCMAX]; // 16 semaphores cause every process has 2 of them ? like in phase 2?
+int swap_semaphores[UPROCMAX]; 
 int mastersemaphore = 1;
 
 void test()
@@ -44,16 +44,13 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
-    
+
     for(int i = 0; i < UPROCMAX; i++)
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
-        /*asid = i + 1;
-        asid <<= ASIDSHIFT;
-        U_state_structure[i].entry_hi =  U_state_structure[i].entry_hi | asid;*/
         SET_ASID(U_state_structure[i].entry_hi,i +1);
       
     }
