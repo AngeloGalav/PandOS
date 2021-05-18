@@ -29,8 +29,6 @@
 #define DEVREG 0x10000054
 
 /* Set the VPN of a TLB/PageTable entry */
-#define SET_VPN(U, x) ( (unsigned int*) U |=( memaddr) x << VPNSHIFT)
-
 #define SET_VPN(U, x) ( { unsigned int  *_U = &(U) ; *_U |= (memaddr)(x) << VPNSHIFT;}) 
 
 /* Set the ASID of a TLB/PageTable entry */
