@@ -1,6 +1,9 @@
 #ifndef DEFINITIONS_H_INCLUDED
 #define DEFINITIONS_H_INCLUDED
 
+#include "pandos_const.h"
+#include "pandos_types.h"
+
 /* Total number of device semaphores in PandOS */
 #define SEMAPHORE_QTY 49
 
@@ -24,5 +27,14 @@
 
 /* Start of the device register memory area */
 #define DEVREG 0x10000054
+
+/* Set the VPN of a TLB/PageTable entry */
+#define SET_VPN(U, x) (  U =  U | ((x) << VPNSHIFT))
+
+/* Set the ASID of a TLB/PageTable entry */
+#define SET_ASID(U, x) ( U = U | ((x) << ASIDSHIFT ))
+
+/* Set D and G bit of EntryLo of a TLB/PageTable entry */
+#define SET_D_AND_G(U) ( U = U | DIRTYON | GLOBALON)
 
 #endif 

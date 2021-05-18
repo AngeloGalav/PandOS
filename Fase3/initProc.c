@@ -1,4 +1,5 @@
 #include "../include/initProc.h"
+#include "definitions.h"
 
 /* U-proc state and support structs */
 HIDDEN support_t U_support_structure[UPROCMAX];
@@ -43,24 +44,25 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
-    unsigned int asid;
+    
     for(int i = 0; i < UPROCMAX; i++)
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
-        asid = i + 1;
+        /*asid = i + 1;
         asid <<= ASIDSHIFT;
-        U_state_structure[i].entry_hi =  U_state_structure[i].entry_hi | asid;
-       
+        U_state_structure[i].entry_hi =  U_state_structure[i].entry_hi | asid;*/
+        SET_ASID(U_state_structure[i].entry_hi,i +1);
+      
     }
 
     /* Initialize u'proc support structure */
+    //only  ASID , exceptContent  and privatePgTbl must be set before SYS1 call !
 
     for(int i = 0; i < UPROCMAX; i++)
     {
-        //only  ASID , exceptContent  and privatePgTbl must be set before SYS1 call !
         U_support_structure[i].sup_asid = i + 1 ; 
 
         U_support_structure[i].sup_exceptContext[0].pc =  PGFAULTEXCEPT;
@@ -72,36 +74,26 @@ void initSupportStructs()
         U_support_structure[i].sup_exceptContext[1].status = IMON | 0X00000001 | TEBITON ;
 
         //Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
-        //it seems those are two int arrays that describe two memory's areas
         U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]) ;
         U_support_structure[i].sup_exceptContext[1].stackPtr = &(supstackGen[499]);
 
         //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
-        //we must set VON, ASID, V and D bits
+        //we must set VPN, ASID, V and D bits
         int j;
-        unsigned int VPN;
 
         for(j = 0;j < 31; j ++)
         {
             //set the VPN to [0x80000..0x8001E]
-            //PLEASE CREATE A MACRO OR A FUNCTION THAT DOES THIS !!!!!!!!
-            VPN = 0x80000 + j;
-            VPN <<= VPNSHIFT ;
-            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI = 
-            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI | VPN ;
-            //TO-DO set the ASID and all the bits for the 31 pages
-
+            SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
+            SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
+            SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
         }
+
         //the last is the stack page and it's apart from the others
-        //PLEASE CREATE A MACRO OR A FUNCTION THAT DOES THIS !!!!!!!!
-        VPN &= 0;
-        VPN = 0xBFFFF;
-        VPN <<= VPNSHIFT;
-        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI = 
-        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI | VPN ;
+        SET_VPN(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, 0xBFFFF);
+        SET_ASID(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, i + 1);
+        SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[31].pte_entryLO);
         
-
-
     }
     
     
