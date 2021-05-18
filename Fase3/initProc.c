@@ -19,19 +19,17 @@ void test()
 {
     initSupportStructs();
     UProcInitiliazer();
+    
 
-    ///TODO: [initialize create ]
+    //should we call SYS2 to end this process after all the childs are dead to invoke HALT ?
+    //SYSCALL(2,)
 }
 
 void UProcInitiliazer()
 {
-
-
     for (int i = 0; i < UPROCMAX; i++)
     // e vaffanculo porcodio
-        SYSCALL(1, (int) &U_state_structure[i], (int) &U_support_structure[i], 0);
-        
-
+        SYSCALL(1, (int) &U_state_structure[i], (int) &U_support_structure[i], 0);    
 }
 
 
