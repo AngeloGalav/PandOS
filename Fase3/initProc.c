@@ -43,17 +43,17 @@ void initSupportStructs()
     }
 
     /* Initialize u'proc processor state */
-
+    unsigned int asid;
     for(int i = 0; i < UPROCMAX; i++)
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
-        U_state_structure[i].entry_hi =  i +1;
-        U_state_structure[i].entry_hi <<= ASIDSHIFT;
-         // not totally sure of this point
-        //i insert the Asid and than i shift 6 position everytime
+        asid = i + 1;
+        asid <<= ASIDSHIFT;
+        U_state_structure[i].entry_hi =  U_state_structure[i].entry_hi | asid;
+       
     }
 
     /* Initialize u'proc support structure */
@@ -79,17 +79,26 @@ void initSupportStructs()
         //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
         //we must set VON, ASID, V and D bits
         int j;
+        unsigned int VPN;
+
         for(j = 0;j < 31; j ++)
         {
             //set the VPN to [0x80000..0x8001E]
-            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI = 0x80000 + j ;
-            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI <<= VPNSHIFT;
+            //PLEASE CREATE A MACRO OR A FUNCTION THAT DOES THIS !!!!!!!!
+            VPN = 0x80000 + j;
+            VPN <<= VPNSHIFT ;
+            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI = 
+            U_support_structure[i].sup_privatePgTbl[j].pte_entryHI | VPN ;
             //TO-DO set the ASID and all the bits for the 31 pages
 
         }
         //the last is the stack page and it's apart from the others
-        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI =  0xBFFFF ;
-        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI <<= VPNSHIFT;
+        //PLEASE CREATE A MACRO OR A FUNCTION THAT DOES THIS !!!!!!!!
+        VPN &= 0;
+        VPN = 0xBFFFF;
+        VPN <<= VPNSHIFT;
+        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI = 
+        U_support_structure[i].sup_privatePgTbl[31].pte_entryHI | VPN ;
         
 
 
