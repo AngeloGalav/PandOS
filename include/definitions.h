@@ -4,6 +4,16 @@
 #include "pandos_const.h"
 #include "pandos_types.h"
 
+/* system call codes */
+#define	CREATETHREAD	1	/* create thread */
+#define	TERMINATETHREAD	2	/* terminate thread */
+#define	PASSERN			3	/* P a semaphore */
+#define	VERHOGEN		4	/* V a semaphore */
+#define	WAITIO			5	/* delay on a io semaphore */
+#define	GETCPUTIME		6	/* get cpu time used to date */
+#define	WAITCLOCK		7	/* delay on the clock semaphore */
+#define	GETSPTPTR		8	/* return support structure ptr. */
+
 /* Total number of device semaphores in PandOS */
 #define SEMAPHORE_QTY 49
 
@@ -36,5 +46,8 @@
 
 /* Set D and G bit of EntryLo of a TLB/PageTable entry */
 #define SET_D_AND_G(U) ( U |=  DIRTYON | GLOBALON)
+
+/* Extract excCode from Cause register */
+#define GET_EXEC_CODE(S) BitExcractor(S, GETEXECCODE, CAUSESHIFT) 
 
 #endif 
