@@ -75,14 +75,25 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     // Printer device associated with the U-proc 
     // IntLno 6
     // DevNo = current Asid 
-    devreg_t* porcodio = DEV_REG_ADDR(6, sPtr->sup_asid);
+    devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid);
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     // Lo scopriremo in un'altra puntata di MISTERO
-    // da 0 a 7 devo mettere da a1 dentro DATA0 per la lunghezza di a2
-    //Ogni carattere è un byte quindi ogni carattere è un ciclo in cui faccio
+    // devo mettere da a1 dentro DATA0 per la lunghezza di a2
+    //Ogni carattere è un byte quindi ogni carattere è un ciclo in cui faccio :
     // metto il carattere da a1 in DATA0, setto lo status e scrivo il comando per scrivere
     //immagino che in a2 ci sia il numero di caratteri quindi di byte per il mio ciclo
     // inoltre controllo che se ho a2 < 0 || a2 > 128 dò errore quindi SYS9
     //si può anche fare ricorsivo ma non ne trovo l'utilità
+    unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2 ;
+    int i;
+    for(i=0; i < strlength ; i++)
+    {
+        devReg->dtp.data0 = (unsigned int) sPtr->sup_exceptState->reg_a1;
+        devReg->dtp.command = PRINTCHR;
+        //TO-DO spostare reg a1 avanti per prendere il byte dopo e infine assicurarsi di 
+        //incontrare EOF
+        //bisogna controllare che sia andato a buon fine ad ogni iterazione e quindi in caso no riprovare ?
+    }
+
 }

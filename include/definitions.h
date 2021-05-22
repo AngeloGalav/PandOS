@@ -14,6 +14,12 @@
 #define	WAITCLOCK		7	/* delay on the clock semaphore */
 #define	GETSPTPTR		8	/* return support structure ptr. */
 
+/* Devices constants */
+#define TRANSMITTED	5
+#define ACK	1
+#define PRINTCHR	2
+
+
 /* Total number of device semaphores in PandOS */
 #define SEMAPHORE_QTY 49
 
