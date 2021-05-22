@@ -5,7 +5,11 @@
 #include "definitions.h"
 
 
+/* General exception handler for the Support level */
+void GeneralException_Handler ();
 
+/* The Support's level Syscall handler */
+void Support_Syscall_Handler(state_t *exceptState);
 
 
 #endif
