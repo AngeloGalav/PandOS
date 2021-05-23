@@ -77,7 +77,7 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
-    // P for the sempaphore ?
+    // P for the semaphore ?
 
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2 ;
 
