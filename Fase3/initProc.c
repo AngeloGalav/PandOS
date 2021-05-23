@@ -20,7 +20,6 @@ void test()
     initSupportStructs();
     UProcInitiliazer();
     
-
     //should we call SYS2 to end this process after all the childs are dead to invoke HALT ?
     //SYSCALL(2,)
 }
@@ -38,27 +37,26 @@ void initSupportStructs()
     //we should clean this code by using functions or macros
 
     /* Set all semaphores to 1 cause of mutex */
-    for(int i = 0; i < UPROCMAX; i++)
+    for (int i = 0; i < UPROCMAX; i++)
     {
         swap_semaphores[i] = 1;
     }
 
     /* Initialize u'proc processor state */
 
-    for(int i = 0; i < UPROCMAX; i++)
+    for (int i = 0; i < UPROCMAX; i++)
     {
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
         SET_ASID(U_state_structure[i].entry_hi,i +1);
-      
     }
 
     /* Initialize u'proc support structure */
     //only  ASID , exceptContent  and privatePgTbl must be set before SYS1 call !
 
-    for(int i = 0; i < UPROCMAX; i++)
+    for (int i = 0; i < UPROCMAX; i++)
     {
         U_support_structure[i].sup_asid = i + 1 ; 
 
@@ -78,7 +76,7 @@ void initSupportStructs()
         //we must set VPN, ASID, V and D bits
         int j;
 
-        for(j = 0;j < 31; j ++)
+        for (j = 0;j < 31; j ++)
         {
             //set the VPN to [0x80000..0x8001E]
             SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI,  0x80000 + j);
@@ -94,6 +92,6 @@ void initSupportStructs()
     }
     
     
-    /*if(tony arbano == coglione)
+    /* If(tony arbano == coglione)
         kernel panic() */
 }

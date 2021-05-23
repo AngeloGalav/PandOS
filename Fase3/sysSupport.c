@@ -3,14 +3,14 @@
 #include "libraries.h"
 
 
-void GeneralException_Handler ()
+void GeneralException_Handler()
 {
     //We take the support info of the current process with the SYS8
     support_t *sPtr = SYSCALL(GETSPTPTR, 0, 0, 0);
     //extract the execCode to check if there is a SYSCALL or a TRAP exception
     int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[0].cause);
     
-    if(excCode >= 9)
+    if (excCode >= 9)
     {
         Support_Syscall_Handler(sPtr); 
     }
@@ -26,39 +26,40 @@ void Support_Syscall_Handler(support_t *sPtr)
 
     switch (sysnumber)
     {
-    case TERMINATE:
+        case TERMINATE:
 
-        Terminate_SYS9();
+            Terminate_SYS9();
 
-        break;
+            break;
 
-    case GET_TOD:
+        case GET_TOD:
 
-        Get_Tod_SYS10((unsigned int*) sPtr->sup_exceptState->reg_v0);
-        break;
+            Get_Tod_SYS10((unsigned int*) sPtr->sup_exceptState->reg_v0);
+            break;
 
-    case WRITEPRINTER:
-       
-       Write_To_Printer_SYS11(sPtr);
-        break;
-    
-    case WRITETERMINAL:
-       
-        break;
+        case WRITEPRINTER:
 
-    case READTERMINAL:
-       
-        break;
+           Write_To_Printer_SYS11(sPtr);
+            break;
 
-    default:
-        //PANIC ?
-        break;
+        case WRITETERMINAL:
+
+            break;
+
+        case READTERMINAL:
+
+            break;
+
+        default:
+            //PANIC ?
+            break;
     }
-    //increment the program counter by 4 here or somewhere else ??
-}
+        //increment the program counter by 4 here or somewhere else ??
+}   
 
 void Terminate_SYS9() // sys2 wrapper ?
-{
+{  
+    //should we check kernel mode ? 
     Terminate_Process_SYS2();
 }
 
@@ -74,6 +75,7 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 {
     // Printer device associated with the U-proc 
     devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid);
+
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
@@ -81,20 +83,25 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2 ;
 
-    if((strlength >= 0 ) && (strlength <= MAXSTRLENG))
+    if ((strlength >= 0 ) && (strlength <= MAXSTRLENG))
     {
         char *s = sPtr->sup_exceptState->reg_a1;
-        while( *s != EOF)
+
+        while ( *s != EOF)
         {
             devReg->dtp.data0 = *s;
 
             devReg->dtp.command = PRINTCHR;
 
-            int status = (int) sPtr->sup_exceptState->reg_v0;
+            //int status = (int) sPtr->sup_exceptState->reg_v0;
 
-            if(status != DEV0ON)
+             int status = (int) devReg->dtp.status;
+
+            if (status != DEV0ON)
             {
-                //invoke panic or terminate ?
+                //status *= -1; 
+                //sPtr->sup_exceptState->reg_v0 = status;
+                //esci dal while 
             }
             
             s++;
