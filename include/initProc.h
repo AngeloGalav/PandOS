@@ -4,9 +4,13 @@
 #include "pandos_const.h"
 #include "pandos_types.h"
 
-extern void initSupportStructs();
+/* Initialize the support structs for the current process */
+extern void initSupportStructs(); // extern cause it should be in TLB file
 
 /* Initializes the Support data structures and the U-Processes */
 void test();
+
+/* Used to invoke SYS1 for each process */
+void UProcInitiliazer();
 
 #endif

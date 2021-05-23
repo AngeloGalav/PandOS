@@ -4,7 +4,7 @@
 #include "pandos_const.h"
 #include "pandos_types.h"
 
-/* system call codes */
+/* System call codes */
 #define	CREATETHREAD	1	/* create thread */
 #define	TERMINATETHREAD	2	/* terminate thread */
 #define	PASSERN			3	/* P a semaphore */

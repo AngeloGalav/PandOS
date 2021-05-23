@@ -35,6 +35,8 @@ void UProcInitiliazer()
 
 void initSupportStructs()
 {
+    //we should clean this code by using functions or macros
+
     /* Set all semaphores to 1 cause of mutex */
     for(int i = 0; i < UPROCMAX; i++)
     {
