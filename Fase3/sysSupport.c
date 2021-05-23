@@ -90,8 +90,14 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 
             devReg->dtp.command = PRINTCHR;
 
+            int status = (int) sPtr->sup_exceptState->reg_v0;
+
+            if(status != DEV0ON)
+            {
+                //invoke panic or terminate ?
+            }
+            
             s++;
-            //check status value each cycle ?
         }
     }
     else
