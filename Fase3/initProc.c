@@ -8,8 +8,8 @@ int supstackTLB[500];
 int supstackGen[500];
 
 /* Int Array for device semaphores*/
-int support_device_semaphores[SEMAPHORE_QTY]; 
-
+int support_device_semaphores[SEMAPHORE_QTY]; // supponiamo di avere 6 device per processo  (0 a 5 per proc1, 6-11 per proc 2 etc...)
+                                              // i primi due device per ogni processo sono dedicati al terminale
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
 
@@ -62,8 +62,8 @@ void initSupportStructs()
     {
         U_support_structure[i].sup_asid = i + 1 ; 
 
-        U_support_structure[i].sup_exceptContext[0].pc =  PGFAULTEXCEPT;
-        U_support_structure[i].sup_exceptContext[1].pc = GENERALEXCEPT ;
+        U_support_structure[i].sup_exceptContext[0].pc = PGFAULTEXCEPT;
+        U_support_structure[i].sup_exceptContext[1].pc = GENERALEXCEPT;
 
         //in order, all interrupts, usermode - first bit (if 1 interrupts are counted as valid),
         //please check if this OR is right, page 9 Pops
@@ -71,7 +71,7 @@ void initSupportStructs()
         U_support_structure[i].sup_exceptContext[1].status = IMON | 0X00000001 | TEBITON ;
 
         //Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
-        U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]) ;
+        U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]);
         U_support_structure[i].sup_exceptContext[1].stackPtr = &(supstackGen[499]);
 
         //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
@@ -81,7 +81,7 @@ void initSupportStructs()
         for (j = 0;j < 31; j ++)
         {
             //set the VPN to [0x80000..0x8001E]
-            SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI,  0x80000 + j);
+            SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
             SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
             SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
         }

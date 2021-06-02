@@ -27,27 +27,24 @@ void Support_Syscall_Handler(support_t *sPtr)
     switch (sysnumber)
     {
         case TERMINATE:
-
             Terminate_SYS9();
-
+            /// TODO: 
             break;
 
         case GET_TOD:
-
             Get_Tod_SYS10((unsigned int*) sPtr->sup_exceptState->reg_v0);
             break;
 
         case WRITEPRINTER:
-
            Write_To_Printer_SYS11(sPtr);
             break;
 
         case WRITETERMINAL:
-
+            /// TODO:
             break;
 
         case READTERMINAL:
-
+            /// TODO:
             break;
 
         default:
@@ -74,22 +71,23 @@ void Get_Tod_SYS10(unsigned int *regv0) // we need to check if the pointers are 
 void  Write_To_Printer_SYS11(support_t* sPtr)
 {
     // Printer device associated with the U-proc 
-    devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid);
-    devreg_t* status;
+    devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid); // prende indirizzo del device register
+    unsigned int status;
 
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
     // P for the semaphore ?
     //calculate the index of the semaphore
-    SYSCALL(PASSERN, (int)&term_mut, 0, 0);
-    
-    unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2 ;
-    
+    SYSCALL(PASSERN, (int) &term_mut, 0, 0); 
 
-    if ((strlength >= 0 ) && (strlength <= MAXSTRLENG))
+    int trasmitted_counter = 0;
+    
+    unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
+
+    if ((strlength >= 0) && (strlength <= MAXSTRLENG))
     {
-        char *s = sPtr->sup_exceptState->reg_a1;
+        char *s = sPtr->sup_exceptState->reg_a1; /* COME CAPIRE SE VIRT_ADDRESS È DENTRO ALL'AREA DEL PROCESSO? */
 
         while ( *s != EOF)
         {
@@ -97,18 +95,19 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 
             devReg->dtp.command = PRINTCHR;
 
-            status = SYSCALL(IOWAIT, TERMINT, 0, 0);
-
-            if (status != DEV0ON)
-            {
-                Terminate_SYS9();
-            }
+            SYSCALL(IOWAIT, 6, sPtr->sup_asid, 0);
+            status = devReg->dtp.status;
             
+            if (status != DEV0ON)
+            {   
+                sPtr->sup_exceptState->reg_v0 = status; 
+                break;
+            }
             s++;
         }
     }
     else
         Terminate_SYS9();
     
-    // V for the semaphore ?
+    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :)
 }

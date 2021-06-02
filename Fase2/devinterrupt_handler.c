@@ -48,7 +48,7 @@ void InterruptLineHandler(int line)
         insertProcQ(&readyQueue, currentProcess);   // we re-insert the process in the readyqueue
         Scheduler();
     }
-    else /* Interval timer interrupt line */
+    else /* Interval timer interrupt line, LINE 2 */
     {
         LDIT(PSECOND);
 
@@ -77,7 +77,7 @@ void InterruptLineHandler(int line)
 
 void NonTimerHandler(int line, int device)
 {
-    devreg_t * device_register = (devreg_t*) (DEVREG + ((line - 3) * 0x80) + (device * 0x10));
+    devreg_t* device_register = (devreg_t*) (DEVREG + ((line - 3) * 0x80) + (device * 0x10)); //DA QUI CAPIAMO IL NUMERO DEL DEVICE
     int isReadTerm = 0;
     unsigned int status_word;
     
