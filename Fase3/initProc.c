@@ -7,6 +7,8 @@ HIDDEN state_t U_state_structure[UPROCMAX];
 int supstackTLB[500];
 int supstackGen[500];
 
+/* Int Array for device semaphores*/
+int support_device_semaphores[SEMAPHORE_QTY]; 
 
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];

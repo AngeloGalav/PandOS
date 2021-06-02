@@ -59,7 +59,7 @@ void Support_Syscall_Handler(support_t *sPtr)
 
 void Terminate_SYS9() // sys2 wrapper ?
 {  
-    //should we check kernel mode ? 
+    //should check the semaphore if 0
     Terminate_Process_SYS2();
 }
 
@@ -75,13 +75,17 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 {
     // Printer device associated with the U-proc 
     devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid);
+    devreg_t* status;
 
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
     // P for the semaphore ?
-
+    //calculate the index of the semaphore
+    SYSCALL(PASSERN, (int)&term_mut, 0, 0);
+    
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2 ;
+    
 
     if ((strlength >= 0 ) && (strlength <= MAXSTRLENG))
     {
@@ -93,15 +97,11 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
 
             devReg->dtp.command = PRINTCHR;
 
-            //int status = (int) sPtr->sup_exceptState->reg_v0;
-
-             int status = (int) devReg->dtp.status;
+            status = SYSCALL(IOWAIT, TERMINT, 0, 0);
 
             if (status != DEV0ON)
             {
-                //status *= -1; 
-                //sPtr->sup_exceptState->reg_v0 = status;
-                //esci dal while 
+                Terminate_SYS9();
             }
             
             s++;
@@ -110,5 +110,5 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     else
         Terminate_SYS9();
     
-    //V for the semaphore ?
+    // V for the semaphore ?
 }
