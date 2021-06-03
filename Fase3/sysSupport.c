@@ -141,7 +141,7 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
 
             SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
             
-            status = devReg->term.transm_status & 0xFF;
+            status = devReg->term.transm_status & 0xFF; // prendo lo status code in modo brutto
             
             if (status != OKCHARTRANS)
             {   
@@ -169,14 +169,15 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
 
     SYSCALL(PASSERN, (int)&support_rterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
     
-    char *s = sPtr->sup_exceptState->reg_a1; //indirizzo del buffer dove andiamo a scrivere
+    char *s = sPtr->sup_exceptState->reg_a1; //indirizzo del buffer dove andiamo a scrivere la stringa
+                                             // che leggiamo dal terminale
 
     int transmitted_char = 0;
    
     if ((*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
     {
     
-        while ( devReg->term.recv_status >> 8 != EOF)
+        while ( (devReg->term.recv_status >> 8) != EOF)
         {
             devReg->term.recv_command = TRANSMITCHAR;//RECEIVEDCHAR non c'era
             //qui il carattere trasmesso è in recv_status.received_char
@@ -198,7 +199,7 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
     else
         Terminate_SYS9();
     
-    sPtr->sup_exceptState->reg_v0 = transmitted_char; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
+    sPtr->sup_exceptState->reg_v0 = transmitted_char; 
 
     SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
 }
