@@ -2,6 +2,9 @@
 #include "syscall.h"
 #include "libraries.h"
 
+extern support_printer_sempahore[UPROCMAX];
+extern support_wterminal_sempahore[UPROCMAX];
+extern support_rterminal_sempahore[UPROCMAX];
 
 void GeneralException_Handler()
 {
@@ -36,11 +39,11 @@ void Support_Syscall_Handler(support_t *sPtr)
             break;
 
         case WRITEPRINTER:
-           Write_To_Printer_SYS11(sPtr);
+            Write_To_Printer_SYS11(sPtr);
             break;
 
         case WRITETERMINAL:
-            /// TODO:
+            Write_to_Terminal_SYS12(sPtr);
             break;
 
         case READTERMINAL:
@@ -77,18 +80,16 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
-    // P for the semaphore ?
-    //calculate the index of the semaphore
-    SYSCALL(PASSERN, (int) &term_mut, 0, 0); 
-
-    int trasmitted_counter = 0;
+    SYSCALL(PASSERN, (int)&support_printer_sempahore[sPtr->sup_asid - 1], 0, 0); 
     
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
 
-    if ((strlength >= 0) && (strlength <= MAXSTRLENG))
+    char *s = sPtr->sup_exceptState->reg_a1; 
+    // check se l'address è dentro lo spazio del processo, compreso lo stack
+    // lo sò l'if così lungo è bruttissimo ma anche la vita è brutta
+    if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
     {
-        char *s = sPtr->sup_exceptState->reg_a1; /* COME CAPIRE SE VIRT_ADDRESS È DENTRO ALL'AREA DEL PROCESSO? */
-
+    
         while ( *s != EOF)
         {
             devReg->dtp.data0 = *s;
@@ -100,7 +101,7 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
             
             if (status != DEV0ON)
             {   
-                sPtr->sup_exceptState->reg_v0 = status; 
+                sPtr->sup_exceptState->reg_v0 = status * -1; 
                 break;
             }
             s++;
@@ -109,5 +110,95 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     else
         Terminate_SYS9();
     
-    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :)
+    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
+
+    SYSCALL(VERHOGEN, (int)&support_printer_sempahore[sPtr->sup_asid - 1], 0 , 0);
+}
+
+
+void Write_to_Terminal_SYS12(support_t* sPtr)
+{
+   
+    devreg_t* devReg = DEV_REG_ADDR(7, sPtr->sup_asid); // prende indirizzo del device register
+
+    unsigned int status;
+
+    SYSCALL(PASSERN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
+    
+    unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
+
+    char *s = sPtr->sup_exceptState->reg_a1; 
+   
+    if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
+    {
+    
+        while ( *s != EOF)
+        {
+            //please create macro for this
+            devReg->term.transm_command = (unsigned int) *s << 8;
+
+            devReg->term.transm_command |= TRANSMITCHAR;
+
+            SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
+            
+            status = devReg->term.transm_status & 0xFF;
+            
+            if (status != OKCHARTRANS)
+            {   
+                sPtr->sup_exceptState->reg_v0 = status * -1; 
+                break;
+            }
+            s++;
+        }
+    }
+    else
+        Terminate_SYS9();
+    
+    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
+
+    SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
+}
+
+
+
+void  Read_From_Terminal_SYS13(support_t* sPtr)
+{
+    devreg_t* devReg = DEV_REG_ADDR(7, sPtr->sup_asid); 
+
+    unsigned int status;
+
+    SYSCALL(PASSERN, (int)&support_rterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
+    
+    char *s = sPtr->sup_exceptState->reg_a1; //indirizzo del buffer dove andiamo a scrivere
+
+    int transmitted_char = 0;
+   
+    if ((*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
+    {
+    
+        while ( devReg->term.recv_status >> 8 != EOF)
+        {
+            devReg->term.recv_command = TRANSMITCHAR;//RECEIVEDCHAR non c'era
+            //qui il carattere trasmesso è in recv_status.received_char
+            *s = devReg->term.recv_status >> 8;
+
+            SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
+            //and per prendere solo lo status
+            status = devReg->term.recv_status & 0xFF;
+            
+            if (status != OKCHARTRANS)
+            {   
+                sPtr->sup_exceptState->reg_v0 = status * -1; 
+                break;
+            }
+            s++;
+            transmitted_char++;
+        }
+    }
+    else
+        Terminate_SYS9();
+    
+    sPtr->sup_exceptState->reg_v0 = transmitted_char; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
+
+    SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
 }

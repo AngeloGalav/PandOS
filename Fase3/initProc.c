@@ -8,8 +8,10 @@ int supstackTLB[500];
 int supstackGen[500];
 
 /* Int Array for device semaphores*/
-int support_device_semaphores[SEMAPHORE_QTY]; // supponiamo di avere 6 device per processo  (0 a 5 per proc1, 6-11 per proc 2 etc...)
-                                              // i primi due device per ogni processo sono dedicati al terminale
+int support_printer_semaphore[8];
+int support_wterminal_semaphore[8];    
+int support_rterminal_semaphore[8];            
+
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
 
@@ -35,12 +37,14 @@ void UProcInitiliazer()
 
 
 void initSupportStructs()
-{
-    //we should clean this code by using functions or macros
+{   
 
     /* Set all semaphores to 1 cause of mutex */
     for (int i = 0; i < UPROCMAX; i++)
     {
+        support_printer_semaphore[i] = 1;
+        support_wterminal_semaphore[i] = 1;
+        support_rterminal_semaphore[i] = 1;
         swap_semaphores[i] = 1;
     }
 
