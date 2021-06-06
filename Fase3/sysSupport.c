@@ -180,7 +180,7 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
 
     int transmitted_char = 0;
    
-    if ((*buffer >= UPROCSTARTADDR) && (*buffer <= USERSTACKTOP))
+    if ((buffer >= UPROCSTARTADDR) && (buffer <= USERSTACKTOP))
     {   
         //con questo comando il carattere viene messo in recv_status
         devReg->term.recv_command = TRANSMITCHAR;
@@ -188,7 +188,7 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
         //ciclo finchè non incontro end of line
         while ( (devReg->term.recv_status >> 8) != EOL)
         {
-            if ((*buffer >= UPROCSTARTADDR) && (*buffer <= USERSTACKTOP))
+            if ((buffer >= UPROCSTARTADDR) && (buffer <= USERSTACKTOP))
             {    
                 SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
 
