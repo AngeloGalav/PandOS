@@ -19,6 +19,7 @@
 #define ACK	1
 #define PRINTCHR	2
 #define EOF         '\0'
+#define EOL         '\n'
 
 
 /* Total number of device semaphores in PandOS */

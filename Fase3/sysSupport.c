@@ -169,37 +169,46 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
 
     SYSCALL(PASSERN, (int)&support_rterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
     
-    char *s = sPtr->sup_exceptState->reg_a1; //indirizzo del buffer dove andiamo a scrivere la stringa
-                                             // che leggiamo dal terminale
+    //indirizzo del buffer dove andiamo a scrivere
+    char *s = sPtr->sup_exceptState->reg_a1; 
 
     int transmitted_char = 0;
    
     if ((*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
-    {
-    
-        while ( (devReg->term.recv_status >> 8) != EOF)
-        {
-            devReg->term.recv_command = TRANSMITCHAR;//RECEIVEDCHAR non c'era
-            //qui il carattere trasmesso è in recv_status.received_char
-            *s = devReg->term.recv_status >> 8;
+    {   
+        //con questo comando il carattere viene messo in recv_status
+        devReg->term.recv_command = TRANSMITCHAR;
 
+        //ciclo finchè non incontro end of line
+        while ( (devReg->term.recv_status >> 8) != EOL)
+        {
             SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
-            //and per prendere solo lo status
+
+            //prendo lo status value che sono solo i primi 8 bit
             status = devReg->term.recv_status & 0xFF;
-            
+
             if (status != OKCHARTRANS)
             {   
                 sPtr->sup_exceptState->reg_v0 = status * -1; 
                 break;
             }
+            //prendo il carattere shiftando di 8
+            *s = devReg->term.recv_status >> 8;
+
             s++;
             transmitted_char++;
+
+            devReg->term.recv_command = TRANSMITCHAR;
+
         }
     }
     else
-        Terminate_SYS9();
-    
-    sPtr->sup_exceptState->reg_v0 = transmitted_char; 
+        Terminate_SYS9
+        ();
+
+    if ( !(sPtr->sup_exceptState->reg_v0 < 0))
+
+        sPtr->sup_exceptState->reg_v0 = transmitted_char; 
 
     SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
 }
