@@ -8,9 +8,9 @@ int supstackTLB[500];
 int supstackGen[500];
 
 /* Int Array for device semaphores*/
-int support_printer_semaphore[8];
-int support_wterminal_semaphore[8];    
-int support_rterminal_semaphore[8];            
+int support_printer_semaphore[UPROCMAX]; 
+int support_wterminal_semaphore[UPROCMAX];    
+int support_rterminal_semaphore[UPROCMAX];    //should we use a matrix for all semaphores?        
 
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
