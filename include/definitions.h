@@ -21,8 +21,10 @@
 #define EOF         '\0'
 #define EOL         '\n'
 
+/* Number of support semaphore types */
+#define SUPP_SEM_N 3
 
-/* Total number of device semaphores in PandOS */
+/* Total number of kernel device semaphores in PandOS */
 #define SEMAPHORE_QTY 49
 
 /* Interval timer semaphore index */

@@ -7,10 +7,13 @@ HIDDEN state_t U_state_structure[UPROCMAX];
 int supstackTLB[500];
 int supstackGen[500];
 
-/* Int Array for device semaphores*/
+///TODO: TOGLI STI SEMAFORI BRO
+/* Int Array for device semaphores*/ 
 int support_printer_semaphore[UPROCMAX]; 
 int support_wterminal_semaphore[UPROCMAX];    
-int support_rterminal_semaphore[UPROCMAX];    //should we use a matrix for all semaphores?        
+int support_rterminal_semaphore[UPROCMAX];    //should we use a matrix for all semaphores?     
+
+int support_semaphores[SUPP_SEM_N][UPROCMAX]; // line 0 is for printer, 1 write_terminal, 2 read_terminal 
 
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
@@ -45,6 +48,9 @@ void initSupportStructs()
         support_printer_semaphore[i] = 1;
         support_wterminal_semaphore[i] = 1;
         support_rterminal_semaphore[i] = 1;
+
+        for (int j = 0; j < SUPP_SEM_N; j++) support_semaphores[j][i] = 1;
+        
         swap_semaphores[i] = 1;
     }
 

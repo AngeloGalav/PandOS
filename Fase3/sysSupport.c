@@ -1,10 +1,11 @@
 #include "../include/sysSupport.h"
 #include "syscall.h"
-#include "libraries.h"
+#include "../include/libraries.h"
 
-extern support_printer_sempahore[UPROCMAX];
-extern support_wterminal_sempahore[UPROCMAX];
-extern support_rterminal_sempahore[UPROCMAX];
+extern int support_printer_semaphore[UPROCMAX];
+extern int support_wterminal_semaphore[UPROCMAX];
+extern int support_rterminal_semaphore[UPROCMAX];
+extern int support_semaphores[SUPP_SEM_N][UPROCMAX];
 
 void GeneralException_Handler()
 {
@@ -14,13 +15,9 @@ void GeneralException_Handler()
     int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[0].cause);
     
     if (excCode >= 9)
-    {
         Support_Syscall_Handler(sPtr); 
-    }
     else // è tra 4 e 7 compresi
-    {
-        //PROGRAM TRAP HANDLER
-    }
+       Terminate_SYS9(sPtr);
 }
 
 void Support_Syscall_Handler(support_t *sPtr)
@@ -30,7 +27,7 @@ void Support_Syscall_Handler(support_t *sPtr)
     switch (sysnumber)
     {
         case TERMINATE:
-            Terminate_SYS9();
+            Terminate_SYS9(sPtr);
             /// TODO: 
             break;
 
@@ -47,7 +44,7 @@ void Support_Syscall_Handler(support_t *sPtr)
             break;
 
         case READTERMINAL:
-            /// TODO:
+            Read_From_Terminal_SYS13(sPtr);
             break;
 
         default:
@@ -57,11 +54,17 @@ void Support_Syscall_Handler(support_t *sPtr)
         //increment the program counter by 4 here or somewhere else ??
 }   
 
-void Terminate_SYS9() // sys2 wrapper ?
+void Terminate_SYS9(support_t* sPtr) // sys2 wrapper 
 {  
-    //check if the process to be terminated is holding any mutex semaphore
-    //in that case use a SYS4 to free it and terminate it with sys2
-    //create a function that checks it ?
+    // check if the process to be terminated is holding any mutex semaphore
+    // in that case use a SYS4 to free it and terminate it with sys2
+    // create a function that checks it ?
+    
+    for (int i = 0; i < SUPP_SEM_N; i++) 
+    {
+        if (support_semaphores[i][sPtr->sup_asid - 1] <= 0)
+            SYSCALL(VERHOGEN, (int) &support_semaphores[i][sPtr->sup_asid - 1], 0, 0); 
+    }
     
     Terminate_Process_SYS2();
 }
@@ -83,7 +86,7 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
-    SYSCALL(PASSERN, (int)&support_printer_sempahore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int)&support_printer_semaphore[sPtr->sup_asid - 1], 0, 0); 
     
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
 
@@ -109,13 +112,13 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
             }
             s++;
         }
+
+        sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
     }
     else
-        Terminate_SYS9();
+        Terminate_SYS9(sPtr);
     
-    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
-
-    SYSCALL(VERHOGEN, (int)&support_printer_sempahore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_printer_semaphore[sPtr->sup_asid - 1], 0 , 0);
 }
 
 
@@ -126,7 +129,7 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
 
     unsigned int status;
 
-    SYSCALL(PASSERN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0, 0); 
     
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
 
@@ -153,13 +156,13 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
             }
             s++;
         }
+
+        sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
     }
     else
-        Terminate_SYS9();
-    
-    sPtr->sup_exceptState->reg_v0 = strlength; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
+        Terminate_SYS9(sPtr);
 
-    SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0 , 0);
 }
 
 
@@ -170,14 +173,14 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
 
     unsigned int status;
 
-    SYSCALL(PASSERN, (int)&support_rterminal_sempahore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int) &support_rterminal_semaphore[sPtr->sup_asid - 1], 0, 0); 
     
     //indirizzo del buffer dove andiamo a scrivere
-    char *s = sPtr->sup_exceptState->reg_a1; 
+    char *buffer = sPtr->sup_exceptState->reg_a1; 
 
     int transmitted_char = 0;
    
-    if ((*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
+    if ((*buffer >= UPROCSTARTADDR) && (*buffer <= USERSTACKTOP))
     {   
         //con questo comando il carattere viene messo in recv_status
         devReg->term.recv_command = TRANSMITCHAR;
@@ -195,23 +198,19 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
                 sPtr->sup_exceptState->reg_v0 = status * -1; 
                 break;
             }
-            //prendo il carattere shiftando di 8
-            *s = devReg->term.recv_status >> 8;
+            // prendo il carattere shiftando di 8
+            *buffer = devReg->term.recv_status >> 8;            
 
-            s++;
+            buffer++;
             transmitted_char++;
 
             devReg->term.recv_command = TRANSMITCHAR;
-
         }
-    }
-    else
-        Terminate_SYS9
-        ();
-
-    if ( !(sPtr->sup_exceptState->reg_v0 < 0))
 
         sPtr->sup_exceptState->reg_v0 = transmitted_char; 
+    }
+    else
+        Terminate_SYS9(sPtr);
 
-    SYSCALL(VERHOGEN, (int)&support_wterminal_sempahore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0 , 0);
 }

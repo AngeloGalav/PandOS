@@ -12,7 +12,7 @@ void GeneralException_Handler ();
 void Support_Syscall_Handler(support_t *sPtr);
 
 /* Terminate the current process , this is a wrapper for SYS2 */
-void Terminate_SYS9();
+void Terminate_SYS9(support_t* sPtr);
 
 /* Read the value of Time of Day Clock and put it inside reg_v0 register */
 void Get_Tod_SYS10(unsigned int *regv0);
