@@ -59,7 +59,10 @@ void Support_Syscall_Handler(support_t *sPtr)
 
 void Terminate_SYS9() // sys2 wrapper ?
 {  
-    //should check the semaphore if 0
+    //check if the process to be terminated is holding any mutex semaphore
+    //in that case use a SYS4 to free it and terminate it with sys2
+    //create a function that checks it ?
+    
     Terminate_Process_SYS2();
 }
 
