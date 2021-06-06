@@ -188,23 +188,26 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
         //ciclo finchè non incontro end of line
         while ( (devReg->term.recv_status >> 8) != EOL)
         {
-            SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
+            if ((*buffer >= UPROCSTARTADDR) && (*buffer <= USERSTACKTOP))
+            {    
+                SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
 
-            //prendo lo status value che sono solo i primi 8 bit
-            status = devReg->term.recv_status & 0xFF;
+                //prendo lo status value che sono solo i primi 8 bit
+                status = devReg->term.recv_status & 0xFF;
 
-            if (status != OKCHARTRANS)
-            {   
-                sPtr->sup_exceptState->reg_v0 = status * -1; 
-                break;
+                if (status != OKCHARTRANS)
+                {   
+                    sPtr->sup_exceptState->reg_v0 = status * -1; 
+                    break;
+                }
+                // prendo il carattere shiftando di 8
+                *buffer = devReg->term.recv_status >> 8;            
+
+                buffer++;
+                transmitted_char++;
+
+                devReg->term.recv_command = TRANSMITCHAR;
             }
-            // prendo il carattere shiftando di 8
-            *buffer = devReg->term.recv_status >> 8;            
-
-            buffer++;
-            transmitted_char++;
-
-            devReg->term.recv_command = TRANSMITCHAR;
         }
 
         sPtr->sup_exceptState->reg_v0 = transmitted_char; 
