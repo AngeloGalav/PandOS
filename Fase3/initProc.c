@@ -1,5 +1,5 @@
 #include "../include/initProc.h"
-#include "definitions.h"
+#include "../include/definitions.h"
 
 /* U-proc state and support structs */
 HIDDEN support_t U_support_structure[UPROCMAX];
@@ -14,36 +14,43 @@ int support_semaphores[SUPP_SEM_N][UPROCMAX]; // line 0 is for printer, 1 write_
 extern swap_t swap_table[POOLSIZE];
 
 /* Swap pool devices semaphores*/
-extern int swap_semaphores[UPROCMAX]; 
-extern int mastersemaphore;
+extern int swap_semaphore; 
+
+/* Init swap_pool sempahores */
+extern void initSwapStructs();
+
+extern int processCount;
 
 void test()
 {
     initSupportStructs();
     UProcInitiliazer();
     
-    //should we call SYS2 to end this process after all the childs are dead to invoke HALT ?
-    //SYSCALL(2,)
+    //se la lista dei figli di test è vuota si ammazza
+    if (processCount <= 1)
+        SYSCALL(TERMPROCESS, 0, 0, 0);
+
+    
 }
 
 void UProcInitiliazer()
 {
     for (int i = 0; i < UPROCMAX; i++)
-    // e vaffanculo porcodio
-        SYSCALL(1, (int) &U_state_structure[i], (int) &U_support_structure[i], 0);    
+        SYSCALL(1, (int) &U_state_structure[i], (int) &U_support_structure[i], 0);   
+
 }
 
 
 void initSupportStructs()
 {   
 
+    initSwapStructs();
     /* Set all semaphores to 1 cause of mutex */
     for (int i = 0; i < UPROCMAX; i++)
     {
 
         for (int j = 0; j < SUPP_SEM_N; j++) support_semaphores[j][i] = 1;
         
-        swap_semaphores[i] = 1;
     }
 
     /* Initialize u'proc processor state */

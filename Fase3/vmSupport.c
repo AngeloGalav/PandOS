@@ -5,12 +5,14 @@
 swap_t swap_table[POOLSIZE];
 
 /* Swap pool devices semaphores*/
-int swap_semaphores[UPROCMAX]; 
-int mastersemaphore = 1;
+int swap_semaphore; 
+
 
 void initSwapStructs()
 {
    
+    swap_semaphore = 1;
 
+    
 
 }
