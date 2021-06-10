@@ -1,4 +1,5 @@
 #include "../include/vmSupport.h"
+#include "../include/definitions.h"
 
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
