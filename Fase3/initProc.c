@@ -40,9 +40,6 @@ void initSupportStructs()
     /* Set all semaphores to 1 cause of mutex */
     for (int i = 0; i < UPROCMAX; i++)
     {
-        support_printer_semaphore[i] = 1;
-        support_wterminal_semaphore[i] = 1;
-        support_rterminal_semaphore[i] = 1;
 
         for (int j = 0; j < SUPP_SEM_N; j++) support_semaphores[j][i] = 1;
         

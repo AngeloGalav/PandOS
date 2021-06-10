@@ -21,7 +21,8 @@
         "devinterrupt_handler.h": "c",
         "debugger.h": "c",
         "syscall.h": "c",
-        "syssupport.h": "c"
+        "syssupport.h": "c",
+        "vmsupport.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }
