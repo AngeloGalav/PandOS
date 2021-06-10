@@ -58,7 +58,6 @@ void Terminate_SYS9(support_t* sPtr) // sys2 wrapper
 {  
     // check if the process to be terminated is holding any mutex semaphore
     // in that case use a SYS4 to free it and terminate it with sys2
-    // create a function that checks it ?
     
     for (int i = 0; i < SUPP_SEM_N; i++) 
     {
@@ -70,7 +69,7 @@ void Terminate_SYS9(support_t* sPtr) // sys2 wrapper
 }
 
 
-void Get_Tod_SYS10(unsigned int *regv0) // we need to check if the pointers are right
+void Get_Tod_SYS10(unsigned int *regv0) 
 {
     unsigned int tod;
     STCK(tod);// macro that takes unsigned int and populate it with TOD value
