@@ -38,4 +38,9 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     SYSCALL(VERHOGEN, (int) &swap_semaphore, 0, 0); // (cast a int inutile )?
 
     unsigned int p = sPtr->sup_exceptState[0].entry_hi >> VPNSHIFT;
+
+    //replace algorithm, use a static variable that starts from 0 ( first in first out)
+    //and we always increment it every time % pool size so it doens't overflow
+    static int i = 0;
 }
+

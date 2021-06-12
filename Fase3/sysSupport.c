@@ -22,7 +22,7 @@ void GeneralException_Handler()
 
 void Support_Syscall_Handler(support_t *sPtr)
 {
-    unsigned int sysnumber = (unsigned int) sPtr->sup_exceptState->reg_a0;
+    unsigned int sysnumber = (unsigned int) sPtr->sup_exceptState[0].reg_a0;
 
     switch (sysnumber)
     {
