@@ -24,3 +24,18 @@ void initSwapStructs()
     }
 
 }
+
+void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
+{
+     //We take the support info of the current process with the SYS8
+    support_t *sPtr = SYSCALL(GETSPTPTR, 0, 0, 0);
+    //extract the execCode to check which exception is happening dio caneporcodiomaiale
+    int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[0].cause);
+
+    if (excCode == MOD) // se è una TLB modification exception la tratto come PROgram trap
+        SYSCALL(TERMINATE,0 ,0, 0); 
+
+    SYSCALL(VERHOGEN, (int) &swap_semaphore, 0, 0); // (cast a int inutile )?
+
+    unsigned int p = sPtr->sup_exceptState[0].entry_hi >> VPNSHIFT;
+}

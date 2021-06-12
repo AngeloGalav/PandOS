@@ -92,17 +92,18 @@ void initSupportStructs()
             //set the VPN to [0x80000..0x8001E]
             SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
             SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
-            SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
+            SET_D(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
+            //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET  IN CASE CHANGE THE MASK IN THE MACRO
         }
 
         //the last is the stack page and it's apart from the others
         SET_VPN(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, 0xBFFFF);
         SET_ASID(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, i + 1);
-        SET_D_AND_G(U_support_structure[i].sup_privatePgTbl[31].pte_entryLO);
+        SET_D(U_support_structure[i].sup_privatePgTbl[31].pte_entryLO);
+        //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET IN CASE CHANGE THE MASK IN THE MACRO
         
     }
     
     
-    /* If(tony arbano == coglione)
-        kernel panic() */
+
 }
