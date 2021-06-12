@@ -93,6 +93,9 @@ void initSupportStructs()
             SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
             SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
             SET_D(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
+            UNSET_BIT(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO, VALIDON);
+            // bisogna mettere il V bit a 0 nella macr0
+
             //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET  IN CASE CHANGE THE MASK IN THE MACRO
         }
 
@@ -100,6 +103,7 @@ void initSupportStructs()
         SET_VPN(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, 0xBFFFF);
         SET_ASID(U_support_structure[i].sup_privatePgTbl[31].pte_entryHI, i + 1);
         SET_D(U_support_structure[i].sup_privatePgTbl[31].pte_entryLO);
+        // bisogna mettere il V bit a 0 nella macr0
         //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET IN CASE CHANGE THE MASK IN THE MACRO
         
     }

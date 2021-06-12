@@ -3,6 +3,8 @@
 
 #include "pandos_const.h"
 #include "pandos_types.h"
+#include <umps3/umps/regdef.h>
+#include "umps3/umps/cp0.h"
 
 /* System call codes */
 #define CREATETHREAD 1    /* create thread */
@@ -21,8 +23,6 @@
 #define EOF '\0'
 #define EOL '\n'
 
-/* Exceptions constants */
-#define MOD 1
 
 /* Number of support semaphore types */
 #define SUPP_SEM_N 3
@@ -62,5 +62,8 @@
 
 /* Extract excCode from Cause register */
 #define GET_EXEC_CODE(S) BitExcractor(S, GETEXECCODE, CAUSESHIFT)
+
+/* Unset V bit of EntryLo */
+#define UNSET_BIT(T, pos) (T &= ~(1 << pos))
 
 #endif
