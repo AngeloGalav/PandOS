@@ -23,6 +23,8 @@
 #define EOF '\0'
 #define EOL '\n'
 
+/* EntryLo useful constants */
+#define PFNSHIFT 12
 
 /* Number of support semaphore types */
 #define SUPP_SEM_N 3

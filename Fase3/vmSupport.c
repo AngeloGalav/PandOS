@@ -44,13 +44,31 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     
     int frame = Round_Robin();
 
+    int asid = swap_table[frame].sw_asid ;
     //controllo se l'i-esima pagina scelta è valida controllandola dentro la spawpool_table
-    if (swap_table[frame].sw_asid != NOPROC)
-    {
-        int x = swap_table[frame].sw_asid ; // da riscrivere meglio ma è per capire il flow
-        //k è la pagina indicata all'indirizzo old_i delal swap table e appartiene al processo
-        //con quell'asid e assumiamo  sia "dirty" cioè forse col dirtyu bit acceso
+    if (asid != NOPROC)
+    {   
+        // DISABLING INTERRUPTS HERE using getStatus -> setStatus
+        unsigned int entry = getSTATUS();
+        UNSET_BIT(entry, IECON);// gliolevo 
+        setSTATUS(entry);//gliorimetto
+        
+        //risalgo al process x dal frame k
         UNSET_BIT(swap_table[frame].sw_pte->pte_entryLO, VALIDON) ; //bisogna mettere il V bit a 0
+     
+        //section 4.5.2 pandos
+        TLBCLR(); // per il momento facciamo erase del TLB come consigliato, poi andrà cambiato
+
+        devreg_t* devReg = DEV_REG_ADDR(4, asid); // prendo il flash/backing store del process x
+        //in DATA0 the starting physical address of the 4k block to be read (or written);
+        // the particular frame’s starting address.
+        devReg->dtp.data0 = swap_table[frame].sw_pte->pte_entryLO >> PFNSHIFT;
+        devReg->dtp.command |= FLASHWRITE  | ; // QUale cazzo è il BLOCKNUMBER ????
+        SYSCALL(IOWAIT,0,0,0);
+        //check the status and see if an error occurred, if yes generate a program trap
+         // ENABLING INTERRUPTS HERE using setStatus
+        setSTATUS(IECON);
+        
     }
     
 }
@@ -58,11 +76,13 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
 int Get_PageTable_Index(support_t* sPtr)
 {
+    //vado a vedere nella memoria logica del processo quale pagina corrisponde
+    //così mi rendo conto quale era quella che cercava e che ha scatenato il fault
     state_t* BadVADDR ;
     GET_BDP_STATUS(BadVADDR);
     unsigned int BadVaddr = BadVADDR->gpr[CP0_BadVAddr]; 
     for(int i = 0; i < MAXPAGES ; i++)
-        if(sPtr->sup_privatePgTbl[i].pte_entryHI == BadVaddr)
+        if((sPtr->sup_privatePgTbl[i].pte_entryHI >> VPNSHIFT) == BadVaddr)
             return i; //ritorniamo l'indice della pagina a cui corrisponde l'address nell'entryHi
 }
 

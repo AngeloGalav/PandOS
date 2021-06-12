@@ -60,6 +60,8 @@ void initSupportStructs()
         U_state_structure[i].pc_epc =  U_state_structure->reg_t9 =  (memaddr) UPROCSTARTADDR ;
         U_state_structure[i].reg_sp = (memaddr) USERSTACKTOP;
         //in order : all interrupts, user-mode and first bit, local timer enabled
+        //ALERT potrebbe essere 0x00000004 = IEPON invece che 3, ho messo 3 perchè diceva che
+        // voleva a 1 anche il bit prima, lo dice quando spiega i bit dello status register
         U_state_structure[i].status = IMON | 0X00000003 | TEBITON ;
         SET_ASID(U_state_structure[i].entry_hi,i +1);
     }
