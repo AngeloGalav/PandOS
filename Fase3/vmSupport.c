@@ -59,11 +59,11 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         //section 4.5.2 pandos
         TLBCLR(); // per il momento facciamo erase del TLB come consigliato, poi andrà cambiato
 
-        devreg_t* devReg = DEV_REG_ADDR(4, asid); // prendo il flash/backing store del process x
+        devreg_t* devReg = DEV_REG_ADDR(4, asid - 1); // prendo il flash/backing store del process x
         //in DATA0 the starting physical address of the 4k block to be read (or written);
         // the particular frame’s starting address.
         devReg->dtp.data0 = swap_table[frame].sw_pte->pte_entryLO >> PFNSHIFT;
-        devReg->dtp.command |= FLASHWRITE  | ; // QUale cazzo è il BLOCKNUMBER ????
+        devReg->dtp.command |= FLASHWRITE  | frame ; // QUale cazzo è il BLOCKNUMBER ????
         SYSCALL(IOWAIT,0,0,0);
         //check the status and see if an error occurred, if yes generate a program trap
          // ENABLING INTERRUPTS HERE using setStatus
