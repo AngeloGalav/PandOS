@@ -31,7 +31,7 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     if (excCode == EXC_MOD) // se è una TLB modification exception la tratto come PROgram trap
         SYSCALL(TERMINATE,0 ,0, 0); 
 
-    SYSCALL(VERHOGEN, (int) &swap_semaphore, 0, 0); // (cast a int inutile )?
+    SYSCALL(PASSEREN, (memaddr) &swap_semaphore, 0, 0); // (cast a int inutile )?
 
     //Andare a prendere l'indirizz della page table address nel CP0 register nel BIOS
     //con quell'indirizzo dentro la page table del current process trovare l'iesima pagina
@@ -46,7 +46,8 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
     int asid = swap_table[frame].sw_asid ;
     //controllo se l'i-esima pagina scelta è valida controllandola dentro la spawpool_table
-    if (asid != NOPROC)
+    
+    if (asid != NOPROC)//OPPURE swapTable[frame].sw_pte->pte_entryLO & VALIDON)
     {   
         // DISABLING INTERRUPTS HERE using getStatus -> setStatus
         unsigned int entry = getSTATUS();
@@ -56,18 +57,52 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         //risalgo al process x dal frame k
         UNSET_BIT(swap_table[frame].sw_pte->pte_entryLO, VALIDON) ; //bisogna mettere il V bit a 0
      
+        //UPDATE TLB
         //section 4.5.2 pandos
         TLBCLR(); // per il momento facciamo erase del TLB come consigliato, poi andrà cambiato
 
+        // ENABLING INTERRUPTS HERE using setStatus
+        setSTATUS(IECON);
+
+        //UPDATE flash backing store
         devreg_t* devReg = DEV_REG_ADDR(4, asid - 1); // prendo il flash/backing store del process x
         //in DATA0 the starting physical address of the 4k block to be read (or written);
         // the particular frame’s starting address.
         devReg->dtp.data0 = swap_table[frame].sw_pte->pte_entryLO >> PFNSHIFT;
-        devReg->dtp.command |= FLASHWRITE  | frame ; // QUale cazzo è il BLOCKNUMBER ????
+        devReg->dtp.command |= FLASHWRITE  | (frame << 8) ; 
         SYSCALL(IOWAIT,0,0,0);
+        int status = devReg->dtp.status;
+        if (status != DEV0ON)
+            SYSCALL(TERMINATE,0,0,0); // program trap in the future
         //check the status and see if an error occurred, if yes generate a program trap
-         // ENABLING INTERRUPTS HERE using setStatus
-        setSTATUS(IECON);
+         
+         //read from the flash device
+        devReg->dtp.command |= READBLK | (frame << 8) ;
+        SYSCALL(IOWAIT,0,0,0);
+        memaddr* address = devReg->dtp.data0; // prendo l'indirizzo dentro data0
+        swap_table[frame].sw_pte->pte_entryLO = *address; // i don't know
+
+        //DISABLE INTERRUPTS
+
+        swap_table[frame].sw_asid = asid;
+        swap_table[frame].sw_pageNo = p;
+        swap_table[frame].sw_pte = &(sPtr->sup_privatePgTbl[p]);
+
+
+        //update the process page table
+         sPtr->sup_privatePgTbl[p].pte_entryLO |= VALIDON;
+         sPtr->sup_privatePgTbl[p].pte_entryLO |= (frame << PFNSHIFT) ;
+
+         //UPDATE TLB
+        //section 4.5.2 pandos
+        TLBCLR();
+
+        //ENABLE INTERRUPTS
+
+        SYSCALL(VERHOGEN, (memaddr) &swap_semaphore,0,0);
+
+        LDST(sPtr->sup_exceptState);
+
         
     }
     
@@ -92,4 +127,27 @@ int Round_Robin()
     int old_frame = frame; //scelgo il frame
     frame = (frame % POOLSIZE) + 1;
     return old_frame;
+}
+
+void uTLB_RefillHandler() {
+    // Get the page number
+    volatile unsigned int pageNumber;
+    //non sono sicuro se bisogna controllare tutto l'entryHi per vedere se è compreso in una
+    //area di memoria o basta anche solo il VPN 
+    //pageNumber = sPtr->sup:exceptState->entryhi >> VPNSHIFT
+    //if è nello stack quindi tra UPROCSTACKPG e  USERSTACKTOP allora la page number è 31
+    //altrimenti 
+    // pageNumber = pageNumber - VPNBASE ( dovrebbe essere 0x80000)
+    pageNumber = GETVPN(EXCSTATE->entry_hi);
+
+    //trovo la entry dentro la page table del processo ?
+    pteEntry_t *entry = findEntry(pageNumber);
+
+    
+    setENTRYHI(entry->pte_entryHI);
+    setENTRYLO(entry->pte_entryLO);
+    TLBWR();
+
+    // Return control to the process by loading the processor state
+    resume();
 }

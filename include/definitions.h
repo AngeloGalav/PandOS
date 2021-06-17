@@ -22,6 +22,7 @@
 #define PRINTCHR 2
 #define EOF '\0'
 #define EOL '\n'
+#define READBLK 2
 
 /* EntryLo useful constants */
 #define PFNSHIFT 12
