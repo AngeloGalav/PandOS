@@ -59,6 +59,17 @@ typedef struct pcb_t {
 
 } pcb_t, *pcb_PTR;
 
+typedef struct semd_t {
+    /* ptr to next element on queue */
+    struct semd_t *s_next;
+
+    /* ptr to the semaphore */
+    int *s_semAdd;  //(semaphore key)
+
+    /* ptr to tail of the queue of procs. blocked on this sem. */
+    pcb_PTR s_procQ;
+
+} semd_t, *semd_PTR;
 
 /* Page swap pool information structure type */
 typedef struct swap_t {

@@ -20,10 +20,10 @@ void Create_Process_SYS1();
 void Terminate_Process_SYS2();
 
 /* Terminates a given process */
-HIDDEN void TerminateSingleProcess(pcb_t* to_terminate);
+void TerminateSingleProcess(pcb_t* to_terminate);
 
 /* Kills a process tree recursively */
-HIDDEN void TerminateTree(pcb_t* to_terminate);
+void TerminateTree(pcb_t* to_terminate);
 
 /* Executes a P operation on a given semaphore (this syscall is reserved for non-device semaphores) */
 void Passeren_SYS3(int* semAddr);

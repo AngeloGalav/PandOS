@@ -86,7 +86,7 @@ void Terminate_Process_SYS2()
     Scheduler();  /* we call the scheduler to dispatch a new process */
 }
 
-HIDDEN void TerminateTree(pcb_t* to_terminate)
+void TerminateTree(pcb_t* to_terminate)
 {
     if (to_terminate == NULL) return;
 
@@ -96,7 +96,7 @@ HIDDEN void TerminateTree(pcb_t* to_terminate)
     TerminateSingleProcess(to_terminate);   /* we are now terminating the current process */
 }
 
-HIDDEN void TerminateSingleProcess(pcb_t* to_terminate) // declared static so it can only be called in this file's scope.
+void TerminateSingleProcess(pcb_t* to_terminate) // declared static so it can only be called in this file's scope.
 {
     processCount -= 1;
     outProcQ(&readyQueue, to_terminate);    /* we remove the terminated process from the readyQueue */
