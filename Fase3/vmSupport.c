@@ -118,6 +118,11 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         SYSCALL(VERHOGEN, (memaddr) &swap_semaphore,0,0);
 
         LDST(sPtr->sup_exceptState);
+<<<<<<< HEAD
+=======
+
+        
+>>>>>>> 78022a12474adf3fb247a88a944e2c9739234c2a
     }
 }
 
