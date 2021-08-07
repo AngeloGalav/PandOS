@@ -85,7 +85,7 @@ void initSupportStructs()
         //we must set VPN, ASID, V and D bits
         int j;
 
-        for (j = 0;j < 31; j ++)
+        for (j = 0; j < 31; j++)
         {
             //set the VPN to [0x80000..0x8001E]
             SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
@@ -103,6 +103,5 @@ void initSupportStructs()
         SET_D(U_support_structure[i].sup_privatePgTbl[31].pte_entryLO);
         // bisogna mettere il V bit a 0 nella macr0
         //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET IN CASE CHANGE THE MASK IN THE MACRO
-        
     }
 }

@@ -2,8 +2,6 @@
 #include "../include/syscall.h"
 #include "../include/libraries.h"
 
-///TODO: fix DEV_REG_ADDR.
-
 extern int support_devsemaphores[SUPP_SEM_N][UPROCMAX];
 
 void GeneralException_Handler()
