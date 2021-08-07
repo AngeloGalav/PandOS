@@ -8,7 +8,7 @@ int supstackTLB[500];
 int supstackGen[500];
 
 /* Support semaphores matrix */
-int support_semaphores[SUPP_SEM_N][UPROCMAX]; // line 0 is for printer, 1 write_terminal, 2 read_terminal 
+int support_devsemaphores[SUPP_SEM_N][UPROCMAX]; // line 0 is for printer, 1 write_terminal, 2 read_terminal 
 
 /* Swap pool table */
 extern swap_t swap_table[POOLSIZE];
@@ -29,8 +29,6 @@ void test()
     //se la lista dei figli di test è vuota si ammazza
     if (processCount <= 1)
         SYSCALL(TERMPROCESS, 0, 0, 0);
-
-    
 }
 
 void UProcInitiliazer()
@@ -46,11 +44,9 @@ void initSupportStructs()
 
     initSwapStructs();
     /* Set all semaphores to 1 cause of mutex */
-    for (int i = 0; i < UPROCMAX; i++)
-    {
-
-        for (int j = 0; j < SUPP_SEM_N; j++) support_semaphores[j][i] = 1;
-        
+    for (int i = 0; i < UPROCMAX; i++){
+        for (int j = 0; j < SUPP_SEM_N; j++) 
+            support_devsemaphores[j][i] = 1;
     }
 
     /* Initialize u'proc processor state */
@@ -82,8 +78,8 @@ void initSupportStructs()
         U_support_structure[i].sup_exceptContext[1].status = IMON | 0X00000001 | TEBITON ;
 
         //Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
-        U_support_structure[i].sup_exceptContext[0].stackPtr = &(supstackTLB[499]);
-        U_support_structure[i].sup_exceptContext[1].stackPtr = &(supstackGen[499]);
+        U_support_structure[i].sup_exceptContext[0].stackPtr = (memaddr) &(supstackTLB[499]);
+        U_support_structure[i].sup_exceptContext[1].stackPtr = (memaddr) &(supstackGen[499]);
 
         //pops 6.3.2 tells us how to set a page table entry, is like TLB entry so follow it
         //we must set VPN, ASID, V and D bits
@@ -95,7 +91,7 @@ void initSupportStructs()
             SET_VPN(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, 0x80000 + j);
             SET_ASID(U_support_structure[i].sup_privatePgTbl[j].pte_entryHI, i + 1);
             SET_D(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO);
-            UNSET_BIT(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO, VALIDON);
+            UNSET_BIT(U_support_structure[i].sup_privatePgTbl[j].pte_entryLO, VALID_BIT_POS);
             // bisogna mettere il V bit a 0 nella macr0
 
             //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET  IN CASE CHANGE THE MASK IN THE MACRO
@@ -109,7 +105,4 @@ void initSupportStructs()
         //IMPORTANT CHECK IF V MUST BE SET OR G MUST BE SET IN CASE CHANGE THE MASK IN THE MACRO
         
     }
-    
-    
-
 }

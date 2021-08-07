@@ -28,7 +28,7 @@ pcb_PTR currentProcess;
 int device_semaphores[SEMAPHORE_QTY]; 
 
 /* The initial processor state */
-HIDDEN state_t initialial_state;
+HIDDEN state_t initial_state;
 
 /* Inizialize pass-up-vector with the addressess needed */
 HIDDEN passupvector_t* passupvector;
@@ -72,15 +72,15 @@ int main()
     proc->p_supportStruct = NULL;
 
     /* setting up the first process state */
-	STST(&initialial_state);			/* create a state area */	
+	STST(&initial_state);			/* create a state area */	
 	
     /* Equivalent to proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))); */
-    RAMTOP(initialial_state.reg_sp);
+    RAMTOP(initial_state.reg_sp);
 
-	initialial_state.pc_epc = initialial_state.reg_t9 = (memaddr) test; /* setting PC, in order to execute p2test functions */
-	initialial_state.status =   IEPON | IMON | TEBITON; /* enabling PLT and interrupts */
+	initial_state.pc_epc = initial_state.reg_t9 = (memaddr) test; /* setting PC, in order to execute p2test functions */
+	initial_state.status =   IEPON | IMON | TEBITON; /* enabling PLT and interrupts */
     
-    proc->p_s = initialial_state;
+    proc->p_s = initial_state;
 
     currentProcess = NULL; 
     insertProcQ(&(readyQueue), proc); /* inserting the current process in the readyQueue so that it can be called later */

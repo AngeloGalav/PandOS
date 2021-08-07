@@ -1,7 +1,7 @@
 #include "../include/syscall.h"
 
 extern pcb_PTR readyQueue;
-HIDDEN state_t* cached_exceptionState; /* we cache the exception state on the BIOSDATAPAGE */
+state_t* cached_exceptionState; /* we cache the exception state on the BIOSDATAPAGE */
 extern pcb_PTR currentProcess;
 
 extern cpu_t startTime;

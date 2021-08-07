@@ -1,16 +1,15 @@
 #include "../include/sysSupport.h"
-#include "syscall.h"
+#include "../include/syscall.h"
 #include "../include/libraries.h"
 
-extern int support_printer_semaphore[UPROCMAX];
-extern int support_wterminal_semaphore[UPROCMAX];
-extern int support_rterminal_semaphore[UPROCMAX];
-extern int support_semaphores[SUPP_SEM_N][UPROCMAX];
+///TODO: fix DEV_REG_ADDR.
+
+extern int support_devsemaphores[SUPP_SEM_N][UPROCMAX];
 
 void GeneralException_Handler()
 {
     //We take the support info of the current process with the SYS8
-    support_t *sPtr = SYSCALL(GETSPTPTR, 0, 0, 0);
+    support_t *sPtr = (support_t*) SYSCALL(GETSPTPTR, 0, 0, 0);
     //extract the execCode to check if there is a SYSCALL or a TRAP exception
     int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[0].cause);
     
@@ -61,8 +60,8 @@ void Terminate_SYS9(support_t* sPtr) // sys2 wrapper
     
     for (int i = 0; i < SUPP_SEM_N; i++) 
     {
-        if (support_semaphores[i][sPtr->sup_asid - 1] <= 0)
-            SYSCALL(VERHOGEN, (int) &support_semaphores[i][sPtr->sup_asid - 1], 0, 0); 
+        if (support_devsemaphores[i][sPtr->sup_asid - 1] <= 0)
+            SYSCALL(VERHOGEN, (int) &support_devsemaphores[i][sPtr->sup_asid - 1], 0, 0); 
     }
     
     Terminate_Process_SYS2();
@@ -79,17 +78,17 @@ void Get_Tod_SYS10(unsigned int *regv0)
 void  Write_To_Printer_SYS11(support_t* sPtr)
 {
     // Printer device associated with the U-proc 
-    devreg_t* devReg = DEV_REG_ADDR(6, sPtr->sup_asid); // prende indirizzo del device register
+    devreg_t* devReg = (devreg_t*) DEV_REG_ADDR(6, sPtr->sup_asid); // prende indirizzo del device register
     unsigned int status;
 
     // Is an error to write to a printer device from an address outside of the requesting 
     // U-proc’s logical address space, but how can we check it ????????
     
-    SYSCALL(PASSERN, (int)&support_printer_semaphore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int)&support_devsemaphores[0][sPtr->sup_asid - 1], 0, 0); 
     
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
 
-    char *s = sPtr->sup_exceptState->reg_a1; 
+    char *s = (char*) sPtr->sup_exceptState->reg_a1; 
     // check se l'address è dentro lo spazio del processo, compreso lo stack
     // lo sò l'if così lungo è bruttissimo ma anche la vita è brutta
     if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
@@ -117,22 +116,21 @@ void  Write_To_Printer_SYS11(support_t* sPtr)
     else
         Terminate_SYS9(sPtr);
     
-    SYSCALL(VERHOGEN, (int)&support_printer_semaphore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_devsemaphores[0][sPtr->sup_asid - 1], 0 , 0);
 }
 
 
 void Write_to_Terminal_SYS12(support_t* sPtr)
 {
-   
-    devreg_t* devReg = DEV_REG_ADDR(7, sPtr->sup_asid); // prende indirizzo del device register
+    devreg_t* devReg = (devreg_t*) DEV_REG_ADDR(7, sPtr->sup_asid); // prende indirizzo del device register
 
     unsigned int status;
 
-    SYSCALL(PASSERN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int)&support_devsemaphores[1][sPtr->sup_asid - 1], 0, 0); 
     
     unsigned int strlength = (unsigned int) sPtr->sup_exceptState->reg_a2;
 
-    char *s = sPtr->sup_exceptState->reg_a1; 
+    char *s = (char*) sPtr->sup_exceptState->reg_a1; 
    
     if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (*s >= UPROCSTARTADDR) && (*s <= USERSTACKTOP))
     {
@@ -161,25 +159,25 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
     else
         Terminate_SYS9(sPtr);
 
-    SYSCALL(VERHOGEN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_devsemaphores[1][sPtr->sup_asid - 1], 0 , 0);
 }
 
 
 
-void  Read_From_Terminal_SYS13(support_t* sPtr)
+void Read_From_Terminal_SYS13(support_t* sPtr)
 {
-    devreg_t* devReg = DEV_REG_ADDR(7, sPtr->sup_asid); 
+    devreg_t* devReg = (devreg_t*) DEV_REG_ADDR(7, sPtr->sup_asid); 
 
     unsigned int status;
 
-    SYSCALL(PASSERN, (int) &support_rterminal_semaphore[sPtr->sup_asid - 1], 0, 0); 
+    SYSCALL(PASSERN, (int) &support_devsemaphores[2][sPtr->sup_asid - 1], 0, 0); 
     
     //indirizzo del buffer dove andiamo a scrivere
-    char *buffer = sPtr->sup_exceptState->reg_a1; 
+    char *buffer = (char*) sPtr->sup_exceptState->reg_a1; 
 
     int transmitted_char = 0;
    
-    if ((buffer >= UPROCSTARTADDR) && (buffer <= USERSTACKTOP))
+    if (((memaddr) buffer >= UPROCSTARTADDR) && ((memaddr) buffer <= USERSTACKTOP))
     {   
         //con questo comando il carattere viene messo in recv_status
         devReg->term.recv_command = TRANSMITCHAR;
@@ -187,7 +185,7 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
         //ciclo finchè non incontro end of line
         while ( (devReg->term.recv_status >> 8) != EOL)
         {
-            if ((buffer >= UPROCSTARTADDR) && (buffer <= USERSTACKTOP))
+            if (((memaddr) buffer >= UPROCSTARTADDR) && ((memaddr) buffer <= USERSTACKTOP))
             {    
                 SYSCALL(IOWAIT, 7, sPtr->sup_asid, 0);
 
@@ -202,7 +200,7 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
                 // prendo il carattere shiftando di 8
                 *buffer = devReg->term.recv_status >> 8;            
 
-                buffer++;
+                //buffer++; //???
                 transmitted_char++;
 
                 devReg->term.recv_command = TRANSMITCHAR;
@@ -214,5 +212,5 @@ void  Read_From_Terminal_SYS13(support_t* sPtr)
     else
         Terminate_SYS9(sPtr);
 
-    SYSCALL(VERHOGEN, (int)&support_wterminal_semaphore[sPtr->sup_asid - 1], 0 , 0);
+    SYSCALL(VERHOGEN, (int)&support_devsemaphores[1][sPtr->sup_asid - 1], 0 , 0);
 }

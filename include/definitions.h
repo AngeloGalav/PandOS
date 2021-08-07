@@ -26,6 +26,7 @@
 
 /* EntryLo useful constants */
 #define PFNSHIFT 12
+#define VALID_BIT_POS 9
 
 /* Number of support semaphore types */
 #define SUPP_SEM_N 3
@@ -48,7 +49,7 @@
 /* Current TOD value */
 #define CURRENT_TOD ((*((memaddr *)TODLOADDR)) / (*((cpu_t *)TIMESCALEADDR)))
 
-/* Creates a variable that contains the process state stored in the biosdatapage before an interrupt */
+/* Creates a variable that contains the process state stored in the BIOSDATAPAGE before an interrupt */
 #define GET_BDP_STATUS(T) state_t *T = (state_t *)BIOSDATAPAGE
 
 /* Start of the device register memory area */
@@ -64,9 +65,15 @@
 #define SET_D(U) (U |= DIRTYON)
 
 /* Extract excCode from Cause register */
-#define GET_EXEC_CODE(S) BitExcractor(S, GETEXECCODE, CAUSESHIFT)
+#define GET_EXEC_CODE(S) BitExtractor(S, GETEXECCODE, CAUSESHIFT)
 
-/* Unset V bit of EntryLo */
+/* Unset pos bit of a T value */
 #define UNSET_BIT(T, pos) (T &= ~(1 << pos))
+
+/* Macro which disables the interrupts by modifying the status bitmap */
+#define DISABLE_INTERRUPTS_COMMAND setSTATUS(getSTATUS() & DISABLEINTS)
+
+/* Macro which enables the interrupts by modifying the status bitmap */
+#define ENABLE_INTERRUPTS_COMMAND setSTATUS(getSTATUS() | IECON);
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "definitions.h"
 #include "asl.h" 
+#include "libraries.h"
 
 /*  The scheduler function of the kernel.
  *  It dispatches a new process (if possible) and gives control to it.
