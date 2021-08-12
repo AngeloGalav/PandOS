@@ -3,7 +3,7 @@
 #
 ifneq ($(wildcard /usr/bin/umps3),)
 	UMPS3_DIR_PREFIX = /usr
-	LIBDIR = $(UMPS3_DIR_PREFIX)/lib/x86_64-linux-gnu/umps3
+	LIBDIR = $(UMPS3_DIR_PREFIX)/lib/umps3
 else
 	UMPS3_DIR_PREFIX = /usr/local
 	LIBDIR = $(UMPS3_DIR_PREFIX)/lib/umps3
@@ -50,4 +50,3 @@ all: printerTest.umps strConcat.umps \
 
 clean:
 	rm -f *.o *.t *.umps
-

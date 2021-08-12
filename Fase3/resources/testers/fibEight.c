@@ -1,6 +1,6 @@
 /*	Test of a CPU intensive recusive job */
 
-#include "/usr/local/include/umps3/umps/libumps.h"
+#include "/usr/include/umps3/umps/libumps.h"
 
 #include "h/tconst.h"
 #include "h/print.h"
@@ -17,13 +17,13 @@ int fib (int i) {
 void main() {
 	int i;
 	
-	print(WRITETERMINAL, "Recursive Fibanaci (11) Test starts\n");
+	print(WRITETERMINAL, "Recursive Fibanaci (8) Test starts\n");
 	
-	i = fib(11);
+	i = fib(8);
 	
 	print(WRITETERMINAL, "Recursion Concluded\n");
 	
-	if (i == 89) {
+	if (i == 21) {
 		print(WRITETERMINAL, "Recursion Concluded Successfully\n");
 	}
 	else

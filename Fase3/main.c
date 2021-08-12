@@ -76,13 +76,13 @@ int main()
 	
     /* Equivalent to proc->p_s.gpr[26] = ((*((int *)RAMBASEADDR)) + (*((int *)RAMBASESIZE))); */
     RAMTOP(initial_state.reg_sp);
-
+    
+    currentProcess = NULL; 
 	initial_state.pc_epc = initial_state.reg_t9 = (memaddr) test; /* setting PC, in order to execute p2test functions */
-	initial_state.status =   IEPON | IMON | TEBITON; /* enabling PLT and interrupts */
+	initial_state.status = IEPON | IMON | TEBITON; /* enabling PLT and interrupts */
     
     proc->p_s = initial_state;
 
-    currentProcess = NULL; 
     insertProcQ(&(readyQueue), proc); /* inserting the current process in the readyQueue so that it can be called later */
 
     Scheduler();

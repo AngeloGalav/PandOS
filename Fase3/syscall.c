@@ -1,4 +1,5 @@
 #include "../include/syscall.h"
+#include "../include/debugger.h"
 
 extern pcb_PTR readyQueue;
 state_t* cached_exceptionState; /* we cache the exception state on the BIOSDATAPAGE */
@@ -44,6 +45,7 @@ void SyscallExceptionHandler(state_t* exception_state)
             break;
         default:
             //InvalidSyscall();   /* case in which the syscall code is invalid */
+            //bp_PAGE_NOT_FOUNDU();
             PassUpOrDie(GENERALEXCEPT, exception_state);
             break;
     } 

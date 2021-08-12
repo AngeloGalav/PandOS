@@ -1,30 +1,16 @@
-/**
- * @file vmSupport.c
- * 
- * @brief this module should contain the TLB exception handler, and
- * the pager. 
- * it also contains the swap table and the swap pool semaphore 
- * 
- * @version 0.1
- * 
- */
-
 #include "../include/vmSupport.h"
 
 // current proc variable which is accessible through the uTLBRefillHandler, since it's a phase 2 function
 extern pcb_PTR currentProcess;
 
-
 /* Swap pool table */
 swap_t swap_table[POOLSIZE];
 
 /* Swap pool devices semaphore*/
-int swap_semaphore; 
+int swap_semaphore;
 
-/**
- * @brief initializes the swap table and swap pool semaphore
- * 
- */
+extern int flash_device_semaphores[UPROCMAX];
+
 void initSwapStructs()
 {
     swap_semaphore = 1;
@@ -34,87 +20,84 @@ void initSwapStructs()
 
 void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 {
-    // We take the support info of the current process with the SYS8
+    // Gathering the support info of the current process with the SYS8
     support_t *sPtr = (support_t*) SYSCALL(GETSPTPTR, 0, 0, 0);
     
-    // extract the execCode to check the exception type
-    int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[0].cause);
-
-    if (excCode == EXC_MOD) // if the call is a modification exception, then it's treated as a progrma trap (since it shouldnt happen)
-        SYSCALL(TERMINATE,0 ,0, 0); 
+    // extracting the execCode to check the exception type
+    int excCode = GET_EXEC_CODE(sPtr->sup_exceptState[PGFAULTEXCEPT].cause);
+    
+    if (excCode == EXC_MOD) // if the call is a TLB-Modification exception, then it's treated as a progrma trap (since it shouldnt happen)
+        SYSCALL(TERMINATE, 0, 0, 0); 
 
     SYSCALL(PASSEREN, (memaddr) &swap_semaphore, 0, 0);
 
-    // we locate the missing page info: 
+    // locate the missing page number (found in entryHI of the Saved Exception State)
+    int p = (sPtr->sup_exceptState[PGFAULTEXCEPT].entry_hi - PAGETBLSTART) >> VPNSHIFT;
 
-    // Andare a prendere l'indirizz della page table address nel CP0 register nel BIOS
-    // con quell'indirizzo dentro la page table del current process trovare l'iesima pagina
-    // restituire l'indirizzo della pagina
+    if (p < 0 || p > 30) {bp(); p = MAXPAGES - 1;} // stack page detection
     
-    int p = Get_PageTable_Index(sPtr); // locate the missing page number (found in entryHI of the Saved Exception State)
+    // we look for a free frame...
+    int victim_frame = -1;
+    for (int i = 0; i < POOLSIZE; i++){
+        if (swap_table[i].sw_asid == NOPROC){
+            victim_frame = i;
+            break;
+        }
+    }
+
+    if (victim_frame == -1) victim_frame = replacementAlgorithm(); //... if there aren't any free frames, we call the replacement algorithm
+
+    // the asid of the occupied frame
+    int frame_asid = swap_table[victim_frame].sw_asid;
     
-    int frame = replacementAlgorithm(); // we are chosing the frame to replace
-
-    int asid = swap_table[frame].sw_asid;
-
-    devreg_t* devReg = NULL;
+    // the asid of the process that caused the pagefault
+    int asid = sPtr->sup_asid;
 
     // in case the page was occupied by a process, and we should assume that is dirty    
-    if (asid != NOPROC)     //OPPURE swapTable[frame].sw_pte->pte_entryLO & VALIDON)
+    if (frame_asid != NOPROC)
     {                          
-        // DISABLING INTERRUPTS HERE using getStatus -> setStatus
+        // DISABLING INTERRUPTS using getStatus -> setStatus
         DISABLE_INTERRUPTS_COMMAND;
 
-        //risalgo al process x dal frame k
-        UNSET_BIT(swap_table[frame].sw_pte->pte_entryLO, VALID_BIT_POS) ; //bisogna mettere il V bit a 0
+        UNSET_BIT(swap_table[victim_frame].sw_pte->pte_entryLO, VALID_BIT_POS) ; //bisogna mettere il V bit a 0
 
-        //UPDATE TLB (section 4.5.2 pandos)
-        TLBCLR(); // per il momento facciamo erase del TLB come consigliato, poi andrà cambiato
+        // tlb update
+        TLBCLR();
 
-        // ENABLING INTERRUPTS HERE using setStatus
+        // ENABLING INTERRUPTS using setStatus
         ENABLE_INTERRUPTS_COMMAND;
 
-        // UPDATE flash backing store
-        devReg = (devreg_t*) DEV_REG_ADDR(4, asid - 1); // prendo il flash/backing store del process x
-        
-        // writing the starting physical address of the 4k block in DATA0 as we should
-        devReg->dtp.data0 = swap_table[frame].sw_pte->pte_entryLO >> PFNSHIFT;
-        
-        // inserting the command that indicates a write operations
-        devReg->dtp.command |= FLASHWRITE  | (frame << 8) ; 
-        SYSCALL(IOWAIT,0,0,0);
+        // address of the page to rewrite onto the flash device
+        int page_addr = POOLSTART + (victim_frame * PAGESIZE);
+        // block of the flash device to write to
+        int block_number = swap_table[victim_frame].sw_pageNo;
+        backStoreManager(FLASHWRITE, frame_asid, page_addr, block_number);
+    }
 
-    } // } --- i assumed that steps 8.a, 8.b and 8.c should be done in case the frame is occupied 
+    // frame address to write the data from flash device to ram
+    memaddr frame_addr = POOLSTART + (victim_frame * PAGESIZE);
 
-    // in case the frame wasnt occupied, i should assign it a value since we skipped the previous steps
-    if (devReg == NULL) devReg = (devreg_t*) DEV_REG_ADDR(4, asid - 1);
+    bp_ignore();
 
-    /** STEP 9 **/
-    int status = devReg->dtp.status;
-    if (status != DEV0ON)
-        SYSCALL(TERMINATE,0,0,0); // we treat an error as a program trap
-    // check the status and see if an error occurred, if yes generate a program trap
-         
-    //read from the flash device
-    devReg->dtp.command |= READBLK | (frame << 8) ;
-    SYSCALL(IOWAIT,0,0,0);
+    // copying the contentes of the page 'p' located into the backing store to the RAM frame.
+    // essentially, a frame is identified by the asid and the page number.
+    backStoreManager(FLASHREAD, asid, frame_addr, p);
     
-    //memaddr* address = (memaddr*) devReg->dtp.data0; // prendo l'indirizzo dentro data0
-    //swap_table[frame].sw_pte->pte_entryLO = *address; // i don't know //** questa riga non ha senso contando che comunque dopo rimpiazzi totalmente la pagina.
-                                                        // inoltre, causa un segfault
-
     DISABLE_INTERRUPTS_COMMAND;
-
+    
     /** STEP 10 **/
-    swap_table[frame].sw_asid = asid;
-    swap_table[frame].sw_pageNo = p;
-    swap_table[frame].sw_pte = &(sPtr->sup_privatePgTbl[p]); // passing the address of the user's page to the swap_table
+    // even though it is not specified, later in 4.5.3 it is said that the swap table must infact be updated atomically
+    swap_table[victim_frame].sw_asid = asid;
+    swap_table[victim_frame].sw_pageNo = p;
+    swap_table[victim_frame].sw_pte = &(sPtr->sup_privatePgTbl[p]); // passing the address of the user's page to the swap_table
 
     /** STEP 11 **/
     //update the process page table
-    sPtr->sup_privatePgTbl[p].pte_entryLO |= VALIDON;
-    sPtr->sup_privatePgTbl[p].pte_entryLO &= 0x7FF; // we clean the PFN string
-    sPtr->sup_privatePgTbl[p].pte_entryLO |= (frame << PFNSHIFT) ;
+    sPtr->sup_privatePgTbl[p].pte_entryLO |= (victim_frame << PFNSHIFT) | VALIDON;
+    // updating the current process page table entry
+    swap_table[victim_frame].sw_pte->pte_entryLO = frame_addr | VALIDON | DIRTYON;
+
+    bp_correct();
 
     /** STEP 12 **/
     //UPDATE TLB by clearing it. (after refactoring it will be more complex)
@@ -124,61 +107,61 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
     /** STEP 13 **/
     // releasing the mutual exclusion semaphore over the Swap Pool table
-    SYSCALL(VERHOGEN, (memaddr) &swap_semaphore, 0, 0);
+    SYSCALL(VERHOGEN, (int) &swap_semaphore, 0, 0);
 
     /** STEP 14 **/
     // Return control to the support process by loading 
-    LDST(sPtr->sup_exceptState);
-    
-    // } --- i assumed that steps 8.a, 8.b and 8.c should be done in case the frame is occupied 
+    LDST((state_t*) &(sPtr->sup_exceptState[PGFAULTEXCEPT]));
 }
 
-int Get_PageTable_Index(support_t* sPtr)
+void backStoreManager(unsigned int command, int flash_asid, unsigned int data_addr, unsigned int deviceBlockNumber)
 {
-    // vado a vedere nella memoria logica del processo quale pagina corrisponde 
-    // così mi rendo conto quale era quella che cercava e che ha scatenato il fault
-    GET_BDP_STATUS(exception_status);
-    /* unsigned int BadVaddr = exception_status->gpr[CP0_BadVAddr]; 
-    for (int i = 0; i < MAXPAGES; i++)
-    {
-        if ((sPtr->sup_privatePgTbl[i].pte_entryHI >> VPNSHIFT) == BadVaddr)
-            return i; //ritorniamo l'indice della pagina a cui corrisponde l'address nell'entryHi
-    } */
+    SYSCALL(PASSEREN, (memaddr) &flash_device_semaphores[flash_asid - 1], 0, 0);
+    devreg_t* devReg = GET_DEV_ADDR(FLASHINT, flash_asid - 1); // ASID values go from 1 to 8
 
-    return exception_status->entry_hi >> VPNSHIFT; // ritorna la virtual page number
+    // block address of the data to read/write 
+    devReg->dtp.data0 = data_addr;
+    
+    DISABLE_INTERRUPTS_COMMAND;
+    // inserting the command after writing into data, since the IO operation happens just about when it is over
+    devReg->dtp.command = (deviceBlockNumber << 8) | command; 
+    
+    SYSCALL(IOWAIT, FLASHINT, flash_asid - 1,0);
+
+    ENABLE_INTERRUPTS_COMMAND;
+
+    bp_correct();
+    
+    SYSCALL(VERHOGEN, (int) &flash_device_semaphores[flash_asid - 1], 0, 0);
+
+    // treating any error as a Program Trap
+    if (devReg->dtp.status != DEV0ON)
+        SYSCALL(TERMINATE, 0, 0, 0); ///TODO: replace with sys9
 }
 
 int replacementAlgorithm()
 {
     static int frame = 0; // this way we keep information in the local variable
     int old_frame = frame; 
-    frame = (frame % POOLSIZE) + 1;
+    frame = ((frame + 1) % POOLSIZE);
     return old_frame;
 }
 
 void uTLB_RefillHandler() {
     
     // Get the page number
-    volatile unsigned int pageNumber;
+    int pageNumber;
 
     GET_BDP_STATUS(exception_state);
-    pageNumber = exception_state->entry_hi >> VPNSHIFT; // getting the missing page number from the exception state in the BIOSDATAPAGE
+    pageNumber = (exception_state->entry_hi - PAGETBLSTART) >> VPNSHIFT; // getting the missing page number from the exception state in the BIOSDATAPAGE
 
-    pteEntry_t entry;
-    entry.pte_entryHI = MAXINT;
-
-    // Locating the correct page table entry from the currentProcess 
-    for (int i = 0; i < 32; i++){
-        if ((currentProcess->p_supportStruct->sup_privatePgTbl[i].pte_entryHI >> VPNSHIFT) == pageNumber)
-            entry = currentProcess->p_supportStruct->sup_privatePgTbl[i];
-    }
-
-    if (entry.pte_entryHI == MAXINT) bp_PAGE_NOT_FOUND(); // this will be an error status in case the wrong page still wasnt found
+    if (pageNumber < 0 || pageNumber > 30) {bp(); pageNumber = MAXPAGES - 1;} // stack page index.. another approch would have been to chek if vpn == 0xBFFFF
     
-    setENTRYHI(entry.pte_entryHI);
-    setENTRYLO(entry.pte_entryLO);
+    // loading the page entry onto memory
+    setENTRYHI(currentProcess->p_supportStruct->sup_privatePgTbl[pageNumber].pte_entryHI);  // REMEMBER: a process page table is different from the swap table
+    setENTRYLO(currentProcess->p_supportStruct->sup_privatePgTbl[pageNumber].pte_entryLO);
     TLBWR();
     
     // Resuming normal control
-    LDST((state_t*) BIOSDATAPAGE);
+    LDST(exception_state);
 }

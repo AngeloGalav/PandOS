@@ -5,13 +5,14 @@
 #include "pandos_types.h"
 #include "libraries.h"
 
-/* Initialize the support structs for the current process */
-extern void initSupportStructs(); // extern cause it should be in TLB file
+/* Initializes and creates a process with asid = id + 1 */
+void initProcess(int id);
 
-/* Initializes the Support data structures and the U-Processes */
+/* Initializes the Support data structures and the U-Processes, equivalent 
+to the init process on UNIX operating systems */
 void test();
 
-/* Used to invoke SYS1 for each process */
-void UProcInitiliazer();
+/* Initializes the support struct device semaphores */
+void initSemaphores();
 
 #endif

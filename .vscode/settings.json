@@ -22,7 +22,8 @@
         "debugger.h": "c",
         "syscall.h": "c",
         "syssupport.h": "c",
-        "vmsupport.h": "c"
+        "vmsupport.h": "c",
+        "print.h": "c"
     },
     "C_Cpp.errorSquiggles": "Enabled"
 }

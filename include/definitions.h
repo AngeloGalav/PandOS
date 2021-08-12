@@ -24,6 +24,11 @@
 #define EOL '\n'
 #define READBLK 2
 
+/* Support Layer Devices Lines (!= device line in nucleus)*/
+#define PRINTER 0
+#define WRITETERM 1
+#define READTERM 2
+
 /* EntryLo useful constants */
 #define PFNSHIFT 12
 #define VALID_BIT_POS 9
@@ -75,5 +80,13 @@
 
 /* Macro which enables the interrupts by modifying the status bitmap */
 #define ENABLE_INTERRUPTS_COMMAND setSTATUS(getSTATUS() | IECON);
+
+/* Swap pool starting address */
+#define POOLSTART 0x20020000
+
+/* Page Table Starting Address */
+#define PAGETBLSTART 0x80000000
+
+#define GET_DEV_ADDR(line, device) (devreg_t*) (DEVREG + (((line) - 3) * 0x80) + ((device) * 0x10))
 
 #endif
