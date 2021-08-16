@@ -34,7 +34,7 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     // locate the missing page number (found in entryHI of the Saved Exception State)
     int p = (sPtr->sup_exceptState[PGFAULTEXCEPT].entry_hi - PAGETBLSTART) >> VPNSHIFT;
 
-    if (p < 0 || p > 30) {bp(); p = MAXPAGES - 1;} // stack page detection
+    if (p < 0 || p > 30) {p = MAXPAGES - 1;} // stack page detection
     
     // we look for a free frame...
     int victim_frame = -1;
@@ -53,6 +53,9 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     // the asid of the process that caused the pagefault
     int asid = sPtr->sup_asid;
 
+    // frame address to write the data from flash device to ram
+    memaddr frame_addr = POOLSTART + (victim_frame * PAGESIZE);
+
     // in case the page was occupied by a process, and we should assume that is dirty    
     if (frame_asid != NOPROC)
     {                          
@@ -66,19 +69,13 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
         // ENABLING INTERRUPTS using setStatus
         ENABLE_INTERRUPTS_COMMAND;
-
-        // address of the page to rewrite onto the flash device
-        int page_addr = POOLSTART + (victim_frame * PAGESIZE);
-        // block of the flash device to write to
-        //int block_number = swap_table[victim_frame].sw_pageNo;
+        
+        // block of the flash device to write to (coincides with the page number)
         int block_number = swap_table[victim_frame].sw_pte->pte_entryHI >> VPNSHIFT;
-        backStoreManager(FLASHWRITE, frame_asid, page_addr, block_number);
+
+        // writing contents of frame (stored in frame_addr) into the backing store in the block_number
+        backStoreManager(FLASHWRITE, frame_asid, frame_addr, block_number);
     }
-
-    // frame address to write the data from flash device to ram
-    memaddr frame_addr = POOLSTART + (victim_frame * PAGESIZE);
-
-    bp_ignore();
 
     // copying the contentes of the page 'p' located into the backing store to the RAM frame.
     // essentially, a frame is identified by the asid and the page number.
@@ -97,8 +94,6 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
     // PFN == NUMBER OF FRAME IN RAM !! (=! physical address of anything)
     sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON;
-
-    bp_correct();
 
     /** STEP 12 **/
     //UPDATE TLB by clearing it. (after refactoring it will be more complex)
@@ -130,8 +125,6 @@ void backStoreManager(unsigned int command, int flash_asid, unsigned int data_ad
     SYSCALL(IOWAIT, FLASHINT, flash_asid - 1,0);
 
     ENABLE_INTERRUPTS_COMMAND;
-
-    bp_correct();
     
     SYSCALL(VERHOGEN, (int) &flash_device_semaphores[flash_asid - 1], 0, 0);
 
