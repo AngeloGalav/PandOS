@@ -110,12 +110,6 @@ void initProcess(int id)
         // valid bit is already set to off...
     }
 
-    // the last is the stack page and it's apart from the others
-    // U_support_structure[id].sup_privatePgTbl[32 - 1].pte_entryHI = 0xBFFFF << VPNSHIFT; //TODO: adriano chiedimi perché qui non ho usato la macro
-    // SET_ASID(U_support_structure[id].sup_privatePgTbl[MAXPAGES - 1].pte_entryHI, id + 1);
-    // U_support_structure[id].sup_privatePgTbl[MAXPAGES - 1].pte_entryLO = DIRTYON;
-
     // starting the process
-    ///TODO: change to memaddress if everything works
     int status = SYSCALL(CREATEPROCESS, (int) &U_state_structure[id], (int) &U_support_structure[id], 0);   
 }

@@ -70,7 +70,8 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         // address of the page to rewrite onto the flash device
         int page_addr = POOLSTART + (victim_frame * PAGESIZE);
         // block of the flash device to write to
-        int block_number = swap_table[victim_frame].sw_pageNo;
+        //int block_number = swap_table[victim_frame].sw_pageNo;
+        int block_number = swap_table[victim_frame].sw_pte->pte_entryHI >> VPNSHIFT;
         backStoreManager(FLASHWRITE, frame_asid, page_addr, block_number);
     }
 
@@ -93,9 +94,9 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
 
     /** STEP 11 **/
     //update the process page table
-    sPtr->sup_privatePgTbl[p].pte_entryLO |= (victim_frame << PFNSHIFT) | VALIDON;
-    // updating the current process page table entry
-    swap_table[victim_frame].sw_pte->pte_entryLO = frame_addr | VALIDON | DIRTYON;
+
+    // PFN == NUMBER OF FRAME IN RAM !! (=! physical address of anything)
+    sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON;
 
     bp_correct();
 
