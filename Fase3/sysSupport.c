@@ -18,7 +18,7 @@ void GeneralException_Handler()
     int excCode = GET_EXEC_CODE(support_ptr->sup_exceptState[GENERALEXCEPT].cause);
     
     if (excCode >= 9)
-        {bp_invalid_exec(); Terminate_SYS9(support_ptr);}
+        Terminate_SYS9(support_ptr);
 
     int sysnumber = (int) support_ptr->sup_exceptState[GENERALEXCEPT].reg_a0;
     support_ptr->sup_exceptState[GENERALEXCEPT].pc_epc += WORDLEN;
@@ -27,7 +27,6 @@ void GeneralException_Handler()
     {
         case TERMINATE:
             Terminate_SYS9(support_ptr);
-            /// TODO: 
             break;
 
         case GET_TOD:
@@ -46,9 +45,9 @@ void GeneralException_Handler()
             Read_From_Terminal_SYS13(support_ptr);
             break;
 
-        // default:
-        //     //PANIC ?
-        //     break;
+        default:
+            Terminate_SYS9(support_ptr);
+            break;
     }
 
     LDST((state_t*) &(support_ptr->sup_exceptState[GENERALEXCEPT]));
@@ -120,9 +119,9 @@ void Write_To_Printer_SYS11(support_t* sPtr)
             n_char_sent++;
         }
     }
-    else{ 
+    else
         Terminate_SYS9(sPtr);
-        }
+        
     
     sPtr->sup_exceptState[GENERALEXCEPT].reg_v0 = n_char_sent; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
     SYSCALL(VERHOGEN, (int) &support_devsemaphores[PRINTER][sPtr->sup_asid - 1], 0 , 0);
@@ -162,9 +161,8 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
             n_char_sent++;
         }
     }
-    else{   bp_print_fail();
-            Terminate_SYS9(sPtr);
-    }
+    else
+        Terminate_SYS9(sPtr);
 
     sPtr->sup_exceptState[GENERALEXCEPT].reg_v0 = n_char_sent; // VA TUTTO BENEEEE!!! :) ... e i bambini in africa ?
     SYSCALL(VERHOGEN, (int)&support_devsemaphores[WRITETERM][sPtr->sup_asid - 1], 0 , 0);

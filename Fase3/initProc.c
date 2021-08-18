@@ -31,13 +31,10 @@ void test(){
 
     for (int i = 0; i < UPROCMAX; i++)
         initProcess(i);
-    
-    //se la lista dei figli di test è vuota si ammazza
-    // bp_PAGE_NOT_FOUND();
-
-    for (int i = 0; i < UPROCMAX; i++) {
+        
+    for (int i = 0; i < UPROCMAX; i++)
         SYSCALL(PASSEREN, (int) &masterSemaphore, 0 ,0); // in this way, the 'test' process will only wake up  
-    }                                              // when every other UPROC is over. So it's sleeping 8 times.
+                                                         // when every other UPROC is over. So it goes back to sleep 8 times.
 
     SYSCALL(TERMPROCESS, 0, 0, 0);
 }
@@ -59,10 +56,10 @@ void initProcess(int id)
 {       
     /* --- Initialization of the processor state structure --- */
 
-    U_state_structure[id].pc_epc =  (U_state_structure[id].reg_t9 = UPROCSTARTADDR);
+    U_state_structure[id].pc_epc = (U_state_structure[id].reg_t9 = UPROCSTARTADDR);
     U_state_structure[id].reg_sp = USERSTACKTOP;
 
-    // interrupt enable, usermode, local timer enabled.
+    // interrupt enabled, usermode, local timer enabled.
     // IMON == accepts all interrupts (only if the bit is on, then the interrupt is accepted).
     // Set IEp and KUp because when doing a LDST on the processor state, the stack is popped, and 
     // the bits become representative of the current status.

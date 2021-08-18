@@ -34,7 +34,8 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     // locate the missing page number (found in entryHI of the Saved Exception State)
     int p = (sPtr->sup_exceptState[PGFAULTEXCEPT].entry_hi - PAGETBLSTART) >> VPNSHIFT;
 
-    if (p < 0 || p > 30) {p = MAXPAGES - 1;} // stack page detection
+    if (p < 0 || p > 30) 
+        p = MAXPAGES - 1; // stack page detection
     
     // we look for a free frame...
     int victim_frame = -1;
@@ -92,7 +93,7 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     /** STEP 11 **/
     //update the process page table
 
-    // PFN == NUMBER OF FRAME IN RAM !! (=! physical address of anything)
+    // PFN == INDEX OF FRAME IN RAM !! (=! physical address of anything)
     sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON;
 
     /** STEP 12 **/
@@ -142,14 +143,12 @@ int replacementAlgorithm()
 }
 
 void uTLB_RefillHandler() {
-    
-    // Get the page number
-    int pageNumber;
 
     GET_BDP_STATUS(exception_state);
-    pageNumber = (exception_state->entry_hi - PAGETBLSTART) >> VPNSHIFT; // getting the missing page number from the exception state in the BIOSDATAPAGE
+    int pageNumber = (exception_state->entry_hi - PAGETBLSTART) >> VPNSHIFT; // getting the missing page number from the exception state in the BIOSDATAPAGE
 
-    if (pageNumber < 0 || pageNumber > 30) {bp(); pageNumber = MAXPAGES - 1;} // stack page index.. another approch would have been to chek if vpn == 0xBFFFF
+    if (pageNumber < 0 || pageNumber > 30) 
+        pageNumber = MAXPAGES - 1; // stack page index.. another approch would have been to chek if vpn == 0xBFFFF
     
     // loading the page entry onto memory
     setENTRYHI(currentProcess->p_supportStruct->sup_privatePgTbl[pageNumber].pte_entryHI);  // REMEMBER: a process page table is different from the swap table
