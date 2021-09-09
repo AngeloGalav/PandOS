@@ -41,7 +41,7 @@ void test(){
 
 void initSemaphores()
 {
-    masterSemaphore = -5;
+    masterSemaphore = 0;
 
     /* Set all semaphores to 1 cause of mutex */
     for (int i = 0; i < UPROCMAX; i++){
