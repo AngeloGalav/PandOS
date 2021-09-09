@@ -41,7 +41,7 @@ void test(){
 
 void initSemaphores()
 {
-    masterSemaphore = 0;
+    masterSemaphore = -5;
 
     /* Set all semaphores to 1 cause of mutex */
     for (int i = 0; i < UPROCMAX; i++){
@@ -109,4 +109,5 @@ void initProcess(int id)
 
     // starting the process
     int status = SYSCALL(CREATEPROCESS, (int) &U_state_structure[id], (int) &U_support_structure[id], 0);   
+    if (status == -1) SYSCALL(TERMINATE, 0, 0, 0);
 }

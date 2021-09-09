@@ -7,9 +7,6 @@ extern int support_devsemaphores[SUPP_SEM_N][UPROCMAX];
 extern int flash_device_semaphores[UPROCMAX];
 extern swap_t swap_table[POOLSIZE];
 
-void bp_print_fail(){};
-void bp_invalid_exec(){};
-
 void GeneralException_Handler()
 {
     // We take the support info of the current process with the SYS8
@@ -62,7 +59,7 @@ void Terminate_SYS9(support_t* sPtr) // sys2 wrapper
     
     for (int i = 0; i < SUPP_SEM_N; i++) 
     {
-        if (support_devsemaphores[i][sPtr->sup_asid - 1] <= 0)
+        if (support_devsemaphores[i][sPtr->sup_asid - 1] <= 0)  // i is the device semaphore line, asid represents the device 
             SYSCALL(VERHOGEN, (int) &support_devsemaphores[i][sPtr->sup_asid - 1], 0, 0); 
     }
 
@@ -91,12 +88,12 @@ void Write_To_Printer_SYS11(support_t* sPtr)
     unsigned int status;
     
     SYSCALL(PASSERN, (int) &support_devsemaphores[PRINTER][sPtr->sup_asid - 1], 0, 0); 
-    
+
     int strlength = (int) sPtr->sup_exceptState[GENERALEXCEPT].reg_a2;
     char *s = (char*) sPtr->sup_exceptState[GENERALEXCEPT].reg_a1; 
     
     // check if string address are between user space
-    if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (int) s >= KUSEG)
+    if ((strlength >= 0) && (strlength <= MAXSTRLENG) && (int) s >= KUSEG) //???
     {
         while (n_char_sent < (int) strlength)
         {
@@ -104,7 +101,7 @@ void Write_To_Printer_SYS11(support_t* sPtr)
             devReg->dtp.data0 = *s;
 
             DISABLE_INTERRUPTS_COMMAND;
-            devReg->dtp.command = PRINTCHR;
+            devReg->dtp.command = PRINTCHR;     
             SYSCALL(IOWAIT, PRNTINT, sPtr->sup_asid - 1, 0);
             ENABLE_INTERRUPTS_COMMAND;
 
@@ -146,7 +143,7 @@ void Write_to_Terminal_SYS12(support_t* sPtr)
         while (n_char_sent < (int) strlength)
         {
             DISABLE_INTERRUPTS_COMMAND;
-            devReg->term.transm_command = (unsigned int) *s << 8 | TRANSMITCHAR;
+            devReg->term.transm_command = (unsigned int) *s << 8 | TRANSMITCHAR; // writing the char in upper part of the 16 bit string. 
             status = SYSCALL(IOWAIT, TERMINT, sPtr->sup_asid - 1, 0); // the interrupt handler returns the status BEFORE the ACK,
             ENABLE_INTERRUPTS_COMMAND;                                // which is what we need (not after like term.trasm_status)
             
@@ -182,7 +179,7 @@ void Read_From_Terminal_SYS13(support_t* sPtr)
 
     int n_char_sent = 0;
    
-    if ((memaddr) buffer >= KUSEG)
+    if ((memaddr) buffer >= KUSEG) // check if we're writing outside of the UPROC address space 
     {   
         while (TRUE)
         {

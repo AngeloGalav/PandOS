@@ -4,7 +4,7 @@
 extern pcb_PTR currentProcess;
 
 /* Swap pool table */
-swap_t swap_table[POOLSIZE];
+swap_t swap_table[POOLSIZE]; // SWAP TABLE IS ACTUALLY JUST THE PAGE TABLE!!!!!!!!
 
 /* Swap pool devices semaphore*/
 int swap_semaphore;
@@ -46,6 +46,7 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         }
     }
 
+    // the replacentAlgorithm returns the index of an occupied frame that we want to dispose.
     if (victim_frame == -1) victim_frame = replacementAlgorithm(); //... if there aren't any free frames, we call the replacement algorithm
 
     // the asid of the occupied frame
@@ -72,7 +73,7 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         ENABLE_INTERRUPTS_COMMAND;
         
         // block of the flash device to write to (coincides with the page number)
-        int block_number = swap_table[victim_frame].sw_pte->pte_entryHI >> VPNSHIFT;
+        int block_number = swap_table[victim_frame].sw_pte->pte_entryHI >> VPNSHIFT; ///TODO: test - PAGETBLSTART
 
         // writing contents of frame (stored in frame_addr) into the backing store in the block_number
         backStoreManager(FLASHWRITE, frame_asid, frame_addr, block_number);
@@ -91,13 +92,13 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     swap_table[victim_frame].sw_pte = &(sPtr->sup_privatePgTbl[p]); // passing the address of the user's page to the swap_table
 
     /** STEP 11 **/
-    //update the process page table
+    // update the process page table
 
     // PFN == INDEX OF FRAME IN RAM !! (=! physical address of anything)
-    sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON;
+    sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON; // dirty bit means the page is write enabled
 
     /** STEP 12 **/
-    //UPDATE TLB by clearing it. (after refactoring it will be more complex)
+    // UPDATE TLB by clearing it. (after refactoring it will be more complex)
     TLBCLR();
 
     ENABLE_INTERRUPTS_COMMAND;

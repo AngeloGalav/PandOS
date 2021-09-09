@@ -39,7 +39,7 @@ void exceptionHandler()
 void PassUpOrDie(int except_type, state_t* exceptionState)
 {
     if (currentProcess->p_supportStruct == NULL) { 
-        bp_correct(); Terminate_Process_SYS2(); }// Die (process termination)
+        Terminate_Process_SYS2(); }// Die (process termination)
     else // PassUp
     {
         (currentProcess->p_supportStruct)->sup_exceptState[except_type] = *exceptionState; 
