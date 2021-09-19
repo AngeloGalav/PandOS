@@ -33,8 +33,8 @@ void test(){
         initProcess(i);
         
     for (int i = 0; i < UPROCMAX; i++)
-        SYSCALL(PASSEREN, (int) &masterSemaphore, 0 ,0); // in this way, the 'test' process will only wake up  
-                                                         // when every other UPROC is over. So it goes back to sleep 8 times.
+        SYSCALL(PASSEREN, (int) &masterSemaphore, 0 ,0); // in this way, the 'test' process will only wake up when
+                                                         // every other UPROC is over. So it goes back to sleep 8 times.
 
     SYSCALL(TERMPROCESS, 0, 0, 0);
 }
@@ -56,12 +56,13 @@ void initProcess(int id)
 {       
     /* --- Initialization of the processor state structure --- */
 
+    // both the PC and the T9 reg are set to the address of the .text section
     U_state_structure[id].pc_epc = (U_state_structure[id].reg_t9 = UPROCSTARTADDR);
     U_state_structure[id].reg_sp = USERSTACKTOP;
 
     // interrupt enabled, usermode, local timer enabled.
     // IMON == accepts all interrupts (only if the bit is on, then the interrupt is accepted).
-    // Set IEp and KUp because when doing a LDST on the processor state, the stack is popped, and 
+    // We are setting up IEp and KUp because when doing a LDST on the processor state, the stack is popped, and 
     // the bits become representative of the current status.
     
     U_state_structure[id].status = IMON | IEPON | USERPON | TEBITON ;
@@ -85,25 +86,24 @@ void initProcess(int id)
     // Set the two SP fields to utilize the two stack spaces allocated in the Support Structure.
     memaddr ramTop;
     RAMTOP(ramTop);
+
+    /* we allocate directly 2 stack spaces per UPROC. These stack spaces are dedicated to PageFault Handler and the General Exception Handler.*/
+    /* The RAM space used is the one directly below RAMTOP, in order to avoid the last frame of RAM. (which is reversed for 'test/init' stackPage) */
     U_support_structure[id].sup_exceptContext[PGFAULTEXCEPT].stackPtr = ramTop - (id + 1) * PAGESIZE * 2;
     U_support_structure[id].sup_exceptContext[GENERALEXCEPT].stackPtr = ramTop - (id + 1) * PAGESIZE * 2 + PAGESIZE;
-
-    // U_support_structure[id].sup_exceptContext[PGFAULTEXCEPT].stackPtr = (memaddr) &U_support_structure[id].sup_stackTLB[499];
-    // U_support_structure[id].sup_exceptContext[GENERALEXCEPT].stackPtr =  (memaddr) &U_support_structure[id].sup_stackGen[499];
 
     // initialization of the process private PageTable
 
     for (int j = 0; j < MAXPAGES; j++)
     {
-        if (j == MAXPAGES - 1) // the last is the stack page, so VPN is set to the starting address
+        if (j == MAXPAGES - 1) // the last is the stack page, so VPN is set to the starting address. Each process has its own stack.
             U_support_structure[id].sup_privatePgTbl[j].pte_entryHI = 0xBFFFF << VPNSHIFT;
         else
             // set the VPN to [0x80000..0x8001E]
             U_support_structure[id].sup_privatePgTbl[j].pte_entryHI = PAGETBLSTART + (j << VPNSHIFT); // pageNumbers go from 0 to 31 (31 is the stack page)
         
         SET_ASID(U_support_structure[id].sup_privatePgTbl[j].pte_entryHI, id + 1); // id + 1 = ASID
-        U_support_structure[id].sup_privatePgTbl[j].pte_entryLO = DIRTYON;
-
+        U_support_structure[id].sup_privatePgTbl[j].pte_entryLO = DIRTYON; // every page is set to DIRTY, so it's write enabled.
         // valid bit is already set to off...
     }
 

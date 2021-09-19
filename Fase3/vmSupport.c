@@ -3,8 +3,8 @@
 // current proc variable which is accessible through the uTLBRefillHandler, since it's a phase 2 function
 extern pcb_PTR currentProcess;
 
-/* Swap pool table */
-swap_t swap_table[POOLSIZE]; // SWAP TABLE IS ACTUALLY JUST THE PAGE TABLE!!!!!!!!
+/* Swap pool table: describes the current situation of the swap pool frames in RAM */
+swap_t swap_table[POOLSIZE];
 
 /* Swap pool devices semaphore*/
 int swap_semaphore;
@@ -18,7 +18,7 @@ void initSwapStructs()
         swap_table[i].sw_asid = NOPROC;
 }
 
-void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
+void Support_Pager()
 {
     // Gathering the support info of the current process with the SYS8
     support_t *sPtr = (support_t*) SYSCALL(GETSPTPTR, 0, 0, 0);
@@ -64,16 +64,17 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
         // DISABLING INTERRUPTS using getStatus -> setStatus
         DISABLE_INTERRUPTS_COMMAND;
 
-        UNSET_BIT(swap_table[victim_frame].sw_pte->pte_entryLO, VALID_BIT_POS) ; //bisogna mettere il V bit a 0
+        UNSET_BIT(swap_table[victim_frame].sw_pte->pte_entryLO, VALID_BIT_POS); // setting the V bit to 0
 
-        // tlb update
-        TLBCLR();
+        // updating the single TLB entry
+        updateTLB(swap_table[victim_frame].sw_pte); // we need to update the single page, that was modified in the previous instruction
+                                                    // (it's modified since the valid bit is set to off).
 
         // ENABLING INTERRUPTS using setStatus
         ENABLE_INTERRUPTS_COMMAND;
         
         // block of the flash device to write to (coincides with the page number)
-        int block_number = swap_table[victim_frame].sw_pte->pte_entryHI >> VPNSHIFT; ///TODO: test - PAGETBLSTART
+        int block_number = (swap_table[victim_frame].sw_pte->pte_entryHI - PAGETBLSTART) >> VPNSHIFT;
 
         // writing contents of frame (stored in frame_addr) into the backing store in the block_number
         backStoreManager(FLASHWRITE, frame_asid, frame_addr, block_number);
@@ -85,35 +86,31 @@ void Support_Pager() // TLB_exception_Handler andrà richiamato immagino
     
     DISABLE_INTERRUPTS_COMMAND;
     
-    /** STEP 10 **/
-    // even though it is not specified, later in 4.5.3 it is said that the swap table must infact be updated atomically
+    // Even though it is not specified, later in 4.5.3 it is said that the swap table must infact be updated atomically
     swap_table[victim_frame].sw_asid = asid;
     swap_table[victim_frame].sw_pageNo = p;
     swap_table[victim_frame].sw_pte = &(sPtr->sup_privatePgTbl[p]); // passing the address of the user's page to the swap_table
 
-    /** STEP 11 **/
-    // update the process page table
+    // Updating the process page table
 
     // PFN == INDEX OF FRAME IN RAM !! (=! physical address of anything)
     sPtr->sup_privatePgTbl[p].pte_entryLO = (frame_addr & 0xFFFFF000) | VALIDON | DIRTYON; // dirty bit means the page is write enabled
 
-    /** STEP 12 **/
-    // UPDATE TLB by clearing it. (after refactoring it will be more complex)
-    TLBCLR();
+    // Updating the TLB entry of the page that was just inserted into RAM.
+    updateTLB(&(sPtr->sup_privatePgTbl[p]));
 
     ENABLE_INTERRUPTS_COMMAND;
 
-    /** STEP 13 **/
     // releasing the mutual exclusion semaphore over the Swap Pool table
     SYSCALL(VERHOGEN, (int) &swap_semaphore, 0, 0);
 
-    /** STEP 14 **/
     // Return control to the support process by loading 
     LDST((state_t*) &(sPtr->sup_exceptState[PGFAULTEXCEPT]));
 }
 
 void backStoreManager(unsigned int command, int flash_asid, unsigned int data_addr, unsigned int deviceBlockNumber)
 {
+    // we gain mutual exclusion on the flash device.
     SYSCALL(PASSEREN, (memaddr) &flash_device_semaphores[flash_asid - 1], 0, 0);
     devreg_t* devReg = GET_DEV_ADDR(FLASHINT, flash_asid - 1); // ASID values go from 1 to 8
 
@@ -132,7 +129,22 @@ void backStoreManager(unsigned int command, int flash_asid, unsigned int data_ad
 
     // treating any error as a Program Trap
     if (devReg->dtp.status != DEV0ON)
-        SYSCALL(TERMINATE, 0, 0, 0); ///TODO: replace with sys9
+        SYSCALL(TERMINATE, 0, 0, 0);
+}
+
+void updateTLB(pteEntry_t *updated_entry)
+{   
+    setENTRYHI(updated_entry->pte_entryHI);
+    TLBP(); // examine the TLB to search if the TLB entry is in the TLB.
+            // TLBP() searches for a TLB entry that matches the current values of the entryHI register in the CPU. 
+            // The return value of the probing is then place into the Index register of the CPU.
+
+    if((getINDEX() & PRESENTFLAG) == 0) // If TLB entry is present, returns 0 into the P value of the Index reg.
+    {   
+        setENTRYLO(updated_entry->pte_entryLO); // If it's present, we update the entry. 
+        TLBWI(); // EntryHI is already set, so we can write the whole pte into the TLB.
+        // TLBWI writes using the information in the Index register.
+    } 
 }
 
 int replacementAlgorithm()
@@ -145,7 +157,7 @@ int replacementAlgorithm()
 
 void uTLB_RefillHandler() {
 
-    GET_BDP_STATUS(exception_state);
+    GET_BDP_STATUS(exception_state); // retrieving the exception state
     int pageNumber = (exception_state->entry_hi - PAGETBLSTART) >> VPNSHIFT; // getting the missing page number from the exception state in the BIOSDATAPAGE
 
     if (pageNumber < 0 || pageNumber > 30) 

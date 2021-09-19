@@ -32,4 +32,7 @@ void backStoreManager(unsigned int command, int flash_asid, unsigned int data_ad
 // auxiliary function used by the syssupport when doing a sys9
 void deleteSwTbEntries(int asid); 
 
+// updates a single TLB entry located in the TLB 
+void updateTLB(pteEntry_t *updated_entry);
+
 #endif

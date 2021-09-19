@@ -10,7 +10,7 @@
 ## Introduzione
 
 PandOs è un "sistema operativo" creato per essere rappresentabile tramite più layer astratti che implementano le funzioni chiave di un sistema operativo Unix.
-L’ambiente di riferimento per l’esecuzione del software e’μMPS3. Si tratta di un emulatore per architettura MIPS con interfaccia grafica integrata per l’esecuzione, l’interazione e il debugging del software.Alcuni celebri esempi di dispositvi basati su MIPS: le consolePlaystation 2, Playstation Portable e Nintendo64; la sonda spazialeNew Horizons; l’autopilota della Tesla Model S.
+L’ambiente di riferimento per l’esecuzione del software e’μMPS3. Si tratta di un emulatore per architettura MIPS con interfaccia grafica integrata per l’esecuzione, l’interazione e il debugging del software. Alcuni celebri esempi di dispositvi basati su MIPS: le consolePlaystation 2, Playstation Portable e Nintendo64; la sonda spaziale New Horizons; l’autopilota della Tesla Model S.
 
 ## Tecnologie usate
 
@@ -36,6 +36,12 @@ Le syscall sono particolari funzioni usabili esclusivamente in kernel mode, che 
 L'interrupt handler gestisce gli interrupt di device timer (come il PLT e l'interval timer) e non-timer (come dispositivi di networking, terminali e stampanti), permettendo di eseguire delle V nei semafori di questi device e liberando i processi bloccati nelle queue ad essi associati.
 L'exception handler gestisce le eccezioni (tra cui anche syscall e interrupt) ridirezionando i processi nelle procedure richieste o che possono gestire tale eccezione. In caso di Program Trap o di TLB exception (eccezioni che riguardano l'organizzazione della memoria), si esegue una procedura "Pass Up or Die", che permette di passare la gestione dell'eccezione al layer di supporto in caso esso sia presente, o di terminare il processo che ha causato l'eccezione altrimenti. 
 
+## Fase 3
+
+Il tema di questa fase è la creazione dello strato di supporto. Questa fase include il supporto per la memoria virtuale e la paginazione, assieme alla gestione di syscall con codice maggiore di 9.
+Otto processi in user-mode vengono creati, inizializzando la loro struttura di supporto e la page table di ognuno dei processi.
+Inoltre, il pager permette di gestire i pagefault, inserendo in memoria le pagine richieste da un dato processo.
+
 ## Come compilare e avviare
 
 La compilazione avviene attraverso il makefile presente nella directory del progetto. Per avviare il programma è necessario avviare μMPS3 e creare una "nuova macchina virtuale" salvando le configurazioni nella directory del progetto, a quel punto l'emulatore sarà in grado di leggere i file generati dal makefile.
@@ -44,8 +50,8 @@ N.B: se si usa una distro di linux basata su arch, bisogna modificare il makefil
 
 ```
 $ cd Progetto_Sistemi/
-$ cd Fase1/
+$ cd Fase3/
 $ make
 ```
 In caso si voglia eliminare i file creati, esistono due semplici comandi:
-Per la fase 1 basta usare `$ make clean`, mentre per la fase 2 esiste `$ make clean_all`.
+Per la fase 1 basta usare `$ make clean`, mentre per la fase 2 e fase 3 esiste `$ make clean_all`.
